@@ -20,7 +20,13 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
   - 에러 타입: `DoorayCliError(message, exitCode)`
   - 스트림 분리: 데이터 stdout, 에러 stderr (에이전트 친화)
 - 하네스
-  - 스킬 6개: planning, plan-and-build, build-with-teams, docs-check, review-fix, release
+  - 스킬 6개
+    - planning
+    - plan-and-build
+    - build-with-teams
+    - docs-check
+    - review-fix
+    - release
   - 커스텀 에이전트: executor, docs-verifier
 
 ## 특이점

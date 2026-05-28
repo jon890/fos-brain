@@ -15,7 +15,11 @@ updated: 2026-05-28
 - **self-healing-teams** — build-with-teams 위에 메타 오케스트레이터를 두어 4가지 자가치유를 수행한다. 실행 후 회고는 스킬 파일에 기록한다.
 - **작성↔검증 분리 제도화**: critic·docs-verifier 가 "자기 면제" 문구를 쓰지 못하도록 명시 금지한다.
 - **docs-audit Quality Loop** — 문서를 5단계로 분류해 주기적으로 흡수·폐기한다.
-  - keep, refresh, merge, archive, delete
+  - keep
+  - refresh
+  - merge
+  - archive
+  - delete
 
 ## 관련 개념
 

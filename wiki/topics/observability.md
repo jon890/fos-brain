@@ -6,7 +6,7 @@ updated: 2026-05-28
 
 # Observability (관측가능성)
 
-분산 시스템의 외부 출력(logs·metrics·traces)만으로 내부 상태를 추론하는 성질.
+분산 시스템의 외부 출력(logs, metrics, traces)만으로 내부 상태를 추론하는 성질.
 Monitoring 이 "미리 정의한 질문에 답"이라면, Observability 는 "예상 못 한 질문도 할 수 있게" 만든다.
 
 ## 핵심 개념

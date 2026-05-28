@@ -23,7 +23,17 @@ updated: 2026-05-28
   - Server Component 기본, `(authenticated)` 라우트 그룹
 - 하네스
   - 스킬 12개
-  - 목록: planning, plan-and-build, build-with-teams, self-healing-teams, commit-convention, review-fix, docs-check, integrate-ux, web-design-guidelines, next/vercel-react-best-practices
+  - 목록
+    - planning
+    - plan-and-build
+    - build-with-teams
+    - self-healing-teams
+    - commit-convention
+    - review-fix
+    - docs-check
+    - integrate-ux
+    - web-design-guidelines
+    - next/vercel-react-best-practices
 
 ## 특이점
 

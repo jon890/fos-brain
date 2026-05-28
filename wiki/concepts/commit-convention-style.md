@@ -12,7 +12,11 @@ updated: 2026-05-28
 
 - **형식**: `type(scope): 설명` — 영문 type/scope + **한국어 본문 설명**.
 - **type 분포** — chore 가 가장 많고, 이하 순서로 사용한다.
-  - chore, docs, feat, fix, refactor
+  - chore
+  - docs
+  - feat
+  - fix
+  - refactor
   - 문서·잡무 커밋 비중이 크다(정원 가꾸기형).
 - **scope 의미** — 세 가지 방식 중 하나로 표기한다.
   - 도메인명: `feat(expense)`

@@ -20,7 +20,14 @@ NHN Cloud 통합 CLI(`@bifos/nhncloud-cli` v0.1.0). 서비스별 인증·엔드�
   - profile 우선순위: `--profile` > env > config > default
 - 하네스
   - dooray-cli 하네스를 포팅한 7스킬
-  - 스킬 목록: planning, plan-and-build (run-phases.py), build-with-teams, review-fix, docs-check, release, _shared
+  - 스킬 목록
+    - planning
+    - plan-and-build (run-phases.py)
+    - build-with-teams
+    - review-fix
+    - docs-check
+    - release
+    - _shared
 
 ## 특이점
 

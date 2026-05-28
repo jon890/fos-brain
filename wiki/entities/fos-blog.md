@@ -22,7 +22,12 @@ updated: 2026-05-28
   - `posts.path` canonical, `isActive` soft-delete
 - 하네스
   - 토큰 라우팅: opus/sonnet/haiku
-  - 스킬: planning, build-with-teams, plan-and-build, docs-check, review-fix
+  - 스킬
+    - planning
+    - build-with-teams
+    - plan-and-build
+    - docs-check
+    - review-fix
   - `_shared` pitfalls BLG1~26 누적
 
 ## 특이점
