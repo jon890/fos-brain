@@ -37,3 +37,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: `raw/notes/2026-05-28-repo-work-style-analysis.md`
 - 신규 16 페이지: topic 1(work-style), concept 7(ai-harness-pattern, docs-first-adr, commit-convention-style, korean-readability-policy, testing-philosophy, tech-stack-preferences, self-improving-harness), entity 7(dooray-cli, nhncloud-cli, fos-blog, fos-accountbook, fos-accountbook-backend, fos-study, ocr-docs)
 - 대상 레포: dooray-cli, fos-blog, fos-accountbook(+backend), fos-study, nhncloud-cli, OCR-docs
+
+## [2026-05-28] add | build-with-teams 하네스 일반 규칙 (public)
+- Source: `raw/notes/2026-05-28-build-with-teams-harness-rules.md` (nhncloud-cli plan001 실행 회고)
+- 신규 1 페이지: concept(build-with-teams-rules). 보강 2: ai-harness-pattern, self-improving-harness 백링크.
+- repo 무관 하네스 운영 규칙·실패 패턴만 추림 (프로젝트별 코딩 규칙 제외). 새 하네스 seed 용.

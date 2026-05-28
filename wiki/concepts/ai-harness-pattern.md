@@ -33,6 +33,7 @@ updated: 2026-05-28
 ## 관련 개념
 
 - [[self-improving-harness]] — 하네스가 리뷰 학습을 스스로 누적
+- [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙
 - [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출
 - [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
 

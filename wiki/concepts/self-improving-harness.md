@@ -20,6 +20,7 @@ updated: 2026-05-28
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 루프가 붙는 베이스 하네스
+- [[build-with-teams-rules]] — 회고 학습이 누적되는 build-with-teams 규칙 모음
 - [[korean-readability-policy]] — 문체 위반도 누적 점검 대상
 
 ## Sources

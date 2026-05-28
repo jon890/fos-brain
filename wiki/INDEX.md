@@ -20,6 +20,7 @@
 - [[concepts/testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
+- [[concepts/build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
 
 ### RAG / 지식 시스템
 
@@ -49,6 +50,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-28 (7개 레포 업무 스타일·하네스)
+- 마지막 brain-add: 2026-05-28 (build-with-teams 하네스 일반 규칙)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
