@@ -1,0 +1,17 @@
+# 비공개 네임스페이스 — 절대 commit 하지 않는다
+private/
+work/
+
+# Quartz 빌드 산출물·의존성
+quartz/node_modules/
+quartz/public/
+quartz/.quartz-cache/
+
+# 로컬 전체 빌드 산출물 (비공개 포함)
+quartz-local/
+
+# 로컬 에이전트 상태 (OMC)
+.omc/
+
+# 잡파일
+.DS_Store
