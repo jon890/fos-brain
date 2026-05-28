@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd /Users/nhn/personal/fos-brain/quartz\\nrm -rf content\\nln -s ../wiki content\\necho \\\"=== content 링크 확인 ===\\\" && ls -la content && echo \\\"\\\" && echo \\\"=== content 내용 ===\\\" && ls content/\\...",
-  "error": "Exit code 2\n=== content 링크 확인 ===\ndrwxr-xr-x@    - nhn 28 5월  11:55 concepts\ndrwxr-xr-x@    - nhn 28 5월  11:57 entities\n.rw-r--r--@ 1.7k nhn 28 5월  11:58 INDEX.md\n.rw-r--r--@ 2.1k nhn 28 5월  11:55 log.md\ndrwxr-xr-x@    - nhn 28 5월  11:55 topics\n\n=== content 내용 ===\nconcepts\nentities\nINDEX.md\nlog.md\ntopics\n\n=== quartz.config.ts 존재 ===\n\"quartz.config.ts\": No such file or directory (os error 2)",
-  "timestamp": "2026-05-28T04:41:26.507Z",
-  "retry_count": 1
-}
