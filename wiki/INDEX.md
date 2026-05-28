@@ -7,6 +7,7 @@
 ## Topics
 
 - [[topics/work-style]] — 개인 프로젝트 7개에서 일관된 개발·문서·AI 협업 방식
+- [[topics/observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
 - [[topics/rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
 
 ## Concepts
@@ -21,6 +22,15 @@
 - [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
 - [[concepts/build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
+
+### 관측성·운영 (학습)
+
+- [[concepts/observability-three-pillars]] — Logs / Metrics / Traces 역할·상호보완·한계
+- [[concepts/latency-percentiles]] — p50/p95/p99, 평균의 함정, histogram_quantile
+- [[concepts/red-use-metrics]] — RED(API) / USE(리소스) 메트릭 분류
+- [[concepts/prometheus-histogram-vs-summary]] — 분위수 집계, 다인스턴스 합산, cardinality 함정
+- [[concepts/slo-burn-rate-alerting]] — symptom 우선, multi-burn-rate 알림
+- [[concepts/k8s-run-tmpfs-containerd]] — /run tmpfs 포화로 Pod 안 뜸 (containerd 메타데이터)
 
 ### RAG / 지식 시스템
 
@@ -50,6 +60,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-28 (build-with-teams 하네스 일반 규칙)
+- 마지막 brain-add: 2026-05-28 (fos-study 관측성 클러스터 — observability + k8s /run tmpfs)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

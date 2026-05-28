@@ -42,3 +42,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: `raw/notes/2026-05-28-build-with-teams-harness-rules.md` (nhncloud-cli plan001 실행 회고)
 - 신규 1 페이지: concept(build-with-teams-rules). 보강 2: ai-harness-pattern, self-improving-harness 백링크.
 - repo 무관 하네스 운영 규칙·실패 패턴만 추림 (프로젝트별 코딩 규칙 제외). 새 하네스 seed 용.
+
+## [2026-05-28] add | fos-study 관측성 클러스터 (observability + k8s /run tmpfs)
+- Source: fos-study `architecture/observability-basics.md`, `devops/k8s/gpu-node-run-tmpfs-full.md` (외부 repo, 경로 인용)
+- 신규 7 페이지: topic 1(observability), concept 6(observability-three-pillars, latency-percentiles, red-use-metrics, prometheus-histogram-vs-summary, slo-burn-rate-alerting, k8s-run-tmpfs-containerd)
+- 게이트: gpu-tmpfs 는 fos-study(blog-post-writer 검증 완료)가 출처라 public 으로. 코드 스니펫·체크리스트는 제외(원본 참조).
