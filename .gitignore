@@ -7,8 +7,9 @@ quartz/node_modules/
 quartz/public/
 quartz/.quartz-cache/
 
-# 로컬 전체 빌드 산출물 (비공개 포함)
-quartz-local/
+# 로컬 전체 빌드 — content(심볼릭 병합)·output 은 무시, serve.sh 스크립트는 추적
+quartz-local/content/
+quartz-local/public/
 
 # 로컬 에이전트 상태 (OMC)
 .omc/

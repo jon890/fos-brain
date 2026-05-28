@@ -127,21 +127,28 @@ Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
 
 ## 웹 UI: Quartz
 
-연결된 지식을 그래프로 보는 웹 UI 는 Quartz 정적 사이트로 구축한다.
+연결된 지식을 그래프로 보는 웹 UI 는 Quartz v4 정적 사이트로 구축한다(`quartz/`).
 공개 빌드와 로컬 전체 빌드 두 가지를 운영한다.
+
+### 툴체인 전제
+
+- node 22.16.0 핀(`.tool-versions` = mise, `.npmrc` 의 `use-node-version` = pnpm). node 25 에선 tsx 가 `.scss` ESM 로딩에 실패하므로 22 유지.
+- pnpm(`packageManager` 필드). `.npmrc` 에 `node-linker=hoisted`(Quartz 가 phantom 의존성을 직접 import).
+- fos-brain 은 **독립 git repo** 여야 한다. 홈(`/Users/nhn`)이 `*` 화이트리스트 .gitignore 라, fos-brain 에 자체 `.git` 이 없으면 Quartz 의 `isGitIgnored` 가 모든 content 를 걸러내 입력 0 이 된다.
 
 ### 공개 빌드 (`quartz/`)
 
-- content: 루트 `wiki/`(public) 만 입력. private·work 제외.
+- content: `quartz/content` → 루트 `wiki/` 심볼릭 링크(public 만). private·work 는 config `ignorePatterns` 로 제외.
 - 기능: 그래프 뷰 + 전문 검색 + 백링크 패널
-- 서빙: `cd quartz && npx quartz build --serve`
-- 외부 게시(GitHub Pages 등)는 별도 요청 시에만.
+- 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
+- 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
 
 ### 로컬 전체 빌드 (`quartz-local/`)
 
-- content: public + private + work 전체 그래프.
-- **gitignore 대상** — 비공개 자료가 섞이므로 절대 게시하지 않는다.
-- 로컬에서 전체 지식 연결을 볼 때만 서빙: `cd quartz-local && npx quartz build --serve`
+- content: public + private + work 전체 그래프. 비공개 폴더는 `_private`/`_work` 로 병합(공개 config 의 ignore 회피).
+- 병합 content 는 repo 밖 temp 에 생성(repo 안이면 `.gitignore` 때문에 입력이 걸러짐).
+- **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
+- 서빙: `./quartz-local/serve.sh` (포트 8081)
 
 ## Obsidian 호환
 
