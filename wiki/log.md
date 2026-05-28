@@ -52,3 +52,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: github.com/jon890/fos-claw AGENTS.md/README.md (public repo, 경로 인용)
 - 신규 4 페이지: entity(ai-nodes) + concept 3(multi-workspace-monorepo, script-skill-separation, task-run-tracking)
 - 범위: 아키텍처·패턴만(개인 워크스페이스 데이터 제외). work-style 하네스 클러스터와 cross-link.
+
+## [2026-05-28] add | GitHub Actions AI 코드 리뷰 워크플로우 패턴
+- Source: github.com/jon890/nhncloud-cli .github/workflows/claude-code-review.yml (public repo, 경로 인용)
+- 신규 1 페이지: concept(ai-code-review-github-actions), 보강 1(ai-harness-pattern 백링크)
+- 범위: 재사용 방법론·함정만(트리거·리뷰어 구성 트레이드오프·게시·gotcha). nhncloud 고유 인증/API 사실 제외.

@@ -22,6 +22,7 @@
 - [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
 - [[concepts/build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
+- [[concepts/ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions(claude-code-action)로 붙이는 패턴·함정
 
 ### 자동화 시스템 (ai-nodes)
 

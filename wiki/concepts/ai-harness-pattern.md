@@ -36,6 +36,7 @@ updated: 2026-05-28
 - [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙
 - [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출
 - [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
+- [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
 
 ## Sources
 
