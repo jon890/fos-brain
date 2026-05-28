@@ -14,11 +14,11 @@ updated: 2026-05-28
 
 - TypeScript `strict: true` 항상, path alias `@/*`, 미사용 변수 `_` prefix.
 - **프레임워크 스택**
-  - Next.js(App Router) + React 19
-  - Tailwind v4 + shadcn/ui + Radix
+  - Next.js(App Router), React 19
+  - Tailwind v4, shadcn/ui, Radix
 - HTTP 는 **`ky` 전용, axios 금지**(ADR 로 못 박음).
 - **CLI 스택**
-  - Commander + tsup(esbuild 단일 번들) + vitest
+  - Commander, tsup(esbuild 단일 번들), vitest
 - 패키지 매니저는 **pnpm** 고정, Node 20~22.
 - **폼·알림**
   - 폼: React Hook Form + Zod
@@ -26,9 +26,9 @@ updated: 2026-05-28
 
 ### Java / 백엔드
 
-- Java 21 + Spring Boot 4, Gradle Kotlin DSL + Version Catalog.
+- Java 21, Spring Boot 4. 빌드는 Gradle Kotlin DSL + Version Catalog.
 - **데이터 접근**
-  - JPA + QueryDSL
+  - JPA, QueryDSL
   - Flyway 마이그레이션
   - MySQL(prod) / H2(test)
 - **코드 품질 도구**
