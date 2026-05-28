@@ -47,3 +47,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: fos-study `architecture/observability-basics.md`, `devops/k8s/gpu-node-run-tmpfs-full.md` (외부 repo, 경로 인용)
 - 신규 7 페이지: topic 1(observability), concept 6(observability-three-pillars, latency-percentiles, red-use-metrics, prometheus-histogram-vs-summary, slo-burn-rate-alerting, k8s-run-tmpfs-containerd)
 - 게이트: gpu-tmpfs 는 fos-study(blog-post-writer 검증 완료)가 출처라 public 으로. 코드 스니펫·체크리스트는 제외(원본 참조).
+
+## [2026-05-28] add | fos-claw(ai-nodes) 자동화 시스템 아키텍처
+- Source: github.com/jon890/fos-claw AGENTS.md/README.md (public repo, 경로 인용)
+- 신규 4 페이지: entity(ai-nodes) + concept 3(multi-workspace-monorepo, script-skill-separation, task-run-tracking)
+- 범위: 아키텍처·패턴만(개인 워크스페이스 데이터 제외). work-style 하네스 클러스터와 cross-link.

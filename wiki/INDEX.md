@@ -23,6 +23,12 @@
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
 - [[concepts/build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
 
+### 자동화 시스템 (ai-nodes)
+
+- [[concepts/multi-workspace-monorepo]] — 워크스페이스 격리 + _shared 규율
+- [[concepts/script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006)
+- [[concepts/task-run-tracking]] — track_task.sh 실행·토큰 로깅
+
 ### 관측성·운영 (학습)
 
 - [[concepts/observability-three-pillars]] — Logs / Metrics / Traces 역할·상호보완·한계
@@ -49,6 +55,7 @@
 - [[entities/fos-accountbook-backend]] — 가계부 Java 백엔드, 도메인 패키지·테스트 규율
 - [[entities/fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
 - [[entities/ocr-docs]] — OCR 공개 문서, 다국어 fan-out·공개 저장소 보안
+- [[entities/ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
 
 ## Raw 인벤토리 요약
 
@@ -60,6 +67,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-28 (fos-study 관측성 클러스터 — observability + k8s /run tmpfs)
+- 마지막 brain-add: 2026-05-28 (fos-claw ai-nodes 자동화 시스템 아키텍처)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
