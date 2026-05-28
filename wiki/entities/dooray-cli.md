@@ -10,9 +10,18 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
 
 ## 개요
 
-- 스택: TypeScript strict, Node>=20, commander, ky, tsup, vitest, pnpm.
-- 아키텍처: `api/ → resolvers/ → commands/ → formatters/`. 입력 통합 헬퍼로 `<project> <num>`·`--id`·`--url` 흡수. `DoorayCliError(message, exitCode)`. 데이터 stdout / 에러 stderr 분리(에이전트 친화).
-- 하네스: planning·plan-and-build·build-with-teams·docs-check·review-fix·release 6스킬. 커스텀 에이전트(executor·docs-verifier) 정의.
+- 스택
+  - 언어·런타임: TypeScript strict, Node >= 20
+  - 라이브러리: commander, ky, tsup, vitest
+  - 패키지 매니저: pnpm
+- 아키텍처
+  - 레이어 순서: `api/ → resolvers/ → commands/ → formatters/`
+  - 입력 통합 헬퍼: `<project> <num>`, `--id`, `--url` 흡수
+  - 에러 타입: `DoorayCliError(message, exitCode)`
+  - 스트림 분리: 데이터 stdout, 에러 stderr (에이전트 친화)
+- 하네스
+  - 스킬 6개: planning, plan-and-build, build-with-teams, docs-check, review-fix, release
+  - 커스텀 에이전트: executor, docs-verifier
 
 ## 특이점
 

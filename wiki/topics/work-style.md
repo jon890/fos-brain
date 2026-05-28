@@ -16,7 +16,7 @@ updated: 2026-05-28
 - **AI 하네스 주도 개발** — 기획부터 릴리스까지 전 주기를 스킬로 자동화한다. [[ai-harness-pattern]]
 - **docs-first + ADR** — 의사결정을 코드보다 먼저 문서에 남긴다. [[docs-first-adr]]
 - **Conventional Commits(한국어 본문)** — 영문 type/scope + 한국어 설명, atomic. [[commit-convention-style]]
-- **한국어 표현 정책 + 마크다운 가독성** — 외래어 금지·문체 규칙을 리뷰 게이트로 강제. [[korean-readability-policy]]
+- **한국어 표현 정책 + 마크다운 가독성** — 외래어 금지·문체 규칙을 리뷰 점검으로 강제. [[korean-readability-policy]]
 - **테스트 철학** — 실제 동작 검증 우선(모킹 최소·실DB). [[testing-philosophy]]
 - **기술 스택 선호** — TS/Next.js·Java/Spring, ky·pnpm 등 고정 취향. [[tech-stack-preferences]]
 - **자기개선 루프** — PR 리뷰 학습을 스킬 문서에 누적한다. [[self-improving-harness]]

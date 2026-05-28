@@ -13,22 +13,32 @@ updated: 2026-05-28
 ### TypeScript / 프론트·CLI
 
 - TypeScript `strict: true` 항상, path alias `@/*`, 미사용 변수 `_` prefix.
-- 프레임워크: Next.js(App Router) + React 19, Tailwind v4 + shadcn/ui + Radix.
+- **프레임워크 스택**
+  - Next.js(App Router) + React 19
+  - Tailwind v4 + shadcn/ui + Radix
 - HTTP 는 **`ky` 전용, axios 금지**(ADR 로 못 박음).
-- CLI 는 Commander + tsup(esbuild 단일 번들) + vitest.
+- **CLI 스택**
+  - Commander + tsup(esbuild 단일 번들) + vitest
 - 패키지 매니저는 **pnpm** 고정, Node 20~22.
-- 폼은 React Hook Form + Zod, 토스트는 sonner(alert/confirm 금지).
+- **폼·알림**
+  - 폼: React Hook Form + Zod
+  - 토스트: sonner(alert/confirm 금지)
 
 ### Java / 백엔드
 
 - Java 21 + Spring Boot 4, Gradle Kotlin DSL + Version Catalog.
-- JPA + QueryDSL, Flyway 마이그레이션, MySQL(prod) / H2(test).
-- Checkstyle(Google Style, maxWarnings=0), Lombok, SpringDoc.
+- **데이터 접근**
+  - JPA + QueryDSL
+  - Flyway 마이그레이션
+  - MySQL(prod) / H2(test)
+- **코드 품질 도구**
+  - Checkstyle(Google Style, maxWarnings=0)
+  - Lombok, SpringDoc
 
 ### 공통
 
-- 로깅 구조화(pino `logger.child` / p6spy), `console.log` 금지.
-- 색은 OKLCH 토큰 강제(hex/rgb 금지), 다크모드는 `[data-theme="dark"]`.
+- **로깅**: 구조화 로깅을 사용한다(pino `logger.child` / p6spy). `console.log` 금지.
+- **색상**: OKLCH 토큰 강제(hex/rgb 금지), 다크모드는 `[data-theme="dark"]`.
 
 ## 관련 개념
 

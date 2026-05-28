@@ -11,11 +11,20 @@ updated: 2026-05-28
 ## 핵심 포인트
 
 - **docs = source of truth**: 백엔드 레포는 CLAUDE.md 와 docs 가 충돌하면 docs 를 우선한다.
-- **표준 docs 세트**: `prd.md`, `flow.md`, `adr.md`, `code-architecture.md`, `data-schema.md`, `testing-strategy.md`.
-- **ADR 원칙**: "기술 의사결정만 / 최종 상태만 / 코드로 자명하지 않은 것만". 주기적으로 slim·retire.
-- **번호 체계**: 레포별 prefix(예: 가계부 F=프론트 / B=백엔드, `ADR-B16`).
+- **표준 docs 세트** — 6개 파일을 기본으로 유지한다.
+  - `prd.md`, `flow.md`, `adr.md`
+  - `code-architecture.md`, `data-schema.md`, `testing-strategy.md`
+- **ADR 원칙** — 아래 세 조건을 만족하는 결정만 기록한다.
+  - 기술 의사결정만
+  - 최종 상태만
+  - 코드로 자명하지 않은 것만
+  - 주기적으로 slim·retire한다.
+- **번호 체계**: 레포별 prefix를 사용한다(예: 가계부 F=프론트 / B=백엔드, `ADR-B16`).
 - **변경-상황 매핑 표**: 작업 종류별 필독 ADR 을 표로 강제해 라이브러리 함정 재발을 막는다.
-- **docs 는 AI 컨텍스트용**: 간결·중복 제거·"왜"만 기록, 코드 스니펫은 넣지 않는다(구현 세부는 코드가 자명).
+- **docs 는 AI 컨텍스트용** — 다음 원칙으로 작성한다.
+  - 간결하게, 중복 제거
+  - "왜"만 기록
+  - 코드 스니펫은 넣지 않는다(구현 세부는 코드가 자명).
 - **task 생성 전 docs commit**: 설계 결정이 먼저 커밋된 뒤 구현 task 가 만들어진다.
 
 ## 관련 개념

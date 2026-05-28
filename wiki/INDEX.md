@@ -16,7 +16,7 @@
 - [[concepts/ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스
 - [[concepts/docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
 - [[concepts/commit-convention-style]] — Conventional Commits(영문 type/scope + 한국어 본문), atomic
-- [[concepts/korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 게이트로 강제
+- [[concepts/korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 점검으로 강제
 - [[concepts/testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프

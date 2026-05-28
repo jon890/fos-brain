@@ -10,9 +10,21 @@ updated: 2026-05-28
 
 ## 개요
 
-- 구성: 순수 마크다운. `.md` 경로 링크만, H1 제목 인덱싱.
-- 아키텍처: 기술 도메인 폴더(architecture/database/java/devops/kafka/...) + 개인 폴더(finance/travel/resume/interview). 개념(architecture/)과 회사 업무 사례(task/)를 엄격 분리. 영문 kebab-case 파일명.
-- 하네스: 스킬 — blog-post-writer(민감정보 제거)·docs-audit(7축 + Quality Loop, sub-agent 병렬)·resume-writer. 에이전트 3(cross-link/orphan/readme auditor).
+- 구성
+  - 순수 마크다운
+  - `.md` 경로 링크만 사용
+  - H1 제목 인덱싱
+- 아키텍처
+  - 기술 도메인 폴더: architecture, database, java, devops, kafka 등
+  - 개인 폴더: finance, travel, resume, interview
+  - 개념(architecture/)과 회사 업무 사례(task/) 엄격 분리
+  - 영문 kebab-case 파일명
+- 하네스
+  - 스킬
+    - blog-post-writer (민감정보 제거)
+    - docs-audit (7축 + Quality Loop, sub-agent 병렬)
+    - resume-writer
+  - 에이전트 3개: cross-link auditor, orphan auditor, readme auditor
 
 ## 특이점
 

@@ -10,9 +10,24 @@ updated: 2026-05-28
 
 ## 개요
 
-- 스택: Java21 + Spring Boot4, Gradle9 Kotlin DSL + Version Catalog, MySQL9/H2(test), Flyway, JPA + QueryDSL5.1, Security+jjwt, SpringDoc, Caffeine, p6spy.
-- 아키텍처: 도메인 기반 패키지(ADR-B16) + 도메인 내부 `presentation→application→domain→infra` 단방향. UUID 이중키, status Enum soft-delete, `@ValidateFamilyAccess` AOP, `@TransactionalEventListener(AFTER_COMMIT)` 이벤트, domain 인터페이스 + infra 구현 분리.
-- 하네스: 스킬 6 — planning·plan-and-build·build-with-teams·docs-check·integrate-api-contract·review-fix.
+- 스택
+  - 언어·프레임워크: Java 21, Spring Boot 4
+  - 빌드: Gradle 9 Kotlin DSL, Version Catalog
+  - DB: MySQL 9 (prod), H2 (test), Flyway
+  - ORM·쿼리: JPA, QueryDSL 5.1
+  - 보안·문서: Spring Security + jjwt, SpringDoc
+  - 캐시·모니터링: Caffeine, p6spy
+- 아키텍처
+  - 패키지 구조: 도메인 기반 패키지 (ADR-B16)
+  - 도메인 내부 단방향: `presentation → application → domain → infra`
+  - 주요 패턴
+    - UUID 이중키
+    - status Enum soft-delete
+    - `@ValidateFamilyAccess` AOP
+    - `@TransactionalEventListener(AFTER_COMMIT)` 이벤트
+    - domain 인터페이스 + infra 구현 분리
+- 하네스
+  - 스킬 6개: planning, plan-and-build, build-with-teams, docs-check, integrate-api-contract, review-fix
 
 ## 특이점
 

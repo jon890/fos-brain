@@ -10,9 +10,20 @@ updated: 2026-05-28
 
 ## 개요
 
-- 스택: Next.js16 + React19 + TS6, Tailwind v4 + shadcn/ui(new-york) + Radix + CVA, NextAuth v5(Google/Naver), ky, RHF+Zod, recharts, pnpm10, Jest30 + Testing Library + MSW.
-- 아키텍처: 4계층 단방향 `Page → Action("use server") → Service → lib/server/api`. 도메인별 평행 구조. Server Component 기본, `(authenticated)` 라우트 그룹.
-- 하네스: 스킬 12개 — planning·plan-and-build·build-with-teams·self-healing-teams·commit-convention·review-fix·docs-check·integrate-ux·web-design-guidelines·next/vercel-react-best-practices.
+- 스택
+  - 프레임워크: Next.js 16, React 19, TypeScript 6
+  - UI: Tailwind v4, shadcn/ui (new-york), Radix, CVA
+  - 인증: NextAuth v5 (Google/Naver)
+  - 데이터·폼: ky, React Hook Form + Zod, recharts
+  - 테스트: Jest 30, Testing Library, MSW
+  - 패키지 매니저: pnpm 10
+- 아키텍처
+  - 4계층 단방향: `Page → Action("use server") → Service → lib/server/api`
+  - 도메인별 평행 구조
+  - Server Component 기본, `(authenticated)` 라우트 그룹
+- 하네스
+  - 스킬 12개
+  - 목록: planning, plan-and-build, build-with-teams, self-healing-teams, commit-convention, review-fix, docs-check, integrate-ux, web-design-guidelines, next/vercel-react-best-practices
 
 ## 특이점
 

@@ -10,9 +10,21 @@ NHN Cloud OCR 공개 문서 저장소(TOAST-DOCS/OCR fork). docs.nhncloud.com �
 
 ## 개요
 
-- 구성: 순수 마크다운. gh CLI PR, dooray-cli 사내 이슈 연동, fork/upstream 동기화.
-- 아키텍처: 언어 디렉터리 `ko(원본) → en/ja/zh`. 파일명 `{document|general}-{ocr|ai}-{api-guide|console-guide|error-code|release-notes}[-vX.Y].md`. ko 가 source-of-truth.
-- 하네스: 스킬 4 — api-guide·docs-i18n-sync(ko→en/ja/zh)·dooray-task-to-docs-update(사내 이슈→공개 PR)·sync-upstream.
+- 구성
+  - 순수 마크다운
+  - gh CLI PR 연동
+  - dooray-cli 사내 이슈 연동
+  - fork/upstream 동기화
+- 아키텍처
+  - 언어 디렉터리: `ko` (원본) → `en`, `ja`, `zh`
+  - 파일명 패턴: `{document|general}-{ocr|ai}-{api-guide|console-guide|error-code|release-notes}[-vX.Y].md`
+  - ko 가 source-of-truth
+- 하네스
+  - 스킬 4개
+    - api-guide
+    - docs-i18n-sync (ko → en/ja/zh)
+    - dooray-task-to-docs-update (사내 이슈 → 공개 PR)
+    - sync-upstream
 
 ## 특이점
 
