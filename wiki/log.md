@@ -57,3 +57,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: github.com/jon890/nhncloud-cli .github/workflows/claude-code-review.yml (public repo, 경로 인용)
 - 신규 1 페이지: concept(ai-code-review-github-actions), 보강 1(ai-harness-pattern 백링크)
 - 범위: 재사용 방법론·함정만(트리거·리뷰어 구성 트레이드오프·게시·gotcha). nhncloud 고유 인증/API 사실 제외.
+
+## [2026-05-28] add | 유튜브 — 달러 패권·미중 패권전쟁 (자산제곱)
+- Source: raw/videos/2026-05-12-dollar-hegemony-jasanjegop.md (YouTube ko 자동자막)
+- 신규 1 페이지: concept(dollar-hegemony-us-china). 거시·지정학 그룹 신설.
+- 자동자막 기반(오인식 가능)·단일 채널 관점 표기. public 객관 요약.

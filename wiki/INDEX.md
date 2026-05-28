@@ -47,6 +47,10 @@
 - [[concepts/multi-chain-rag-architecture]] — Router Supervisor + 의도별 특화 체인 라우팅 패턴
 - [[concepts/sionic-vlm-document-parsing]] — VLM 2-Stage 파싱 + 자연어 직렬화, 파서 교체만으로 정확도 20%+ 향상
 
+### 거시·지정학
+
+- [[concepts/dollar-hegemony-us-china]] — 달러 패권(브레튼우즈→페트로달러→AI)과 미중 패권전쟁 프레임 (유튜브 출처)
+
 ## Entities
 
 - [[entities/dooray-cli]] — Dooray API CLI, 하네스 원형(6스킬)
@@ -64,10 +68,11 @@
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (2개: 다른 기업의 RAG 시스템 발표자료, 2026-05-28 레포 업무 스타일 분석)
+- `raw/videos/` — 유튜브 자막 정리본 (1개: 자산제곱 달러 패권·미중 패권전쟁)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-28 (fos-claw ai-nodes 자동화 시스템 아키텍처)
+- 마지막 brain-add: 2026-05-28 (유튜브 — 달러 패권·미중 패권전쟁, 자산제곱)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
