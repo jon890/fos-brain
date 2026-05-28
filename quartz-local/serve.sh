@@ -9,8 +9,13 @@ OUT="$ROOT/quartz-local/public"
 rm -rf "$CONTENT" && mkdir -p "$CONTENT"
 # 공개 config 의 ignorePatterns(private/work) 회피 위해 _ prefix 사용
 ln -s "$ROOT/wiki"         "$CONTENT/public"
-ln -s "$ROOT/private/wiki" "$CONTENT/_private"
-ln -s "$ROOT/work/wiki"    "$CONTENT/_work"
+[ -d "$ROOT/private/wiki" ] && ln -s "$ROOT/private/wiki" "$CONTENT/_private"
+# work 는 회사별 서브레벨(work/<회사>/wiki) — 각 회사를 _work_<회사> 로 병합
+for cw in "$ROOT"/work/*/wiki; do
+  [ -d "$cw" ] || continue
+  company="$(basename "$(dirname "$cw")")"
+  ln -s "$cw" "$CONTENT/_work_${company}"
+done
 
 cd "$ROOT/quartz"
 pnpm quartz build -d "$CONTENT" -o "$OUT" --serve --port 8081
