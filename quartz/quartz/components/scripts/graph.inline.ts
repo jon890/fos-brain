@@ -378,7 +378,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       interactive: false,
       eventMode: "none",
       text: n.text,
-      alpha: 0,
+      alpha: 1, // fos-brain: 라벨 항상 표시(첫 줌 이벤트 전에도 보이게)
       anchor: { x: 0.5, y: 1.2 },
       style: {
         fontSize: fontSize * 15,
@@ -510,8 +510,9 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
           stage.position.set(transform.x, transform.y)
 
           // zoom adjusts opacity of labels too
+          // fos-brain: 라벨을 항상 표시한다(한눈에 연결 파악). 기존 줌 fade(floor 0) 대신 floor 1.
           const scale = transform.k * opacityScale
-          let scaleOpacity = Math.max((scale - 1) / 3.75, 0)
+          let scaleOpacity = Math.max((scale - 1) / 3.75, 1)
           const activeNodes = nodeRenderData.filter((n) => n.active).flatMap((n) => n.label)
 
           for (const label of labelsContainer.children) {
