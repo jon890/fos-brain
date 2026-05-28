@@ -32,6 +32,22 @@ brain 은 세 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
    - 예: `work/nhn` 의 OCR 배포 incident 페이지 → 공개 `[[k8s-run-tmpfs-containerd]]` 개념.
    - 반대(공개 → 비공개)는 금지(규칙 2).
 
+### 형상관리 (네임스페이스별 독립 VC)
+
+각 네임스페이스는 **독립된 git repo** 로 버전관리한다. 공개 repo 가 `private/`·`work/` 를 gitignore 하므로 중첩 독립 repo 라도 서로 섞이지 않는다(submodule 포인터·URL 노출 없음).
+
+| 네임스페이스 | git repo | 비고 |
+| --- | --- | --- |
+| public | `github.com/jon890/fos-brain` (PUBLIC) | 루트 repo |
+| private | `github.com/jon890/fos-brain-private` (PRIVATE) | `private/` 안 중첩 `.git`, SSH |
+| work | **로컬 전용** git (원격 없음) | `work/` 안 중첩 `.git`. **외부 push 절대 금지** |
+
+불변 규칙:
+
+- **work 에 remote 를 추가하지 않는다.** 회사 자료는 이 컴퓨터 로컬에만 둔다.
+- private repo 는 **PRIVATE visibility** 유지(개인 커리어·건강·투자 포함).
+- 개인·회사 repo 생성은 반드시 `github.com`(개인 계정) 또는 로컬에. 회사 GitHub Enterprise 에 개인 brain 을 올리지 않는다.
+
 아래 디렉터리·스키마 설명은 한 네임스페이스 내부 구조를 가리킨다(public 기준이며 private·work 도 동일).
 
 ## 디렉터리 역할
