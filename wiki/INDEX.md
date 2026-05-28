@@ -6,9 +6,22 @@
 
 ## Topics
 
+- [[topics/work-style]] — 개인 프로젝트 7개에서 일관된 개발·문서·AI 협업 방식
 - [[topics/rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
 
 ## Concepts
+
+### 업무 스타일
+
+- [[concepts/ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스
+- [[concepts/docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
+- [[concepts/commit-convention-style]] — Conventional Commits(영문 type/scope + 한국어 본문), atomic
+- [[concepts/korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 게이트로 강제
+- [[concepts/testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
+- [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
+- [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
+
+### RAG / 지식 시스템
 
 - [[concepts/toss-park-ssi-rag]] — 토스 프론트엔드의 Slack 통합 RAG 봇, 순환형 지식 파이프라인
 - [[concepts/docflow-code-to-doc]] — JSDoc → CI 강제 → 문서 최신성 보장. Toss RAG 의 Ingestion 측 메커니즘
@@ -16,16 +29,26 @@
 - [[concepts/multi-chain-rag-architecture]] — Router Supervisor + 의도별 특화 체인 라우팅 패턴
 - [[concepts/sionic-vlm-document-parsing]] — VLM 2-Stage 파싱 + 자연어 직렬화, 파서 교체만으로 정확도 20%+ 향상
 
+## Entities
+
+- [[entities/dooray-cli]] — Dooray API CLI, 하네스 원형(6스킬)
+- [[entities/nhncloud-cli]] — NHN Cloud CLI, dooray-cli 하네스 포팅(코드보다 하네스 먼저)
+- [[entities/fos-blog]] — Next.js 개인 블로그, 토큰 라우팅·BLG 누적
+- [[entities/fos-accountbook]] — 가계부 프론트, 4계층 단방향·12스킬
+- [[entities/fos-accountbook-backend]] — 가계부 Java 백엔드, 도메인 패키지·테스트 규율
+- [[entities/fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
+- [[entities/ocr-docs]] — OCR 공개 문서, 다국어 fan-out·공개 저장소 보안
+
 ## Raw 인벤토리 요약
 
 - `raw/web/` — Web Clipper 로 수집한 웹 기사 (현재 비어있음)
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
-- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (1개: 다른 기업의 RAG 시스템 발표자료)
+- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (2개: 다른 기업의 RAG 시스템 발표자료, 2026-05-28 레포 업무 스타일 분석)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 ingest: 2026-05-19
+- 마지막 brain-add: 2026-05-28 (7개 레포 업무 스타일·하네스)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

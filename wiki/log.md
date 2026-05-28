@@ -32,3 +32,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - ingest skill 에 `qmd update && qmd embed` 인덱스 갱신 단계 추가.
 - lint skill 에 `qmd status` 사전 점검 단계 추가.
 - 합성 데이터·파인튜닝·자체 UI·Marp 자동화는 Future Work 로 명시.
+
+## [2026-05-28] add | 7개 레포 업무 스타일·AI 하네스 등록 (public)
+- Source: `raw/notes/2026-05-28-repo-work-style-analysis.md`
+- 신규 16 페이지: topic 1(work-style), concept 7(ai-harness-pattern, docs-first-adr, commit-convention-style, korean-readability-policy, testing-philosophy, tech-stack-preferences, self-improving-harness), entity 7(dooray-cli, nhncloud-cli, fos-blog, fos-accountbook, fos-accountbook-backend, fos-study, ocr-docs)
+- 대상 레포: dooray-cli, fos-blog, fos-accountbook(+backend), fos-study, nhncloud-cli, OCR-docs
