@@ -22,7 +22,7 @@
 - [[concepts/tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[concepts/self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
 - [[concepts/build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
-- [[concepts/ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions(claude-code-action)로 붙이는 패턴·함정
+- [[concepts/ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
 
 ### 자동화 시스템 (ai-nodes)
 
@@ -73,6 +73,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-29 (docker compose 마운트 config reload 함정 — docker-compose-config-reload)
+- 마지막 brain-add: 2026-05-29 (claude code review self-hosted CLI 방식 + 신규 구축 레시피 — ai-code-review-github-actions 보강)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

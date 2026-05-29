@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-05-29] ingest | claude code review self-hosted CLI 방식 + 신규 구축 레시피
+- Source: raw/notes/2026-05-29-claude-code-review-cli-recipe.md
+- 보강 1 페이지: ai-code-review-github-actions (marketplace action 중심 → CLI 방식·신규 레시피·프롬프트 설계·함정 추가)
+- 맥락: docu-parser claude-review.yml 정비 — 개방형 프레이밍(앵커링 방지), 프롬프트 .txt 분리(markdown linter glob 손상), opus 별칭(버전 추종), 조용한 실패 가시화, Checks API GitHub App 전용
+- GHE 특화 delta 는 work/nhn(ghe-claude-review-ops)로 분리
+
 ## [2026-05-29] ingest | docker compose 마운트 config reload 함정 (force-recreate)
 - Source: docu-parser Vector 사이드카 로그 유실 디버깅 세션 (work/nhn 사례에서 범용 부분 추출)
 - 신규 1 concept: docker-compose-config-reload. 마운트된 config 파일 내용 변경은 up -d 의 recreate 트리거가 아니라 옛 컨테이너가 유지된다 → --force-recreate 필요. k8s 는 rollout restart 로 유사 패턴(참고).
