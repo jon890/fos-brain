@@ -9,7 +9,7 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 
 ## 대상 디렉터리
 
-`/Users/nhn/personal/fos-brain` — 세 네임스페이스 전부 로컬 검색 대상:
+`~/personal/fos-brain` — 세 네임스페이스 전부 로컬 검색 대상:
 
 - public — 루트 `wiki/`, `raw/`
 - private — `private/wiki/`, `private/raw/`

@@ -10,7 +10,7 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
 
 ## 대상 디렉터리
 
-`/Users/nhn/personal/fos-brain` — 네임스페이스별(public·private·work)로 점검한다.
+`~/personal/fos-brain` — 네임스페이스별(public·private·work)로 점검한다.
 사용자가 범위를 지정하면 해당 네임스페이스만.
 
 ## 검사 항목

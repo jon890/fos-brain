@@ -10,7 +10,7 @@ Karpathy 스타일 지식 기반의 ingest 단계. 소스를 brain 으로 가져
 
 ## 대상 디렉터리
 
-`/Users/nhn/personal/fos-brain` — 다른 곳에서 호출되었다면 사용자에게 확인.
+`~/personal/fos-brain` — 다른 곳에서 호출되었다면 사용자에게 확인.
 
 ## 0단계 — 네임스페이스 선택 (필수)
 
