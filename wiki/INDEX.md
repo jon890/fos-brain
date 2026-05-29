@@ -38,6 +38,7 @@
 - [[concepts/prometheus-histogram-vs-summary]] — 분위수 집계, 다인스턴스 합산, cardinality 함정
 - [[concepts/slo-burn-rate-alerting]] — symptom 우선, multi-burn-rate 알림
 - [[concepts/k8s-run-tmpfs-containerd]] — /run tmpfs 포화로 Pod 안 뜸 (containerd 메타데이터)
+- [[concepts/docker-compose-config-reload]] — 마운트 config 변경이 up -d 로 반영 안 됨, force-recreate 필요 (컨테이너 운영 함정)
 
 ### RAG / 지식 시스템
 
@@ -73,6 +74,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-28 (유튜브 — 달러 패권·미중 패권전쟁, 자산제곱)
+- 마지막 brain-add: 2026-05-29 (docker compose 마운트 config reload 함정 — docker-compose-config-reload)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

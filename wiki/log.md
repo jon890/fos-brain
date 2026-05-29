@@ -6,6 +6,11 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-05-29] ingest | docker compose 마운트 config reload 함정 (force-recreate)
+- Source: docu-parser Vector 사이드카 로그 유실 디버깅 세션 (work/nhn 사례에서 범용 부분 추출)
+- 신규 1 concept: docker-compose-config-reload. 마운트된 config 파일 내용 변경은 up -d 의 recreate 트리거가 아니라 옛 컨테이너가 유지된다 → --force-recreate 필요. k8s 는 rollout restart 로 유사 패턴(참고).
+- work→public link: work/nhn entities/ai-playground-docu-parser, concepts/nhn-log-and-crash 에서 이 페이지로 연결.
+
 ## [2026-05-19] ingest | RAG 시스템 사례 비교 (Toss, 우아한형제들, Sionic AI)
 - Sources: `raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf` (15p), `raw/notes/다른 기업의 RAG 시스템 발표자료.md`
 - 신규 5 concept + 1 topic. INDEX 신규 등록.
