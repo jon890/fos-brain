@@ -46,6 +46,14 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 - 후보 5개 이상이면 INDEX 요약·qmd 점수로 좁힌다.
 - brain 외부 정보가 명백히 필요하면 사용자에게 알린 후 WebSearch.
 
+### 하이픈 식별자 함정 (qmd vec/hyde)
+
+`docu-parser`, `ai-playground-docu-parser` 처럼 하이픈이 든 식별자를 쿼리에 그대로 넣으면 파서가 `-parser` 를 negation(제외)으로 해석한다.
+
+- **vec / hyde** — negation 미지원이라 에러로 실패한다 (`Negation (-term) is not supported`). 하이픈 식별자 대신 공백으로 풀어쓴다 — `"문서 파서 grafana"`, `"document parser worker pool"`.
+- **lex** — negation 이 의도된 기능이라 에러는 안 나지만, `docu-parser` 가 `docu AND NOT parser` 로 새어 엉뚱한 결과를 준다. 정확 일치는 따옴표로 감싼다 — `"docu-parser"`.
+- 이건 저장 측 문제가 아니다. 문서 본문에 하이픈 식별자가 있어도 매칭엔 지장 없다 — 식별자를 인위로 개명하지 말고 쿼리 쪽에서만 처리한다.
+
 ## 출력 형식
 
 - 짧은 질문: 인라인 답변 + 출처 링크(네임스페이스 태그)
