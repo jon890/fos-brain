@@ -130,6 +130,7 @@ brain 스킬의 **실제 파일은 이 저장소 `skills/` 에** 있다(관심�
 - `brain-add` — 소스를 가져와 `raw/` 로 저장한 뒤 `wiki/` 로 컴파일
 - `brain-search` — INDEX → wiki → raw 순으로 답변, 결과는 wiki 로 환원
 - `brain-lint` — 무결성 점검(백링크·고아·중복·Sources·frontmatter·INDEX 동기화·모순·교차 참조·공개/비공개 누출)
+- `brain-delete` — wiki 페이지를 안전하게 제거(백링크·INDEX·log 정리 동반, 완전 삭제/archive 선택). raw 원본은 기본 보존
 
 모든 skill 은 `wiki/log.md` 에 append-only 로 활동 기록을 남긴다. 모든 skill 의 대상 디렉터리는 이 저장소(`~/personal/fos-brain`)다.
 
@@ -138,7 +139,7 @@ brain 스킬의 **실제 파일은 이 저장소 `skills/` 에** 있다(관심�
 repo 를 clone 한 뒤 전역 skills 에 symlink 를 건다:
 
 ```bash
-for s in brain-add brain-search brain-lint; do
+for s in brain-add brain-search brain-lint brain-delete; do
   ln -s "$HOME/personal/fos-brain/skills/$s" "$HOME/.claude/skills/$s"
 done
 ```
