@@ -23,8 +23,7 @@ GitHub: `jon890/fos-claw` (public).
 ## 핵심 패턴
 
 - [[../concepts/multi-workspace-monorepo]] — 워크스페이스 격리 + `_shared` 규율
-- [[../concepts/script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006)
-- [[../concepts/task-run-tracking]] — track_task.sh 실행·토큰 로깅
+- [[../concepts/script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006), native skill 직접 호출
 
 ## 같은 결의 하네스 (작성자 시그니처)
 

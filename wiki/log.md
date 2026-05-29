@@ -67,3 +67,9 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/videos/2026-05-12-dollar-hegemony-jasanjegop.md (YouTube ko 자동자막)
 - 신규 1 페이지: concept(dollar-hegemony-us-china). 거시·지정학 그룹 신설.
 - 자동자막 기반(오인식 가능)·단일 채널 관점 표기. public 객관 요약.
+
+## [2026-05-29] delete | task-run-tracking 개념 제거 (track_task.sh 폐기 반영)
+- 대상: wiki/concepts/task-run-tracking.md (방식: 완전 삭제)
+- 정리: 백링크 2건 제거(multi-workspace-monorepo, entities/ai-nodes), INDEX 항목 제거
+- 사유: ai-nodes ADR-011로 track_task.sh·extract_claude_result.ts·update_artifacts.py 폐기. 5 워크스페이스 native 직접 호출 전환으로 공통 실행 래퍼 개념 자체가 stale.
+- raw: 없음 (Sources는 fos-claw AGENTS.md 경로 인용, raw 파일 미인용)
