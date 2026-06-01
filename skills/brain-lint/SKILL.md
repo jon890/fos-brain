@@ -35,6 +35,7 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
     - **중복·병합 후보** — 다른 페이지와 상당 부분 겹침.
     - **적합성** — 절차(→skill)·행동규칙(→CLAUDE.md)·코드로 자명한 내용이 잘못 들어와 있는지.
     - **미사용** — `scripts/brain-usage.py` 의 genuine 기준 미사용 페이지(데이터 충분할 때만 archive 후보로).
+    - **카테고리 비대(topic 분리 후보)** — INDEX 한 카테고리에 concept 이 대략 7개를 넘거나 성격이 섞이면(예: 학습 개념 + 실전 장애), `topics/` 로 묶을 후보로 제안. 자동 분리 금지 — 주제 경계·이름은 사용자 확인. (brain-add 9단계와 동일 기준)
     - 분류: `keep / refresh-needed / merge / archive / delete-candidate` 5단계.
     - 품질 축은 **기본 실행 아님** — 사용자가 "품질 점검", "quality loop" 등 명시 호출 시에만.
 
