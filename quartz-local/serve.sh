@@ -19,6 +19,16 @@ for cw in "$ROOT"/work/*/wiki; do
   companies+=("$company")
 done
 
+# raw 병합 — wiki 의 Sources 링크([[../../raw/...]])는 모든 네임스페이스에서
+# content/raw 로 수렴하므로, 전 네임스페이스 raw 를 content/raw 에 병합한다.
+# 로컬 전용 빌드라 비공개 raw 포함 OK (게시 금지). 파일명은 날짜 prefix 로 대체로 고유.
+mkdir -p "$CONTENT/raw"
+cp -RL "$ROOT/raw/." "$CONTENT/raw/" 2>/dev/null || true
+[ -d "$ROOT/private/raw" ] && cp -RL "$ROOT/private/raw/." "$CONTENT/raw/" 2>/dev/null || true
+for cr in "$ROOT"/work/*/raw; do
+  [ -d "$cr" ] && cp -RL "$cr/." "$CONTENT/raw/" 2>/dev/null || true
+done
+
 # 루트 대문 페이지 — / 가 404 가 되지 않도록 네임스페이스로 안내
 {
   echo "# fos-brain (로컬 전체)"
