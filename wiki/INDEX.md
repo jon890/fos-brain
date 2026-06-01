@@ -7,27 +7,33 @@
 ## Topics
 
 - [[work-style]] — 개인 프로젝트 7개에서 일관된 개발·문서·AI 협업 방식
+- [[ai-dev-harness]] — 기획~릴리스 전 주기를 AI 에이전트로 자동화하는 하네스 방식 (work-style 의 한 축)
 - [[observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
 - [[operations-troubleshooting]] — 운영 중 실제로 터진 인프라·컨테이너 장애와 해결 사례
 - [[rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
 
 ## Concepts
 
-### 업무 스타일
+### AI 개발 하네스
 
-- [[ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스
-- [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
+상위 주제: [[ai-dev-harness]]
+
+- [[ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스 (핵심 허브)
 - [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 게이트 (새 하네스 seed)
+- [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
 - [[pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
 - [[docs-six-axis-audit]] — docs-check 의 6축 점검 방법론 (부패·과대화·추론성·중복·자명성·가독성, seed)
+- [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
+- [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
+- [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
+
+### 개인 코딩 규율·취향
+
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
 - [[commit-convention-style]] — Conventional Commits(영문 type/scope + 한국어 본문), atomic
 - [[korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 점검으로 강제
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
-- [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
-- [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
-- [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
 
 ### 자동화 시스템 (ai-nodes)
 
@@ -83,6 +89,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-01 (dooray-cli 도구 지식 — agent-friendly-cli-design 신설, dooray-cli entity 도구 섹션 + ai-harness-pattern MVP 워크플로 보강)
+- 마지막 brain-add: 2026-06-01 (AI 개발 하네스 topic 신설 — "업무 스타일" 카테고리 분리)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

@@ -50,6 +50,7 @@ AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다
 
 ## 관련 개념
 
+- [[ai-dev-harness]] — 이 패턴과 단계별 방법론을 묶는 상위 주제
 - [[planning-eight-step-design]] — 1단계 planning 의 8단계 설계 방법론 (seed)
 - [[pr-review-fix-workflow]] — 3단계 review-fix 의 PR 리뷰 사후 반영 방법론 (seed)
 - [[docs-six-axis-audit]] — 4단계 docs-check 의 6축 점검 방법론 (seed)

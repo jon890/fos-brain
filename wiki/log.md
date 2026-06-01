@@ -96,3 +96,9 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 신규 1 페이지: concept(agent-friendly-cli-design)
 - 보강 3 페이지: dooray-cli(도구 섹션 — 무엇/어떻게/어디에), ai-harness-pattern(하네스 정의 + MVP 3단계 워크플로), nhncloud-cli(agent-friendly 백링크)
 - 평가: 도구 사용 지식은 비어 있고 하네스 관점만 있었음 → 도구 정체성·사용·설계 패턴을 채움. 개별 명령 문법은 --help/README 로 충분하여 제외
+
+## [2026-06-01] add | AI 개발 하네스 topic 신설 — "업무 스타일" 카테고리 분리
+- 신규 1 페이지: topic(ai-dev-harness)
+- 보강: ai-harness-pattern 역백링크
+- INDEX: "업무 스타일"(13개 비대) → "AI 개발 하네스"(8) + "개인 코딩 규율·취향"(5) 분리, Topics 등록
+- 계기: 카테고리 비대 규약(brain-add 9단계) 작동
