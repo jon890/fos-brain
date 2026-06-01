@@ -46,8 +46,8 @@ repo 무관한 운영 규칙과 자주 실패하는 패턴.
 - [[pr-review-fix-workflow]] — PR 생성 후 외부 리뷰를 반영하는 짝 단계 (사전/사후 분리)
 - [[self-improving-harness]] — 회고 학습이 이 규칙을 누적하는 루프
 - [[korean-readability-policy]] — 본 문서도 외래어 금지(예: 게이트→점검) 대상
-- [[../entities/dooray-cli]] — 이 하네스의 원형
-- [[../entities/nhncloud-cli]] — 이 하네스를 포팅한 프로젝트
+- [[dooray-cli]] — 이 하네스의 원형
+- [[nhncloud-cli]] — 이 하네스를 포팅한 프로젝트
 
 ## Sources
 

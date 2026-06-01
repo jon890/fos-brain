@@ -36,10 +36,10 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/commit-convention-style]]
-- [[../concepts/tech-stack-preferences]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[commit-convention-style]]
+- [[tech-stack-preferences]]
+- [[work-style]]
 
 ## Sources
 

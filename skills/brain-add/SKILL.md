@@ -160,6 +160,7 @@ wiki 에 쓰기 전에 채팅 본문에 인라인으로 보여준다:
 - 개체(사람·프로젝트·목표): `<ns>/wiki/entities/<kebab-case>.md`
 - 보강: 기존 페이지 하단 `## 추가 (YYYY-MM-DD)` 로 append, Sources 갱신
 - 모든 페이지에 양방향 백링크
+- **wikilink 는 bare-slug 로**: 다른 wiki 페이지는 경로 없이 파일명만 — `[[work-style]]` (O), `[[topics/work-style]]`·`[[../concepts/X]]` (X). 경로형은 로컬 전체 빌드에서 prefix 누락으로 404. 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 경로형 유지(빌드 대상 아님). (CLAUDE.md 작업 원칙 3 참조)
 - **링크 방향 규칙**: 공개(public) 페이지는 private·work 를 링크하지 않는다. 비공개 → 공개는 허용.
 
 ## 8단계 — 가독성 검증 (필수)

@@ -11,11 +11,11 @@ Monitoring 이 "미리 정의한 질문에 답"이라면, Observability 는 "예
 
 ## 핵심 개념
 
-- [[../concepts/observability-three-pillars]] — Logs / Metrics / Traces
-- [[../concepts/latency-percentiles]] — p50 / p95 / p99, 평균의 함정
-- [[../concepts/red-use-metrics]] — RED(API) / USE(리소스)
-- [[../concepts/prometheus-histogram-vs-summary]] — 분위수 집계, cardinality 함정
-- [[../concepts/slo-burn-rate-alerting]] — symptom 우선 알림
+- [[observability-three-pillars]] — Logs / Metrics / Traces
+- [[latency-percentiles]] — p50 / p95 / p99, 평균의 함정
+- [[red-use-metrics]] — RED(API) / USE(리소스)
+- [[prometheus-histogram-vs-summary]] — 분위수 집계, cardinality 함정
+- [[slo-burn-rate-alerting]] — symptom 우선 알림
 
 ## 운영 원칙
 

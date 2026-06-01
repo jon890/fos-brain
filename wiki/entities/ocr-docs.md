@@ -33,10 +33,10 @@ NHN Cloud OCR 공개 문서 저장소(TOAST-DOCS/OCR fork). docs.nhncloud.com �
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/commit-convention-style]]
-- [[../concepts/korean-readability-policy]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[commit-convention-style]]
+- [[korean-readability-policy]]
+- [[work-style]]
 
 ## Sources
 

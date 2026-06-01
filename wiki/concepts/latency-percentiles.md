@@ -42,7 +42,7 @@ updated: 2026-05-28
 
 - [[red-use-metrics]] — Duration 이 곧 백분위수
 - [[prometheus-histogram-vs-summary]]
-- [[../topics/observability]]
+- [[observability]]
 
 ## Sources
 

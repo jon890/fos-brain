@@ -22,15 +22,15 @@ GitHub: `jon890/fos-claw` (public).
 
 ## 핵심 패턴
 
-- [[../concepts/multi-workspace-monorepo]] — 워크스페이스 격리 + `_shared` 규율
-- [[../concepts/script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006), native skill 직접 호출
+- [[multi-workspace-monorepo]] — 워크스페이스 격리 + `_shared` 규율
+- [[script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006), native skill 직접 호출
 
 ## 같은 결의 하네스 (작성자 시그니처)
 
-- [[../concepts/ai-harness-pattern]] — 개발 프로젝트 하네스
-- [[../concepts/self-improving-harness]] — 회고 학습 누적
-- [[../concepts/docs-first-adr]] — ADR 누적 + docs-style(ADR-005)
-- [[../topics/work-style]]
+- [[ai-harness-pattern]] — 개발 프로젝트 하네스
+- [[self-improving-harness]] — 회고 학습 누적
+- [[docs-first-adr]] — ADR 누적 + docs-style(ADR-005)
+- [[work-style]]
 
 ## Sources
 

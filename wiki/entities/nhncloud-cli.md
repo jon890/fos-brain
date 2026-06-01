@@ -35,10 +35,10 @@ NHN Cloud 통합 CLI(`@bifos/nhncloud-cli` v0.1.0). 서비스별 인증·엔드�
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/docs-first-adr]]
-- [[../concepts/tech-stack-preferences]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[docs-first-adr]]
+- [[tech-stack-preferences]]
+- [[work-style]]
 
 ## Sources
 

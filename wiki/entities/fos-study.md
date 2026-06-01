@@ -32,10 +32,10 @@ updated: 2026-05-28
 
 ## 보여주는 스타일
 
-- [[../concepts/self-improving-harness]]
-- [[../concepts/korean-readability-policy]]
-- [[../concepts/docs-first-adr]]
-- [[../topics/work-style]]
+- [[self-improving-harness]]
+- [[korean-readability-policy]]
+- [[docs-first-adr]]
+- [[work-style]]
 
 ## Sources
 

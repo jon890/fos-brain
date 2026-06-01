@@ -36,7 +36,7 @@ updated: 2026-05-28
 
 ## 관련 개념
 
-- [[../topics/observability]] — 배포 장애 탐지·진단과 연결
+- [[observability]] — 배포 장애 탐지·진단과 연결
 
 ## Sources
 

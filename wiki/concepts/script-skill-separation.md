@@ -24,7 +24,7 @@ updated: 2026-05-28
 
 - [[multi-workspace-monorepo]]
 - [[ai-harness-pattern]] — 스킬 기반 워크플로우
-- [[../entities/ai-nodes]]
+- [[ai-nodes]]
 
 ## Sources
 

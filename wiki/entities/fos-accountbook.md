@@ -41,11 +41,11 @@ updated: 2026-05-28
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/self-improving-harness]]
-- [[../concepts/docs-first-adr]]
-- [[../concepts/tech-stack-preferences]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[self-improving-harness]]
+- [[docs-first-adr]]
+- [[tech-stack-preferences]]
+- [[work-style]]
 
 ## Sources
 

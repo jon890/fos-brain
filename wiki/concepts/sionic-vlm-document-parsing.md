@@ -30,7 +30,7 @@ Sionic AI 가 제시하는 RAG 성능의 숨겨진 병목 해결법: 모델보�
 
 ## 관련 주제
 
-- [[../topics/rag-system-architecture-strategies]] — Data Quality 축의 대표 사례
+- [[rag-system-architecture-strategies]] — Data Quality 축의 대표 사례
 
 ## Sources
 

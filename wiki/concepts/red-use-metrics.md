@@ -29,7 +29,7 @@ updated: 2026-05-28
 
 - [[latency-percentiles]] — Duration 의 측정 방식
 - [[observability-three-pillars]]
-- [[../topics/observability]]
+- [[observability]]
 
 ## Sources
 

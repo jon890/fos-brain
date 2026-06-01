@@ -41,11 +41,11 @@ updated: 2026-05-28
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/docs-first-adr]]
-- [[../concepts/testing-philosophy]]
-- [[../concepts/tech-stack-preferences]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[docs-first-adr]]
+- [[testing-philosophy]]
+- [[tech-stack-preferences]]
+- [[work-style]]
 
 ## Sources
 

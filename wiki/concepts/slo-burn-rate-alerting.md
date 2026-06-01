@@ -33,7 +33,7 @@ updated: 2026-05-28
 
 - [[latency-percentiles]] — p95/p99 가 SLO 지표
 - [[red-use-metrics]] — error rate·latency 가 symptom
-- [[../topics/observability]]
+- [[observability]]
 
 ## Sources
 

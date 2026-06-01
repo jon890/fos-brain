@@ -23,7 +23,7 @@ updated: 2026-05-19
 
 ## 관련 주제
 
-- [[../topics/rag-system-architecture-strategies]]
+- [[rag-system-architecture-strategies]]
 
 ## Sources
 

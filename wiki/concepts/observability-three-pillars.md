@@ -34,7 +34,7 @@ updated: 2026-05-28
 
 - [[latency-percentiles]]
 - [[prometheus-histogram-vs-summary]]
-- [[../topics/observability]]
+- [[observability]]
 
 ## Sources
 

@@ -18,16 +18,16 @@ updated: 2026-05-19
 
 | 축 | 핵심 질문 | 대표 사례 |
 |---|---|---|
-| **Workflow / UX** | 사용자의 기존 워크플로우에 검색이 어떻게 스며들 것인가? | [[../concepts/toss-park-ssi-rag]] |
-| **Logic / Reasoning** | 의도 분류와 추론 로직을 어떻게 설계할 것인가? | [[../concepts/woowa-mulebose-text-to-sql]] |
-| **Data Quality / Parsing** | 원본 데이터를 어떻게 신뢰 가능하게 파싱할 것인가? | [[../concepts/sionic-vlm-document-parsing]] |
+| **Workflow / UX** | 사용자의 기존 워크플로우에 검색이 어떻게 스며들 것인가? | [[toss-park-ssi-rag]] |
+| **Logic / Reasoning** | 의도 분류와 추론 로직을 어떻게 설계할 것인가? | [[woowa-mulebose-text-to-sql]] |
+| **Data Quality / Parsing** | 원본 데이터를 어떻게 신뢰 가능하게 파싱할 것인가? | [[sionic-vlm-document-parsing]] |
 
 ## 사례별 종합 비교
 
 | 구분 | 토스 (Toss) | 우아한형제들 (Woowa) | Sionic AI |
 |---|---|---|---|
 | 핵심 전략 | Workflow & Culture (UX) | Logic & Reasoning (SQL) | Data Quality (Parsing) |
-| 주요 기술 | IDE 통합, 순환형 파이프라인 ([[../concepts/docflow-code-to-doc]]) | [[../concepts/multi-chain-rag-architecture]], ReAct Prompt | VLM 2-Stage Parsing |
+| 주요 기술 | IDE 통합, 순환형 파이프라인 ([[docflow-code-to-doc]]) | [[multi-chain-rag-architecture]], ReAct Prompt | VLM 2-Stage Parsing |
 | 추천 영역 | 지식 관리 (Knowledge Mgmt) | 데이터 분석 (Data Analytics) | 문서 자산화 (Doc Processing) |
 
 ## 3가지 제언 (결론)
@@ -38,11 +38,11 @@ updated: 2026-05-19
 
 ## 포함 개념
 
-- [[../concepts/toss-park-ssi-rag]]
-- [[../concepts/docflow-code-to-doc]]
-- [[../concepts/woowa-mulebose-text-to-sql]]
-- [[../concepts/multi-chain-rag-architecture]]
-- [[../concepts/sionic-vlm-document-parsing]]
+- [[toss-park-ssi-rag]]
+- [[docflow-code-to-doc]]
+- [[woowa-mulebose-text-to-sql]]
+- [[multi-chain-rag-architecture]]
+- [[sionic-vlm-document-parsing]]
 
 ## Sources
 

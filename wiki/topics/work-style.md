@@ -23,13 +23,13 @@ updated: 2026-05-28
 
 ## 이 스타일을 보여주는 레포 (entities)
 
-- [[../entities/dooray-cli]] — 하네스 원형(planning→release 6스킬), 입력 통합 CLI
-- [[../entities/nhncloud-cli]] — dooray-cli 하네스 포팅, 코드보다 하네스가 먼저
-- [[../entities/fos-blog]] — Next.js 블로그, 토큰 라우팅·BLG 누적
-- [[../entities/fos-accountbook]] — 4계층 단방향, self-healing-teams, 12 스킬
-- [[../entities/fos-accountbook-backend]] — Java/Spring 도메인 패키지, 테스트 규율
-- [[../entities/fos-study]] — 글쓰기 하네스, docs-audit Quality Loop
-- [[../entities/ocr-docs]] — 공개 문서 보안 경계, 다국어 fan-out
+- [[dooray-cli]] — 하네스 원형(planning→release 6스킬), 입력 통합 CLI
+- [[nhncloud-cli]] — dooray-cli 하네스 포팅, 코드보다 하네스가 먼저
+- [[fos-blog]] — Next.js 블로그, 토큰 라우팅·BLG 누적
+- [[fos-accountbook]] — 4계층 단방향, self-healing-teams, 12 스킬
+- [[fos-accountbook-backend]] — Java/Spring 도메인 패키지, 테스트 규율
+- [[fos-study]] — 글쓰기 하네스, docs-audit Quality Loop
+- [[ocr-docs]] — 공개 문서 보안 경계, 다국어 fan-out
 
 ## Sources
 

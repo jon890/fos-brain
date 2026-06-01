@@ -23,7 +23,7 @@ updated: 2026-05-28
 
 - [[script-skill-separation]] — 워크스페이스 내부 구조 (native skill 직접 호출)
 - [[ai-harness-pattern]] — 개발 하네스의 자동화 버전
-- [[../entities/ai-nodes]]
+- [[ai-nodes]]
 
 ## Sources
 

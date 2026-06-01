@@ -40,7 +40,7 @@ updated: 2026-05-28
 
 - [[latency-percentiles]] — 다인스턴스 분위수 계산의 근거
 - [[observability-three-pillars]] — 신호 분리(메트릭 vs 로그)
-- [[../topics/observability]]
+- [[observability]]
 
 ## Sources
 

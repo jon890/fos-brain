@@ -27,7 +27,7 @@ updated: 2026-05-19
 
 ## 관련 주제
 
-- [[../topics/rag-system-architecture-strategies]] — Logic 축의 대표 사례
+- [[rag-system-architecture-strategies]] — Logic 축의 대표 사례
 
 ## Sources
 

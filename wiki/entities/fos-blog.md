@@ -36,11 +36,11 @@ updated: 2026-05-28
 
 ## 보여주는 스타일
 
-- [[../concepts/ai-harness-pattern]]
-- [[../concepts/self-improving-harness]]
-- [[../concepts/tech-stack-preferences]]
-- [[../concepts/commit-convention-style]]
-- [[../topics/work-style]]
+- [[ai-harness-pattern]]
+- [[self-improving-harness]]
+- [[tech-stack-preferences]]
+- [[commit-convention-style]]
+- [[work-style]]
 
 ## Sources
 
