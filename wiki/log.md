@@ -79,3 +79,9 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 정리: 백링크 2건 제거(multi-workspace-monorepo, entities/ai-nodes), INDEX 항목 제거
 - 사유: ai-nodes ADR-011로 track_task.sh·extract_claude_result.ts·update_artifacts.py 폐기. 5 워크스페이스 native 직접 호출 전환으로 공통 실행 래퍼 개념 자체가 stale.
 - raw: 없음 (Sources는 fos-claw AGENTS.md 경로 인용, raw 파일 미인용)
+
+## [2026-06-01] add | docu-parser 워크플로 스킬 3종 방법론
+- Source: raw/notes/2026-06-01-docu-parser-workflow-skills.md (ai-playground-docu-parser .claude/skills/{planning,review-fix,docs-check})
+- 신규 3 페이지: concept(planning-eight-step-design, pr-review-fix-workflow, docs-six-axis-audit), 보강 1(ai-harness-pattern 인라인 백링크 + 관련 개념 3건)
+- 범위: 새 프로젝트에 포팅 가능한 절차·결정 규칙만 (8단계 골격·ADR 자명성 게이트·6축·봇 루프 방지·학습 누적). 명령어 시퀀스·docu-parser 특화 세부 제외.
+- release-flow/test-flow 는 NHN 인프라 특화라 work/nhn 으로 분리.

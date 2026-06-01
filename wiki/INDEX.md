@@ -15,6 +15,9 @@
 ### 업무 스타일
 
 - [[concepts/ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스
+- [[concepts/planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 게이트 (새 하네스 seed)
+- [[concepts/pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
+- [[concepts/docs-six-axis-audit]] — docs-check 의 6축 점검 방법론 (부패·과대화·추론성·중복·자명성·가독성, seed)
 - [[concepts/docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
 - [[concepts/commit-convention-style]] — Conventional Commits(영문 type/scope + 한국어 본문), atomic
 - [[concepts/korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 점검으로 강제
@@ -73,6 +76,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-05-29 (claude code review self-hosted CLI 방식 + 신규 구축 레시피 — ai-code-review-github-actions 보강)
+- 마지막 brain-add: 2026-06-01 (docu-parser 워크플로 스킬 3종 방법론 신설 — planning-eight-step-design / pr-review-fix-workflow / docs-six-axis-audit, ai-harness-pattern 보강)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

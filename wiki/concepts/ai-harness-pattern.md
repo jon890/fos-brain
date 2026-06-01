@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # AI 하네스 패턴
@@ -12,10 +12,10 @@ updated: 2026-05-28
 ## 핵심 포인트
 
 - **표준 파이프라인** — 5단계 순서로 실행한다.
-  - `planning` — 8단계 설계
-  - `plan-and-build` / `build-with-teams` — 구현
-  - `review-fix` — PR 리뷰 자동 반영
-  - `docs-check` — 문서 검증
+  - `planning` — 8단계 설계 ([[planning-eight-step-design]])
+  - `plan-and-build` / `build-with-teams` — 구현 ([[build-with-teams-rules]])
+  - `review-fix` — PR 리뷰 자동 반영 ([[pr-review-fix-workflow]])
+  - `docs-check` — 문서 검증 ([[docs-six-axis-audit]])
   - `release`
 - **Agent Teams 협업** — `build-with-teams` 가 4역할로 작성과 검증을 분리한다.
   - 역할: team-lead, critic, executor, docs-verifier
@@ -32,6 +32,9 @@ updated: 2026-05-28
 
 ## 관련 개념
 
+- [[planning-eight-step-design]] — 1단계 planning 의 8단계 설계 방법론 (seed)
+- [[pr-review-fix-workflow]] — 3단계 review-fix 의 PR 리뷰 사후 반영 방법론 (seed)
+- [[docs-six-axis-audit]] — 4단계 docs-check 의 6축 점검 방법론 (seed)
 - [[self-improving-harness]] — 하네스가 리뷰 학습을 스스로 누적
 - [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙
 - [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출

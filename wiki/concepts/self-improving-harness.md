@@ -25,6 +25,8 @@ updated: 2026-05-28
 
 - [[ai-harness-pattern]] — 이 루프가 붙는 베이스 하네스
 - [[build-with-teams-rules]] — 회고 학습이 누적되는 build-with-teams 규칙 모음
+- [[pr-review-fix-workflow]] — 리뷰 학습 누적을 수행하는 사후 단계 (이 루프의 입력원)
+- [[docs-six-axis-audit]] — docs 품질 분류·흡수가 누적되는 점검 단계
 - [[korean-readability-policy]] — 문체 위반도 누적 점검 대상
 
 ## Sources
