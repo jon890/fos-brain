@@ -85,3 +85,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 신규 3 페이지: concept(planning-eight-step-design, pr-review-fix-workflow, docs-six-axis-audit), 보강 1(ai-harness-pattern 인라인 백링크 + 관련 개념 3건)
 - 범위: 새 프로젝트에 포팅 가능한 절차·결정 규칙만 (8단계 골격·ADR 자명성 게이트·6축·봇 루프 방지·학습 누적). 명령어 시퀀스·docu-parser 특화 세부 제외.
 - release-flow/test-flow 는 NHN 인프라 특화라 work/nhn 으로 분리.
+
+## [2026-06-01] add | 운영 트러블슈팅 topic 신설 — concepts 주제 분리
+- 신규 1 페이지: topic(operations-troubleshooting)
+- 보강: k8s-run-tmpfs-containerd·docker-compose-config-reload 에 topic 역백링크
+- INDEX: "관측성·운영(학습)" → "관측성(학습)" + "운영·트러블슈팅(실전)" 분리, Topics 등록

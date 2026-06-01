@@ -8,6 +8,7 @@
 
 - [[work-style]] — 개인 프로젝트 7개에서 일관된 개발·문서·AI 협업 방식
 - [[observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
+- [[operations-troubleshooting]] — 운영 중 실제로 터진 인프라·컨테이너 장애와 해결 사례
 - [[rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
 
 ## Concepts
@@ -32,13 +33,18 @@
 - [[multi-workspace-monorepo]] — 워크스페이스 격리 + _shared 규율
 - [[script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006)
 
-### 관측성·운영 (학습)
+### 관측성 (학습)
 
 - [[observability-three-pillars]] — Logs / Metrics / Traces 역할·상호보완·한계
 - [[latency-percentiles]] — p50/p95/p99, 평균의 함정, histogram_quantile
 - [[red-use-metrics]] — RED(API) / USE(리소스) 메트릭 분류
 - [[prometheus-histogram-vs-summary]] — 분위수 집계, 다인스턴스 합산, cardinality 함정
 - [[slo-burn-rate-alerting]] — symptom 우선, multi-burn-rate 알림
+
+### 운영·트러블슈팅 (실전)
+
+상위 주제: [[operations-troubleshooting]]
+
 - [[k8s-run-tmpfs-containerd]] — /run tmpfs 포화로 Pod 안 뜸 (containerd 메타데이터)
 - [[docker-compose-config-reload]] — 마운트 config 변경이 up -d 로 반영 안 됨, force-recreate 필요 (컨테이너 운영 함정)
 

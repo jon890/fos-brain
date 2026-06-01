@@ -36,6 +36,7 @@ updated: 2026-05-28
 
 ## 관련 개념
 
+- [[operations-troubleshooting]] — 이 장애가 속한 운영 트러블슈팅 주제
 - [[observability]] — 배포 장애 탐지·진단과 연결
 
 ## Sources
