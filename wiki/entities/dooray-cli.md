@@ -8,6 +8,9 @@ updated: 2026-06-01
 
 NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하네스의 원형.
 
+- **Repo**: https://github.com/jon890/dooray-cli
+- **npm**: `@bifos/dooray-cli`
+
 ## 도구로서 (사용)
 
 - **무엇** — Dooray REST API 의 얇은 CLI 래퍼. 사람이 터미널에서 쓰고, AI 에이전트가 프로그램적으로 호출하는 두 사용자를 동시에 겨냥한다. dooray-mcp-server 를 CLI 로 포팅하며 시작했다.

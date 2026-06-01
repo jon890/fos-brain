@@ -75,7 +75,6 @@
 - [[fos-accountbook]] — 가계부 프론트, 4계층 단방향·12스킬
 - [[fos-accountbook-backend]] — 가계부 Java 백엔드, 도메인 패키지·테스트 규율
 - [[fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
-- [[ocr-docs]] — OCR 공개 문서, 다국어 fan-out·공개 저장소 보안
 - [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
 
 ## Raw 인벤토리 요약

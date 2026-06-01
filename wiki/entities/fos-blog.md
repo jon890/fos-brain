@@ -1,12 +1,14 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # fos-blog
 
 `jon890/fos-study` 마크다운을 MySQL 캐싱 후 렌더하는 개인 블로그(blog.fosworld.co.kr). 홈서버 Docker 배포.
+
+- **Repo**: https://github.com/jon890/fos-blog
 
 ## 개요
 

@@ -1,12 +1,14 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # fos-accountbook-backend
 
 가계부 앱의 Java 백엔드 REST API. 프론트는 [[fos-accountbook]].
+
+- **Repo**: https://github.com/jon890/fos-accountbook-backend
 
 ## 개요
 

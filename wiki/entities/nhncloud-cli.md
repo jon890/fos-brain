@@ -1,12 +1,15 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # nhncloud-cli
 
 NHN Cloud 통합 CLI(`@bifos/nhncloud-cli` v0.1.0). 서비스별 인증·엔드포인트·응답 봉투를 단일 profile 추상화 뒤로 숨긴다.
+
+- **Repo**: https://github.com/jon890/nhncloud-cli
+- **npm**: `@bifos/nhncloud-cli`
 
 ## 개요
 

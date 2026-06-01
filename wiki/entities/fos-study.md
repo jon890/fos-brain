@@ -1,12 +1,14 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # fos-study
 
 개인 기술 블로그 겸 학습 기록 저장소(마크다운). GitHub sync 로 [[fos-blog]] 에 게시된다.
+
+- **Repo**: https://github.com/jon890/fos-study
 
 ## 개요
 

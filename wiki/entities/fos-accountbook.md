@@ -1,12 +1,14 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-01
 ---
 
 # fos-accountbook
 
 가족이 함께 쓰는 가계부 앱의 프론트엔드("우리집 가계부"). 백엔드는 [[fos-accountbook-backend]] 별도 레포.
+
+- **Repo**: https://github.com/jon890/fos-accountbook-frontend
 
 ## 개요
 

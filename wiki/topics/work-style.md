@@ -6,7 +6,7 @@ updated: 2026-05-28
 
 # 업무 스타일
 
-`~/personal` 의 개인 프로젝트 7개에서 일관되게 나타나는 개발·문서·AI 협업 방식.
+`~/personal` 의 개인 프로젝트 6개에서 일관되게 나타나는 개발·문서·AI 협업 방식.
 
 한 사람의 작업 방식이 레포마다 복제·진화하며 굳어진 시그니처 패턴이다.
 새 프로젝트를 시작하면 동일한 하네스를 포팅하고, 같은 커밋·문서·테스트 규율을 적용한다.
@@ -29,7 +29,6 @@ updated: 2026-05-28
 - [[fos-accountbook]] — 4계층 단방향, self-healing-teams, 12 스킬
 - [[fos-accountbook-backend]] — Java/Spring 도메인 패키지, 테스트 규율
 - [[fos-study]] — 글쓰기 하네스, docs-audit Quality Loop
-- [[ocr-docs]] — 공개 문서 보안 경계, 다국어 fan-out
 
 ## Sources
 

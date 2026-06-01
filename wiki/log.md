@@ -102,3 +102,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 보강: ai-harness-pattern 역백링크
 - INDEX: "업무 스타일"(13개 비대) → "AI 개발 하네스"(8) + "개인 코딩 규율·취향"(5) 분리, Topics 등록
 - 계기: 카테고리 비대 규약(brain-add 9단계) 작동
+
+## [2026-06-01] move | OCR-docs → work/nhn 이동 + entity repo 링크 추가
+- OCR-docs entity 를 public → work/nhn 이동(회사 OCR 문서 fork, 외부 유지보수 안 함). public 삭제.
+- work-style: ocr-docs 제거(개인 프로젝트 7→6개), INDEX entity 제거.
+- entity 6개에 GitHub repo 링크 추가(dooray-cli·nhncloud-cli·fos-blog·fos-accountbook·fos-accountbook-backend·fos-study).
