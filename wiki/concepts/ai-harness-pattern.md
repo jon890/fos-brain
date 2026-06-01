@@ -30,6 +30,24 @@ updated: 2026-06-01
   - `skills/` — 공개 사용법
 - **하네스 우선**: nhncloud-cli 는 코드 0줄 상태에서 하네스부터 포팅 — "도구를 만들기 전에 도구 만드는 공정을 표준화".
 
+## 하네스란 + MVP 구축 워크플로우
+
+하네스를 한 줄로 정의하면 `실행 계획 + 완료 조건 + 컨텍스트 참조` 다.
+
+- **실행 계획** — 무엇을 어떤 순서로 만드나(Phase 분리).
+- **완료 조건** — 각 Phase 가 언제 끝나나(빌드 성공·CLI 실행 등 기계적으로 판단 가능한 조건).
+- **컨텍스트 참조** — 에이전트가 어떤 문서를 읽고 실행하나.
+
+AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다(dooray-cli 사례).
+
+1. **양질의 컨텍스트** — 대화로 기술적 결정을 깊이 쌓는다.
+2. **하네스 엔지니어링** — 문서를 기반으로 Phase 를 분리하고 에이전트가 자율 구현한다.
+3. **기능 추가·문서화** — 추가 구현마다 문서를 누적·정제해 에이전트의 판단력을 높이는 루프.
+
+각 단계는 이전 산출물에 의존한다 — 1이 부실하면 2에서 에이전트가 방향을 잃는다.
+
+> 핵심 통찰: 에이전트가 잘 동작하는 이유는 코드를 잘 짜서가 아니라 **실행 전에 문서가 충분히 정제돼 있기 때문**이다.
+
 ## 관련 개념
 
 - [[planning-eight-step-design]] — 1단계 planning 의 8단계 설계 방법론 (seed)
@@ -40,7 +58,9 @@ updated: 2026-06-01
 - [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출
 - [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
 - [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
+- [[agent-friendly-cli-design]] — 하네스가 다루는 도구(CLI)를 에이전트가 안정적으로 호출하도록 만드는 설계
 
 ## Sources
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
+- [[../../raw/repos/2026-06-01-dooray-cli-tool-analysis.md]]

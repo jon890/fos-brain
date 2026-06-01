@@ -90,3 +90,9 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 신규 1 페이지: topic(operations-troubleshooting)
 - 보강: k8s-run-tmpfs-containerd·docker-compose-config-reload 에 topic 역백링크
 - INDEX: "관측성·운영(학습)" → "관측성(학습)" + "운영·트러블슈팅(실전)" 분리, Topics 등록
+
+## [2026-06-01] add | dooray-cli 도구 지식 — 사용·설계 패턴·MVP 방법론
+- Source: raw/repos/2026-06-01-dooray-cli-tool-analysis.md (github.com/jon890/dooray-cli)
+- 신규 1 페이지: concept(agent-friendly-cli-design)
+- 보강 3 페이지: dooray-cli(도구 섹션 — 무엇/어떻게/어디에), ai-harness-pattern(하네스 정의 + MVP 3단계 워크플로), nhncloud-cli(agent-friendly 백링크)
+- 평가: 도구 사용 지식은 비어 있고 하네스 관점만 있었음 → 도구 정체성·사용·설계 패턴을 채움. 개별 명령 문법은 --help/README 로 충분하여 제외

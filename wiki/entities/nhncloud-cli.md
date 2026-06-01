@@ -36,6 +36,7 @@ NHN Cloud 통합 CLI(`@bifos/nhncloud-cli` v0.1.0). 서비스별 인증·엔드�
 ## 보여주는 스타일
 
 - [[ai-harness-pattern]]
+- [[agent-friendly-cli-design]] — dooray-cli 의 에이전트 친화 CLI 설계를 포팅
 - [[docs-first-adr]]
 - [[tech-stack-preferences]]
 - [[work-style]]

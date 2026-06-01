@@ -16,6 +16,7 @@
 ### 업무 스타일
 
 - [[ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스
+- [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
 - [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 게이트 (새 하네스 seed)
 - [[pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
 - [[docs-six-axis-audit]] — docs-check 의 6축 점검 방법론 (부패·과대화·추론성·중복·자명성·가독성, seed)
@@ -82,6 +83,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-01 (docu-parser 워크플로 스킬 3종 방법론 신설 — planning-eight-step-design / pr-review-fix-workflow / docs-six-axis-audit, ai-harness-pattern 보강)
+- 마지막 brain-add: 2026-06-01 (dooray-cli 도구 지식 — agent-friendly-cli-design 신설, dooray-cli entity 도구 섹션 + ai-harness-pattern MVP 워크플로 보강)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
