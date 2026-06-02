@@ -24,10 +24,20 @@ updated: 2026-05-28
 - **정적 검사 + 일괄 수정**: 위반(예: fos-blog `§ 39건`, `~ 82건`)을 자동 탐지해 한 번에 교정한다.
 - **공개 저장소 일반화**: 사내 명칭·링크·멤버 ID 를 placeholder 로 바꾼다(예: Dooray → "사내 협업 도구").
 
+## 추가 (2026-06-02): 개인 글로벌 rules 로 관리
+
+이 정책은 **개인 취향 규칙**이지 팀 강제 규칙이 아니다 — 그래서 개인 글로벌에만 둔다.
+
+- 배치: `~/.claude/rules/korean-style.md` (외래어 매핑 표·종결 규칙·자가 점검) + `~/.claude/CLAUDE.md` 에서 `@~/.claude/rules/korean-style.md` import.
+- `~/.claude/rules/` 는 내 모든 레포에 자동 적용되므로 레포마다 복제할 필요가 없다 ([[claude-code-memory-rules]]).
+- **레포 문서가 이 개인 룰을 참조하지 않게 한다** — 팀원에겐 `~/.claude/...` 파일이 없어 깨진 참조가 된다. 레포 CLAUDE.md 에서 한국어 정책 언급·링크를 제거하고 "작성자 개인 환경에 맡김" 으로 둔다 (docu-parser 에서 실제로 그렇게 분리).
+- 대비: PR·Dooray 컨벤션은 팀 공유라 레포 `.claude/rules/` 에 둔다 ([[pr-body-convention]], [[dooray-task-convention]]). 개인 취향(한국어·가독성)과 팀 공유를 위치로 가른다.
+
 ## 관련 개념
 
 - [[docs-first-adr]] — docs 가 이 문체 규칙의 주 적용 대상
 - [[self-improving-harness]] — docs-audit 가 문체 위반을 축으로 점검
+- [[claude-code-memory-rules]] — 이 정책을 개인 글로벌 rules 로 자동 적용하는 메커니즘
 
 ## Sources
 

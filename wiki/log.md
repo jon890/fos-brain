@@ -107,3 +107,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - OCR-docs entity 를 public → work/nhn 이동(회사 OCR 문서 fork, 외부 유지보수 안 함). public 삭제.
 - work-style: ocr-docs 제거(개인 프로젝트 7→6개), INDEX entity 제거.
 - entity 6개에 GitHub repo 링크 추가(dooray-cli·nhncloud-cli·fos-blog·fos-accountbook·fos-accountbook-backend·fos-study).
+
+## [2026-06-02] add | Claude Code rules + PR 컨벤션 (다른 레포 재사용)
+- Source: raw/notes/2026-06-02-claude-rules-and-conventions.md
+- 신규 2 (claude-code-memory-rules, pr-body-convention), 보강 1 (korean-readability-policy)
+- 핵심: .claude/rules 자동 로드 메커니즘 + PR 본문 양식 + 개인/팀 규칙 위치 분리(개인=~/.claude, 팀=레포 .claude/rules)
