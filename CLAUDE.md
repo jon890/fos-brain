@@ -217,8 +217,8 @@ qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **
 
 ### 툴체인 전제
 
-- node 22.16.0 핀(`.tool-versions` = mise, `.npmrc` 의 `use-node-version` = pnpm). node 25 에선 tsx 가 `.scss` ESM 로딩에 실패하므로 22 유지.
-- pnpm(`packageManager` 필드). `.npmrc` 에 `node-linker=hoisted`(Quartz 가 phantom 의존성을 직접 import).
+- node 24.15.0 핀(`quartz/.tool-versions` = mise, `quartz/.npmrc` 의 `use-node-version` = pnpm). quartz engines 는 `node >=22`. node 25 에선 tsx 가 `.scss` ESM 로딩에 실패하므로 24 를 쓴다(25 회피). 핀 파일은 루트가 아니라 `quartz/` 에 있다.
+- pnpm(`packageManager` 필드). `quartz/.npmrc` 에 `node-linker=hoisted`(Quartz 가 phantom 의존성을 직접 import).
 - fos-brain 은 **독립 git repo** 여야 한다. 홈(`/Users/nhn`)이 `*` 화이트리스트 .gitignore 라, fos-brain 에 자체 `.git` 이 없으면 Quartz 의 `isGitIgnored` 가 모든 content 를 걸러내 입력 0 이 된다.
 
 ### 공개 빌드 (`quartz/`)
