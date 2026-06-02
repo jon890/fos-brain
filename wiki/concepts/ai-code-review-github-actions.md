@@ -38,6 +38,40 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 - **개방형 프레이밍(앵커링 방지)** — "리뷰 관점 (4가지 축)" 처럼 닫힌 번호 목록을 주면 LLM 이 그것만 체크리스트로 보고 일반 버그(로직·보안·엣지·타입)를 놓친다. "먼저 일반 코드 리뷰를 수행하고, 추가로 프로젝트 특화 관점을 우선 점검하되 이에 한정하지 말 것" 으로 연다. 특화 항목의 번호도 빼서 닫힌 인상을 줄인다.
 - **심각도 시각 구분** — 요약 댓글 섹션 제목에 색 원(🔴 심각 / 🟡 권장 / 🔵 잘 된 점).
 
+## 프롬프트 주입 — marketplace action vs self-hosted CLI (delta)
+
+`.txt` 외부 분리·`--model opus` 별칭·`envsubst` 화이트리스트는 두 방식 공통이다. 차이는 **분리한 프롬프트를 어디로 흘려보내느냐**다.
+
+| 구분 | marketplace action | self-hosted CLI |
+|------|--------------------|-----------------|
+| prompt 전달 | 사전 step 이 `envsubst` 로 `.txt` 치환 → `$GITHUB_OUTPUT` 멀티라인 output → action 의 `prompt:` 입력 | `envsubst ... < prompt.txt \| claude ... -p -` 로 stdin 직접 파이프 |
+| 모델 지정 | `claude_args: '--model opus ...'` | `claude --model opus ...` |
+| 도구 제한 | `claude_args: '--allowedTools ... --disallowedTools ...'` | 동일 플래그를 CLI 에 직접 |
+
+공통 원칙(둘 다 지킨다):
+
+- prompt 는 `.txt` 외부 파일 — `.md` 금지(포맷터가 glob `*.lock`·식별자 escape 깨뜨림).
+- `--model opus` 별칭 — 고정 태그(`claude-opus-4-7`) 금지.
+- `envsubst '$PR_NUMBER $REPO'` 화이트리스트 — 파일이 YAML 밖이라 `${{ }}` 가 안 먹으므로 `$VAR` placeholder + 명시 치환. 화이트리스트를 줘야 프롬프트 안 다른 `$` 표현이 안 깨진다.
+
+marketplace action 의 멀티라인 output 패턴:
+
+```yaml
+- id: prompt
+  env:
+    PR_NUMBER: ${{ env.PR_NUMBER }}
+    REPO: ${{ github.repository }}
+  run: |
+    {
+      echo 'text<<PROMPT_EOF'
+      envsubst '$PR_NUMBER $REPO' < .github/workflows/code-review-prompt.txt
+      echo 'PROMPT_EOF'
+    } >> "$GITHUB_OUTPUT"
+# 이후 action 에 prompt: ${{ steps.prompt.outputs.text }}
+```
+
+함정(marketplace 고유) — `$GITHUB_OUTPUT` heredoc delimiter(`PROMPT_EOF`)가 프롬프트 본문에 우연히 등장하면 output 이 잘린다. delimiter 를 본문에 안 나올 토큰으로 둔다. prompt 파일은 `.github/` 안에 둬 action wrapper 의 `git add -A` 에 휩쓸려도 의도된 추적 파일이게 한다.
+
 ## 모델 버전 정책
 
 - 모델을 `claude-opus-4-7` 처럼 고정하면 버전업마다 워크플로를 수정해야 하고, CLI 버전이 그 태그를 모르면 실패한다.
@@ -77,4 +111,4 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 
 - [[../../raw/notes/2026-05-28-ai-code-review-github-actions.md]]
 - [[../../raw/notes/2026-05-29-claude-code-review-cli-recipe.md]] (self-hosted CLI 방식 + 신규 구축 레시피 + 함정 보강)
-- github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml`
+- github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml` (2026-06-02: marketplace action 방식으로 prompt 를 `code-review-prompt.txt` 외부 분리 + `--model opus` 별칭 적용, 일반 리뷰 우선 개방형 프레이밍 반영)

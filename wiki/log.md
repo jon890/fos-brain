@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-02] lint | marketplace action 의 prompt 주입 방식 delta 보강
+- 보강 1 페이지: ai-code-review-github-actions (프롬프트 주입 — marketplace action vs self-hosted CLI delta 소절 신설)
+- 맥락: nhncloud-cli claude-code-review.yml 정비 — marketplace action 에서도 prompt .txt 외부 분리가 가능하나 주입 경로가 self-hosted CLI 와 다름. action 은 사전 step 의 envsubst 출력을 $GITHUB_OUTPUT 멀티라인 output 으로 담아 prompt 입력에 전달, CLI 는 stdin 파이프
+- 함정 추가: $GITHUB_OUTPUT heredoc delimiter 가 프롬프트 본문에 등장하면 output 잘림
+- 기존 페이지의 개방형 프레이밍·opus 별칭 권고를 nhncloud-cli 가 실제 적용한 사례로 Sources 갱신
+
 ## [2026-05-29] ingest | claude code review self-hosted CLI 방식 + 신규 구축 레시피
 - Source: raw/notes/2026-05-29-claude-code-review-cli-recipe.md
 - 보강 1 페이지: ai-code-review-github-actions (marketplace action 중심 → CLI 방식·신규 레시피·프롬프트 설계·함정 추가)
