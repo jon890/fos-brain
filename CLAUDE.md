@@ -200,6 +200,16 @@ Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
 
 `brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
+### 런타임 함정 — bun 으로 고정 (node ABI 불일치 방지)
+
+qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **실행 런타임에 종속**된다.
+
+- qmd 의 `bin/qmd` 는 패키지 디렉터리의 lockfile 로 런타임을 고른다: `bun.lock` 이면 bun, `package-lock.json` 이면 node, 둘 다 없으면 node.
+- mise 가 세션·디렉터리마다 node 버전(22/24 등)을 바꾸므로, **node 로 실행하면** better-sqlite3 ABI(예: node24=137 vs node22=127)가 어긋나 `"better-sqlite3 재컴파일 필요"` 로 깨진다.
+- **회피 — bun 고정**: qmd 패키지(`~/.bun/install/global/node_modules/@tobilu/qmd/`)에 `bun.lock` 을 두면 항상 bun 으로 실행된다. bun 은 단일 런타임이라 mise node 버전과 무관하게 안정적이다.
+- 깨졌을 때 복구: `touch ~/.bun/install/global/node_modules/@tobilu/qmd/bun.lock`. (qmd 재설치·업데이트 시 lockfile 이 사라지면 재발하므로 다시 touch.)
+- qmd 가 끝내 안 되면 `brain-search` 는 grep 으로 폴백한다(품질은 떨어지지만 동작).
+
 ## 웹 UI: Quartz
 
 연결된 지식을 그래프로 보는 웹 UI 는 Quartz v4 정적 사이트로 구축한다(`quartz/`).
