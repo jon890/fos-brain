@@ -18,18 +18,18 @@ GitHub: `jon890/fos-claw` (public).
   - stock-investment — 일일 주식·암호화폐 모닝 브리핑
   - travel — 여행별 일정·결정 로그
   - health-care — 재활 daily 체크인(cron)
-- 오케스트레이션 — 영속 워크플로 로직은 `~/ai-nodes`, `~/.openclaw` 는 thin glue 로 유지한다.
+- 오케스트레이션 — 영속 워크플로 로직은 `~/ai-nodes`, `~/.openclaw` 는 thin glue 로 유지한다([[openclaw]]).
 
 ## 핵심 패턴
 
-- [[multi-workspace-monorepo]] — 워크스페이스 격리 + `_shared` 규율
+- [[multi-workspace-monorepo]] — 워크스페이스 격리와 `_shared` 규율
 - [[script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006), native skill 직접 호출
 
 ## 같은 결의 하네스 (작성자 시그니처)
 
 - [[ai-harness-pattern]] — 개발 프로젝트 하네스
 - [[self-improving-harness]] — 회고 학습 누적
-- [[docs-first-adr]] — ADR 누적 + docs-style(ADR-005)
+- [[docs-first-adr]] — ADR 누적과 docs-style(ADR-005)
 - [[work-style]]
 
 ## Sources

@@ -117,4 +117,24 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-06-02] add | Claude Code rules + PR 컨벤션 (다른 레포 재사용)
 - Source: raw/notes/2026-06-02-claude-rules-and-conventions.md
 - 신규 2 (claude-code-memory-rules, pr-body-convention), 보강 1 (korean-readability-policy)
-- 핵심: .claude/rules 자동 로드 메커니즘 + PR 본문 양식 + 개인/팀 규칙 위치 분리(개인=~/.claude, 팀=레포 .claude/rules)
+- 핵심:
+  - .claude/rules 자동 로드 메커니즘
+  - PR 본문 양식
+  - 개인/팀 규칙 위치 분리(개인=~/.claude, 팀=레포 .claude/rules)
+
+## [2026-06-02] add | OpenClaw topic 신설 — 게이트웨이 운영·설정 지식
+- Source: raw/notes/2026-06-02-openclaw-knowledge-session.md (공식 docs + GitHub 소스 + doctor/CLI 실측)
+- 신규 10 페이지: topic openclaw + concept 9개(overview, architecture, sessions, channels-routing, tool-policy, config, gateway-ops, cli-reference, message-tool)
+- 보강 1 페이지: ai-nodes entity 에 [[openclaw]] 교차링크
+- 계기: "작업 요청 → 관련 지식 탐색" 플로우용 일반 지식 누적(함정만 X). tool-policy allow 교집합 함정·웹UI↔Discord 미러링 한계 포함
+
+## [2026-06-02] add | orphan transcript mining — openclaw-web-search 신규
+- Source: ~/.openclaw/agents/main/sessions orphan transcript 442개 분석 (raw/notes/2026-06-02-openclaw-knowledge-session.md 에 mining 섹션 추가)
+- 신규 1 페이지: openclaw-web-search (provider autodetect 우선순위·key-free·교훈)
+- 보강 1 페이지: openclaw-channels-routing 에 discord requireMention 팁
+- 실질 단물 1건 확인 — 나머지 440개는 cron 자동화·trajectory·checkpoint 노이즈 (정리 전 분석 ROI: 샘플 우선이 적중)
+
+## [2026-06-06] add | 시판 육수 물냉면 조리법
+- Source: raw/notes/2026-06-06-store-bought-naengmyeon.md
+- 신규 1 페이지: simple-store-bought-naengmyeon
+- 범위: 시판 냉면사리와 시판 동치미 육수를 기준으로 한 공개 가능한 범용 조리 지식. 개인 구매 맥락과 채널 맥락은 제외.
