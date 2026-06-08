@@ -27,11 +27,27 @@ updated: 2026-05-28
   - 코드 스니펫은 넣지 않는다(구현 세부는 코드가 자명).
 - **task 생성 전 docs commit**: 설계 결정이 먼저 커밋된 뒤 구현 task 가 만들어진다.
 
+## 추가 (2026-06-08): ADR 가독성 형식
+
+같은 planning 템플릿(결정 / 맥락 / 대안 기각 / 트레이드오프)을 써도 ADR 가독성은 갈린다.
+두 프로젝트 `adr.md` 비교에서 도출한 형식 원칙 — **가독성 차이는 템플릿이 아니라
+semantic line break 적용 엄격도에서 나온다.**
+
+- **대안 기각은 옵션마다 별도 bullet** (`**옵션** — 이유`).
+  괄호 인라인 나열(`A(이유), B(이유)`)은 대안 비교가 눈으로 안 된다.
+  [[korean-readability-policy]] 의 "인라인 연결 금지" 6패턴을 ADR 에 적용한 것이다.
+- **한 bullet = 한 사실** — 200자 초과 bullet 은 정보 4개가 뭉친 신호라 분리한다.
+- **모든 ADR 이 같은 호흡** — 초기 압축 / 후기 과밀 편차를 피한다. 한 파일 안에서 ADR 마다 밀도가 다르면 읽는 호흡이 끊긴다.
+- **파일 상단에 작성 원칙 1줄** — "결정의 무엇·왜·대안만, 구현 세부는 코드에", planning ADR 점검 링크를 함께 둔다. 미래 작성자에게 형식을 고정한다.
+- **근거는 실측 수치로** — 운영 측정값·`%`·확인 날짜를 적는다. 정성 서술보다 결정의 신뢰도가 산다.
+- **탐색성 — ADR Index(클릭 목차)와 anchor 병행** — 구분선만 두는 것보다 인덱스가 있으면 긴 `adr.md` 에서 특정 ADR 로 바로 점프할 수 있다.
+
 ## 관련 개념
 
 - [[ai-harness-pattern]] — planning 스킬이 docs 를 산출하는 단계
-- [[korean-readability-policy]] — docs 문체·가독성 규칙
+- [[korean-readability-policy]] — docs 문체·가독성 규칙 (6패턴의 단일 소스)
 
 ## Sources
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
+- [[../../raw/notes/2026-06-08-adr-readability-comparison.md]]

@@ -110,6 +110,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-06 (시판 육수 물냉면 조리법 추가)
+- 마지막 brain-add: 2026-06-08 (docs-first-adr 보강 — ADR 가독성 형식 6원칙, 두 프로젝트 adr.md 비교)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

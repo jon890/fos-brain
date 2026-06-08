@@ -35,7 +35,7 @@ updated: 2026-05-28
 
 ## 관련 개념
 
-- [[docs-first-adr]] — docs 가 이 문체 규칙의 주 적용 대상
+- [[docs-first-adr]] — docs 가 이 문체 규칙의 주 적용 대상. 6패턴을 ADR 에 적용한 형식 원칙은 그 페이지의 "ADR 가독성 형식" 절
 - [[self-improving-harness]] — docs-audit 가 문체 위반을 축으로 점검
 - [[claude-code-memory-rules]] — 이 정책을 개인 글로벌 rules 로 자동 적용하는 메커니즘
 

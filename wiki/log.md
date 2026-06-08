@@ -138,3 +138,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/notes/2026-06-06-store-bought-naengmyeon.md
 - 신규 1 페이지: simple-store-bought-naengmyeon
 - 범위: 시판 냉면사리와 시판 동치미 육수를 기준으로 한 공개 가능한 범용 조리 지식. 개인 구매 맥락과 채널 맥락은 제외.
+
+## [2026-06-08] add | ADR 가독성 형식 6원칙 (docs-first-adr 보강)
+- Source: raw/notes/2026-06-08-adr-readability-comparison.md
+- 신규 0, 보강 2 (docs-first-adr, korean-readability-policy 역참조)
+- 핵심: 같은 planning 템플릿이라도 가독성은 semantic line break 적용 엄격도에서 갈린다. 대안 기각 옵션별 bullet·한 bullet 한 사실·호흡 일관성·상단 작성 원칙 주석·실측 근거·탐색성 anchor. 두 프로젝트 adr.md 비교에서 도출.
