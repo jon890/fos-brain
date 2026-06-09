@@ -56,6 +56,7 @@
 상위 주제: [[operations-troubleshooting]]
 
 - [[k8s-run-tmpfs-containerd]] — /run tmpfs 포화로 Pod 안 뜸 (containerd 메타데이터)
+- [[ingress-controller-internal-external-split]] — 외부/내부 ingress controller 분리 + cluster-scoped webhook self-lock 함정
 - [[docker-compose-config-reload]] — 마운트 config 변경이 up -d 로 반영 안 됨, force-recreate 필요 (컨테이너 운영 함정)
 
 ### RAG / 지식 시스템

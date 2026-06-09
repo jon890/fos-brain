@@ -143,3 +143,7 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/notes/2026-06-08-adr-readability-comparison.md
 - 신규 0, 보강 2 (docs-first-adr, korean-readability-policy 역참조)
 - 핵심: 같은 planning 템플릿이라도 가독성은 semantic line break 적용 엄격도에서 갈린다. 대안 기각 옵션별 bullet·한 bullet 한 사실·호흡 일관성·상단 작성 원칙 주석·실측 근거·탐색성 anchor. 두 프로젝트 adr.md 비교에서 도출.
+
+## [2026-06-09] add | 외부/내부 ingress controller 분리 패턴
+- Source: raw/notes/ingress-controller-internal-external-split.md
+- 신규 1 페이지(ingress-controller-internal-external-split), 보강 0
