@@ -58,6 +58,50 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
    - 주요 발견·수정: <메모>
    ```
 
+## 점수 게이트 (reward)
+
+docs-audit 의 docs_score 와 같은 SkillOpt validation gate 패턴.
+11개 항목 중 *객관 채점 가능한* 구조 항목만 점수로 환산해 수정 전후를 비교한다.
+중복·모순·교차참조·품질축(3·8·9·11)은 주관 판단이라 점수에서 제외한다.
+
+### 측정 도구
+
+`scripts/brain_score.py` — 위반을 가중 감점으로 합산한다. 위반 0이면 score 0(만점).
+
+| 채점 축 | 가중 | 근거 |
+|---|---|---|
+| visibility_leak | 10 | public 이 private/work slug 를 링크 (유출, 보안 최고) |
+| broken_backlink | 5 | `[[slug]]` 가 어느 페이지도 안 가리킴 |
+| path_wikilink | 4 | `[[topics/X]]` 경로형 — 로컬 빌드 404 |
+| missing_sources | 3 | concepts 페이지에 `## Sources` 없음/빔 (entities·topics 면제) |
+| frontmatter | 3 | type/created/updated 누락 |
+| index_desync | 2 | 페이지가 자기 ns INDEX 에 없음 |
+| orphan_note | 2 | 어디서도 참조 안 됨 |
+| style_tilde | 2 | `~` 취소선 함정 |
+
+### 사용
+
+```bash
+python3 scripts/brain_score.py          # 측정 + 직전 대비 delta
+python3 scripts/brain_score.py --save   # 게이트 통과 시 history 기록
+python3 scripts/brain_score.py --json    # 기계 판독용
+```
+
+### 게이트 흐름
+
+1. lint 착수 전 측정해 baseline 을 본다.
+2. 항목별로 수정한다 (누출 → 백링크 → frontmatter → Sources 순).
+3. 다시 측정해 점수가 baseline 보다 올랐는지 확인한다.
+4. 올랐으면 `--save` 로 기록한다.
+
+### reward 정확성 주의
+
+점수 함수가 틀리면 잘못된 방향으로 고치게 된다 (docs-audit 의 교훈).
+
+- `visibility_leak` 는 보안 위반이니 즉시 사용자에게 보고한다. 자동 수정 금지.
+- `missing_sources` 는 concepts 만 대상. entities(자기 프로젝트)·topics(narrative)는 면제.
+- ADR 류 concept 은 자기 결정 기록이라 Sources 가 없을 수 있다 — 잔존 건은 spot-check 후 면제 판단.
+
 ## 외부 자원
 
 - 누락 Sources 보강 시 WebSearch 사용 가능 — 사용자 승인 후.
