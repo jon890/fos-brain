@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-12] lint | public 연결·stale 점검 — 건강 확인, 실질 수정 0
+- 검사: 구조 10항 + stale 품질축 / 발견: 실질 0 (brain_score -53 은 대부분 오탐)
+- 연결: 깨진 백링크 0, 고아 0, 경로형 0(raw Sources 면제), 누출 0 (work-style 은 public topics 인데 score 가 work/ slug 로 오인)
+- stale: 하네스 concept 다 최근·역할 분명 → prune 불필요. openclaw 는 이미 topics/openclaw + INDEX 카테고리로 분리 완료(비대 오판)
+- 미수정(면제): docker-compose-config-reload Sources(실측 함정 ADR류), frontmatter 1(미미), style_tilde 1(범위표기·홈경로 오탐)
+
 ## [2026-06-12] ingest | 누적 파일 머지 충돌 구조 제거 패턴 신규 + planning phase/docs 함정 보강
 - Source: raw/notes/2026-06-12-adr-directory-split.md
 - 신규 1 페이지: concept(merge-conflict-free-append) — append 파일 충돌을 파일 per 항목 + INDEX 라우터로 제거, 번호 glob 으로 발견성 보존
