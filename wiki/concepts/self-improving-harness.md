@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-12
 ---
 
 # 자기개선 하네스 (메타 피드백 루프)
@@ -20,6 +20,7 @@ updated: 2026-05-28
   - merge
   - archive
   - delete
+- **SkillOpt 로 형식화** — 이 수동 루프를 머신러닝 학습 루프로 자동화한 외부 방법론이 SkillOpt 다. 편집 예산·검증 게이트라는 규율을 빌려올 수 있다.
 
 ## 관련 개념
 
@@ -28,6 +29,7 @@ updated: 2026-05-28
 - [[pr-review-fix-workflow]] — 리뷰 학습 누적을 수행하는 사후 단계 (이 루프의 입력원)
 - [[docs-six-axis-audit]] — docs 품질 분류·흡수가 누적되는 점검 단계
 - [[korean-readability-policy]] — 문체 위반도 누적 점검 대상
+- [[skillopt-trainable-skill-document]] — 이 수동 루프를 자동화·형식화한 외부 방법론(SkillOpt)
 
 ## Sources
 

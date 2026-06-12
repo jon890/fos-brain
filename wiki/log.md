@@ -159,3 +159,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-06-09] add | 외부/내부 ingress controller 분리 패턴
 - Source: raw/notes/ingress-controller-internal-external-split.md
 - 신규 1 페이지(ingress-controller-internal-external-split), 보강 0
+
+## [2026-06-12] add | SkillOpt 패턴 4개념 (brain-curate 첫 큐레이션)
+- Source: raw/notes/2026-06-12-skillopt-sessions.md (fos-study·blog-post-writer 세션)
+- 신규 4 페이지, 보강 1 페이지(self-improving-harness)
+- brain-curate 스킬로 public 27세션 분석 → 81후보 → 병합 28 → SkillOpt 군 등록

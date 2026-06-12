@@ -31,6 +31,13 @@
 - [[claude-code-memory-rules]] — Claude Code 메모리: CLAUDE.md·.claude/rules 자동 로드 규칙(frontmatter·paths·우선순위) + 규칙을 여러 레포에 재사용하는 법 + 강제는 hook
 - [[pr-body-convention]] — PR 본문 공통 양식(Summary/Changes/Verification, Commits·프로세스이력 제외, 자가점검) + .claude/rules 적용법
 
+### 스킬 자동 최적화
+
+- [[skillopt-trainable-skill-document]] — 스킬 문서를 신경망 가중치처럼 학습(Microsoft SkillOpt) + Sleep 야간 정리
+- [[skill-auto-optimization-prerequisites]] — reward·held-out 선행 조건 + A/B/C 채점 계층
+- [[reward-detector-false-positive]] — reward detector 오탐을 먼저 잡기(잘못된 그래디언트 방어)
+- [[two-tier-reward-static-llm-judge]] — 정적 정규식 바닥 + LLM judge 천장 2계층 reward
+
 ### 개인 코딩 규율·취향
 
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
@@ -112,6 +119,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-08 (docs-first-adr 보강 — ADR 가독성 형식 6원칙, 두 프로젝트 adr.md 비교)
+- 마지막 brain-add: 2026-06-12 (SkillOpt 4개념 신규 — brain-curate 첫 큐레이션, self-improving-harness 보강)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
