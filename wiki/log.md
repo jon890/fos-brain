@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-12] ingest | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
+- Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (한 프로젝트 하네스가 plan 43개 진행하며 발전한 분석 중 기존 concept 보강분, repo 무관 일반화)
+- 보강 5 concept: build-with-teams-rules(스폰 안전·재시도 한도·spawn-shutdown·특이사항 4종·마킹 사고 역검증), self-improving-harness(역할별 회고 거울 구조·회피 패턴 wiki 운영 규율), ai-harness-pattern(커스텀 도메인 에이전트=단일 소스), planning-eight-step-design(번호 충돌 방지·docs↔코드 식별자 정합), merge-conflict-free-append(축적 점검·prune 운영 규율 한 줄 연결)
+- 운영 개념(격리 검증·카나리 rolling·에러 분류)은 사용자 결정으로 brain 신설 보류 — 보강분만 반영
+- 맥락: 2026-06-01 노트는 planning/review-fix/docs-check 3스킬만 추출 → 그 후 발전한 (1)자기개선 인프라 (2)평가자 다단 파이프라인 보강분을 환원. docu-parser 구체(인스턴스명·도메인·사내 식별자)는 전부 제거
+
 ## [2026-06-12] lint | public 연결·stale 점검 — 건강 확인, 실질 수정 0
 - 검사: 구조 10항 + stale 품질축 / 발견: 실질 0 (brain_score -53 은 대부분 오탐)
 - 연결: 깨진 백링크 0, 고아 0, 경로형 0(raw Sources 면제), 누출 0 (work-style 은 public topics 인데 score 가 work/ slug 로 오인)

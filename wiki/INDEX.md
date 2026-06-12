@@ -113,12 +113,12 @@
 - `raw/web/` — Web Clipper 로 수집한 웹 기사 (현재 비어있음)
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
-- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (4개: 다른 기업의 RAG 시스템 발표자료, 2026-05-28 레포 업무 스타일 분석, 2026-06-02 OpenClaw 지식 세션, 2026-06-06 시판 육수 물냉면 조리 메모)
+- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
 - `raw/videos/` — 유튜브 자막 정리본 (1개: 자산제곱 달러 패권·미중 패권전쟁)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-12 (SkillOpt 4개념 신규 — brain-curate 첫 큐레이션, self-improving-harness 보강)
+- 마지막 brain-add: 2026-06-12 (docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

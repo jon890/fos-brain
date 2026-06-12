@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-06-01
+updated: 2026-06-12
 ---
 
 # AI 하네스 패턴
@@ -29,6 +29,14 @@ updated: 2026-06-01
   - `.claude/skills/` — 개발 워크플로우
   - `skills/` — 공개 사용법
 - **하네스 우선**: nhncloud-cli 는 코드 0줄 상태에서 하네스부터 포팅 — "도구를 만들기 전에 도구 만드는 공정을 표준화".
+- **커스텀 도메인 에이전트 = 도메인 지식 단일 소스** — executor·docs-verifier 를 프로젝트 전용 agent 정의로 만들고, 거기에 코딩 규칙·환경 함정·검증 축을 모은다. 스킬의 스폰 프롬프트는 "호출 인자 + 직전 phase 학습 인계" 만 담아 가벼워지고, 도메인 규칙을 스킬마다 반복하지 않아 drift 가 안 생긴다.
+  - agent 프롬프트 골격 — Role / Domain_Rules / Self_Check(완료 직전 grep) / Verification_Protocol(보고·차단 조건) / Self_Discipline(git 금지·격리·꼭 필요한 변경만).
+  - 검증 전용 agent 는 쓰기 도구를 막아 읽기 전용을 강제하고, 자기-면제 금지를 정의에 직접 박는다.
+  - 거울 구조 — docs-verifier 의 검증 항목은 planning 영향 표의 거울이라 별도 체크리스트를 신설하지 않는다.
+- **운영 단계까지 닫는 루프** — 파이프라인은 구현·릴리스에서 끝나지 않고 운영 신호를 다시 입력으로 환원한다.
+  - 운영 반영 전 격리 인스턴스로 통합 회귀를 검증한다.
+  - 운영 반영은 카나리 한 대를 먼저 검증한 뒤 나머지를 rolling 한다.
+  - 운영 에러를 분류해 다음 planning 입력으로 되돌린다.
 
 ## 하네스란 + MVP 구축 워크플로우
 
@@ -66,3 +74,4 @@ AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
 - [[../../raw/repos/2026-06-01-dooray-cli-tool-analysis.md]]
+- [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 커스텀 도메인 에이전트 단일 소스 보강

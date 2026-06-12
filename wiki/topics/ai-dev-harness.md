@@ -1,7 +1,7 @@
 ---
 type: topic
 created: 2026-06-01
-updated: 2026-06-01
+updated: 2026-06-12
 ---
 
 # AI 개발 하네스

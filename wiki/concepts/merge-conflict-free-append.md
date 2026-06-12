@@ -39,11 +39,15 @@ updated: 2026-06-12
 - 같은 구조를 ADR(adr.md)로 확장한다 — 단일 파일 → `docs/adr/NNN-slug.md` + INDEX.
 - 핵심은 "검증된 구조는 증상이 같은 곳에 재사용한다" 는 이식 사고이다.
 
+이 구조에 누적 운영 규율을 더하면 무한 성장을 막는다 — 새 항목을 추가하는 축적 점검(재발성·심각도·도구로 못 잡음·추상화 가능)과 주기적 prune·automate 패스다.
+회피 패턴 wiki 의 운영 규율은 [[self-improving-harness]] 가 단일 소스다.
+
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 구조를 쓰는 하네스 전체
 - [[planning-eight-step-design]] — 분해 plan 을 설계하는 단계 (발견성 검토 포함)
 - [[docs-first-adr]] — ADR 을 docs 로 남기는 규율 (이 구조의 대표 적용처)
+- [[self-improving-harness]] — 이 구조 위에 축적 점검·prune 운영 규율을 더하는 루프
 
 ## Sources
 
