@@ -80,6 +80,12 @@ planning 이 만드는 task 의 phase 는 로컬에서 완결되는 코드 작�
 
 배포·운영 흐름은 release 계열 스킬의 책임이다 (NHN 환경 사례는 비공개 노트로 분리).
 
+주의 — docs 의 어느 부분이 phase 인가.
+"다루는 것" 의 docs 갱신은 planning 이 결정한 내용을 코드와 함께 옮기는 것에 한한다.
+결정 docs (아키텍처·ADR·환경변수) 는 planning 단계에서 commit 하고 phase 에서 바꾸지 않는다.
+"phase 가 다루는 것" 목록에 docs 를 나열하면 "구현 단계에서 docs 를 고친다" 는 오독을 부른다 (실측 — 분해 plan 의 docs 트리 갱신을 phase 에 잘못 넣었다).
+누적 docs 를 파일 단위로 분해하는 구조 패턴은 [[merge-conflict-free-append]] 를 따른다.
+
 ## 문서 단일 소스 + 변경 영향 표
 
 같은 정보를 두 문서에 본문으로 쓰지 않는다 — 정의는 1곳, 나머지는 링크·짧은 참조.

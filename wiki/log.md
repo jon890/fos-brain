@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-12] ingest | 누적 파일 머지 충돌 구조 제거 패턴 신규 + planning phase/docs 함정 보강
+- Source: raw/notes/2026-06-12-adr-directory-split.md
+- 신규 1 페이지: concept(merge-conflict-free-append) — append 파일 충돌을 파일 per 항목 + INDEX 라우터로 제거, 번호 glob 으로 발견성 보존
+- 보강 2 페이지: planning-eight-step-design (phase = 코드 작업 only 섹션에 "결정 docs 는 planning 책임, phase 아님" 함정), ai-harness-pattern (백링크)
+- 맥락: docu-parser plan043 — adr.md 단일 파일이 PR 마다 끝줄 충돌(PR #166 ADR-028 vs 029) → pitfalls 의 파일 per 패턴 구조를 ADR 로 이식
+
 ## [2026-06-02] lint | marketplace action 의 prompt 주입 방식 delta 보강
 - 보강 1 페이지: ai-code-review-github-actions (프롬프트 주입 — marketplace action vs self-hosted CLI delta 소절 신설)
 - 맥락: nhncloud-cli claude-code-review.yml 정비 — marketplace action 에서도 prompt .txt 외부 분리가 가능하나 주입 경로가 self-hosted CLI 와 다름. action 은 사전 step 의 envsubst 출력을 $GITHUB_OUTPUT 멀티라인 output 으로 담아 prompt 입력에 전달, CLI 는 stdin 파이프

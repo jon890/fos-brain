@@ -60,6 +60,7 @@ AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다
 - [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
 - [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
 - [[agent-friendly-cli-design]] — 하네스가 다루는 도구(CLI)를 에이전트가 안정적으로 호출하도록 만드는 설계
+- [[merge-conflict-free-append]] — 하네스가 쌓는 누적 docs(ADR·pitfalls)의 머지 충돌을 파일 per 항목 + INDEX 로 없애는 구조 패턴
 
 ## Sources
 
