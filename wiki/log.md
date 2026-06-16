@@ -6,6 +6,12 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-16] ingest | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
+- Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업 + 독립 평가에서 도출한 일반화 학습
+- 신규 1 섹션: "인라인 라인 계산 — read-only 리뷰봇의 함정" (hunk 헤더 누적 계산법·422 는 entry 만 빼고 재시도·실패해도 요약 게시)
+- 함정 3 bullet: 큰 diff false negative(규모 판단 후 전수 못 하면 명시), 구체 체크리스트의 오탐 역효과(read-only↔구체성 trade-off), 빈 배열 API 차단 > 자연어 sanity
+- 범위: repo 무관 일반 방법론만. fos-blog 프롬프트 전문·도메인 특화 항목은 repo 에 두고 미등록
+
 ## [2026-06-12] ingest | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
 - Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (한 프로젝트 하네스가 plan 43개 진행하며 발전한 분석 중 기존 concept 보강분, repo 무관 일반화)
 - 보강 5 concept: build-with-teams-rules(스폰 안전·재시도 한도·spawn-shutdown·특이사항 4종·마킹 사고 역검증), self-improving-harness(역할별 회고 거울 구조·회피 패턴 wiki 운영 규율), ai-harness-pattern(커스텀 도메인 에이전트=단일 소스), planning-eight-step-design(번호 충돌 방지·docs↔코드 식별자 정합), merge-conflict-free-append(축적 점검·prune 운영 규율 한 줄 연결)
