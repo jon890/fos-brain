@@ -59,6 +59,11 @@
 - [[prometheus-histogram-vs-summary]] — 분위수 집계, 다인스턴스 합산, cardinality 함정
 - [[slo-burn-rate-alerting]] — symptom 우선, multi-burn-rate 알림
 
+### 성능·확장성 (학습)
+
+- [[connection-pool-sizing]] — DB 커넥션 풀 사이즈 공식(코어×2+스핀들) + USL 역설 + Little's Law 진단 + WAS 분배 + maxconn 한계
+- [[connection-pool-pitfalls]] — 커넥션 풀 4대 함정(롱 트랜잭션·maxLifetime 미스매치·CM>1 데드락·누수)
+
 ### 운영·트러블슈팅 (실전)
 
 상위 주제: [[operations-troubleshooting]]
@@ -107,6 +112,7 @@
 - [[fos-accountbook-backend]] — 가계부 Java 백엔드, 도메인 패키지·테스트 규율
 - [[fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
 - [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
+- [[coding-engineer-tv]] — 유튜버 코딩하는기술사(@codingpe), 성능·아키텍처 자료 추적 허브
 
 ## Raw 인벤토리 요약
 
@@ -119,6 +125,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-12 (docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강)
+- 마지막 brain-add: 2026-06-16 (DB 커넥션 풀 사이징·함정 + 코딩하는기술사 채널 추적 entity — 코딩하는기술사 영상)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

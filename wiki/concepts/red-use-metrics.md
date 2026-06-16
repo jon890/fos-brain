@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-16
 ---
 
 # RED / USE 메트릭 분류
@@ -30,6 +30,7 @@ updated: 2026-05-28
 - [[latency-percentiles]] — Duration 의 측정 방식
 - [[observability-three-pillars]]
 - [[observability]]
+- [[connection-pool-sizing]] — Saturation(커넥션 풀 포화)이 처리량 한계를 만드는 실전 메커니즘(USL)
 
 ## Sources
 

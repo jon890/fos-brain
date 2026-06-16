@@ -176,3 +176,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/notes/2026-06-12-skillopt-sessions.md (fos-study·blog-post-writer 세션)
 - 신규 4 페이지, 보강 1 페이지(self-improving-harness)
 - brain-curate 스킬로 public 27세션 분석 → 81후보 → 병합 28 → SkillOpt 군 등록
+
+## [2026-06-16] add | DB 커넥션 풀 사이징·함정 + 코딩하는기술사 채널 entity
+- Source: raw/videos/2026-06-15-connection-pool-sizing.md (코딩하는기술사 유튜브, 멤버십·자동자막)
+- 신규 2 concept(connection-pool-sizing, connection-pool-pitfalls) + 1 entity(coding-engineer-tv)
+- 보강 1: red-use-metrics (Saturation↔커넥션 풀 한계 연결)
