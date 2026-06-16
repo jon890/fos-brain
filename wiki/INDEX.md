@@ -20,11 +20,14 @@
 상위 주제: [[ai-dev-harness]]
 
 - [[ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스 (핵심 허브)
+- [[harness-bootstrap-checklist]] — 새 레포에 하네스를 까는 조립 순서 체크리스트 (메모리→스킬→전용 agent→pitfalls→docs→CI→자기개선)
 - [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 게이트 (새 하네스 seed)
 - [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
+- [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor·docs-verifier, self-check grep 내장)
 - [[pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
 - [[docs-six-axis-audit]] — docs-check 의 6축 점검 방법론 (부패·과대화·추론성·중복·자명성·가독성, seed)
 - [[merge-conflict-free-append]] — 누적 append 파일의 머지 충돌을 파일 per 항목 + INDEX 라우터로 구조적 제거 (번호 glob 으로 발견성 보존, pitfalls→ADR 이식)
+- [[pitfalls-file-per-pattern]] — 회피 패턴 wiki 를 파일-per-패턴 + INDEX 라우터로 운영 (카테고리=소비 시점, 축적 게이트, prune·automate)
 - [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
 - [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
 - [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
@@ -125,6 +128,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-16 (DB 커넥션 풀 사이징·함정 + 코딩하는기술사 채널 추적 entity — 코딩하는기술사 영상)
+- 마지막 brain-add: 2026-06-16 (하네스 강화 — 전용 agent·pitfalls 파일-per-패턴·부트스트랩 체크리스트 3 concept)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.

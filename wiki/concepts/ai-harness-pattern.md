@@ -69,6 +69,9 @@ AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다
 - [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
 - [[agent-friendly-cli-design]] — 하네스가 다루는 도구(CLI)를 에이전트가 안정적으로 호출하도록 만드는 설계
 - [[merge-conflict-free-append]] — 하네스가 쌓는 누적 docs(ADR·pitfalls)의 머지 충돌을 파일 per 항목 + INDEX 로 없애는 구조 패턴
+- [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor/docs-verifier)
+- [[pitfalls-file-per-pattern]] — 회피 패턴을 파일-per-패턴 + INDEX 라우터로 운영하는 구조
+- [[harness-bootstrap-checklist]] — 이 파이프라인을 새 레포에 까는 조립 순서 체크리스트
 
 ## Sources
 

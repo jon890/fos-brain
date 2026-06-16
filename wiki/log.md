@@ -181,3 +181,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/videos/2026-06-15-connection-pool-sizing.md (코딩하는기술사 유튜브, 멤버십·자동자막)
 - 신규 2 concept(connection-pool-sizing, connection-pool-pitfalls) + 1 entity(coding-engineer-tv)
 - 보강 1: red-use-metrics (Saturation↔커넥션 풀 한계 연결)
+
+## [2026-06-16] add | 하네스 강화 — 전용 agent·pitfalls 구조·부트스트랩 (3 concept)
+- Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (섹션 1·5) + docu-parser .claude/ 실측
+- 신규 3 concept(custom-domain-agent, pitfalls-file-per-pattern, harness-bootstrap-checklist), 보강 1(ai-harness-pattern 백링크 3)
+- 2026-06-12 raw note 의 보강-보류분을 정식 concept 으로 승격. brain-add 에 HTML 미리보기(6b) + brain-preview 생성기 번들화(scripts/+templates/) 반영.
