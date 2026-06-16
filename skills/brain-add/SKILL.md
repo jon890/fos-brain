@@ -143,7 +143,12 @@ raw 파일 상단에 출처 메타(원본 URL·수집일·소스 종류)를 fron
 
 ## 6단계 — 핵심 요약 미리보기 (사용자 개입)
 
-wiki 에 쓰기 전에 채팅 본문에 인라인으로 보여준다:
+wiki 에 쓰기 전에 **두 가지를 함께** 보여준다 — 채팅 인라인(기록용)과 HTML 미리보기(렌더링 검토용).
+둘 중 하나만 띄우지 않는다. 인라인은 결정 근거를 텍스트로 남기고, HTML 은 실제 렌더·백링크 그래프를 보여준다.
+
+### 6a. 채팅 인라인 요약
+
+채팅 본문에 인라인으로 보여준다:
 
 - 추출한 핵심 요약
 - 5단계 **유입 검증 판정** (넣을 항목 / 제외 항목 + 이유 / 미검증 항목)
@@ -151,7 +156,36 @@ wiki 에 쓰기 전에 채팅 본문에 인라인으로 보여준다:
 - 만들·보강할 페이지 목록
 - 연결할 백링크
 
-유입 검증에서 갈린 항목·결정은 평문이 아니라 **`AskUserQuestion`** 으로 묻는다.
+### 6b. HTML 미리보기 (기본 — 생략 금지)
+
+페이지가 실제로 어떻게 렌더되는지, `[[wikilink]]` 백링크가 맞는지는 텍스트만으로 검토가 어렵다.
+쓸 페이지 `.md` 를 임시 파일로 만들어 HTML 미리보기를 띄운다 — Dooray·GitHub 미리보기와 같은 관례다.
+
+- 생성기: `scripts/generate_preview.py` (이 스킬 번들 안). 템플릿: `templates/preview.html`.
+- 신규/보강을 배지로 구분하고, `[[wikilink]]` 대상이 이미 brain 에 있는지(빨간 배지 = 신규 생성 예정 또는 오타)를 표시한다.
+
+```bash
+python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
+  --ns <public|private|work> \
+  --title "<요약 제목>" \
+  --summary "<한 줄 설명>" \
+  --new /tmp/brain-new/*.md \
+  --update /tmp/brain-update/*.md \
+  --known-from ~/personal/fos-brain/wiki \
+  --out /tmp/brain-preview.html
+cmux browser open "file:///tmp/brain-preview.html"
+```
+
+- `--ns` 가 private·work 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`, `~/personal/fos-brain/work/<회사>/wiki`).
+- `--new` 는 새로 만들 페이지, `--update` 는 기존 보강 페이지. 보강본은 실제 brain 파일을 복사해 보강 내용을 얹은 버전을 넘긴다.
+- 주의: 본문에 `</script>` 가 있으면 생성기가 거부한다. CDN 로드라 오프라인이면 스타일이 빠진다.
+- 빨간 🔗 배지는 아직 없는 백링크 대상이다 — 신규 생성 예정이거나 slug 오타다. 의도와 맞는지 확인한다.
+
+### 6c. 결정 (다음 턴)
+
+미리보기(6a + 6b)는 그 턴에 끝낸다.
+유입 검증에서 갈린 항목·네임스페이스 확정은 사용자가 본문을 읽은 **다음 턴**에 `AskUserQuestion` 으로 묻는다.
+미리보기와 같은 턴에 모달을 띄우면 본문을 가려 읽기 전에 결정을 강요하게 된다.
 사용자 검토·승인을 받은 뒤 7단계로 진행한다.
 
 ## 7단계 — 페이지 작성·갱신

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} — brain 미리보기</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    background: #f4f1ea;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #2b2622;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 60px; }
+  .top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .top h1 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .top .brand {
+    font-size: 12px;
+    color: #b5651d;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .summary {
+    color: #6f655b;
+    font-size: 13px;
+    margin: 0 0 22px;
+    border-left: 3px solid #d8cdbb;
+    padding-left: 12px;
+  }
+  .page {
+    background: #fffdf9;
+    border: 1px solid #e3ddd3;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(70, 55, 30, 0.05);
+  }
+  .page-head {
+    padding: 14px 22px 12px;
+    border-bottom: 1px solid #efe9df;
+    background: linear-gradient(180deg, #fbf7ef 0%, #fffdf9 100%);
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .badge.ns-public  { background: #1a7f37; color: #fff; }
+  .badge.ns-private { background: #57606a; color: #fff; }
+  .badge.ns-work    { background: #8250df; color: #fff; }
+  .badge.status-new    { background: #b5651d; color: #fff; }
+  .badge.status-update { background: #bf8700; color: #fff; }
+  .badge.type {
+    background: #f0e9db;
+    color: #7a6a52;
+    border: 1px solid #e0d6c2;
+  }
+  .dates { color: #a59785; font-size: 11px; margin-left: 4px; }
+  .path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: #9a8d7c;
+    margin: 8px 0 4px;
+  }
+  .page-head h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 0;
+    color: #2b2622;
+  }
+  .markdown-body {
+    box-sizing: border-box;
+    background: transparent;
+    padding: 18px 22px 22px;
+    font-size: 14.5px;
+  }
+  .markdown-body h1 { display: none; } /* H1 은 헤더 카드에 이미 표시 */
+  .markdown-body h2 {
+    font-size: 16px;
+    border-bottom: 1px solid #efe9df;
+    padding-bottom: 4px;
+    margin-top: 22px;
+  }
+  .markdown-body h3 { font-size: 14.5px; }
+  .markdown-body code { background: #f3ede2; }
+  .markdown-body pre { background: #f7f2e9; border: 1px solid #ece4d6; }
+  .markdown-body table { display: table; width: 100%; }
+  .markdown-body table th { background: #f7f2e9; }
+  /* wikilink 강조 */
+  .wikilink {
+    display: inline-block;
+    background: #f0e6d4;
+    border: 1px solid #e0d2b6;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 0.9em;
+    color: #7a5c2e;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .wikilink::before { content: "🔗 "; font-size: 0.85em; opacity: 0.7; }
+  .wikilink.missing {
+    background: #fbe9e4;
+    border-color: #f0c4b6;
+    color: #b03a1d;
+  }
+  .note {
+    color: #9a8d7c;
+    font-size: 11.5px;
+    margin-top: 18px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="brand">brain</span>
+    <h1>{{TITLE}}</h1>
+  </div>
+  <p class="summary">{{SUMMARY}}</p>
+  {{CARDS}}
+  <div class="note">brain 미리보기 (github-markdown-css + marked.js). 🔗 배지는 <code>[[wikilink]]</code> 백링크 — 빨간 배지는 아직 brain 에 없는 대상(신규 생성 예정). CDN 로드라 오프라인이면 스타일이 빠진다.</div>
+</div>
+<script>
+  (function () {
+    var known = {{KNOWN_SLUGS}};
+    var knownSet = {};
+    known.forEach(function (s) { knownSet[s] = true; });
+
+    function highlightWikilinks(root) {
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (node) {
+          // 코드/링크 안의 [[ ]] 는 건드리지 않는다
+          var p = node.parentNode;
+          while (p && p !== root) {
+            var tag = p.nodeName;
+            if (tag === 'CODE' || tag === 'PRE' || tag === 'A') return NodeFilter.FILTER_REJECT;
+            p = p.parentNode;
+          }
+          return /\[\[[^\]]+\]\]/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+      var targets = [];
+      while (walker.nextNode()) targets.push(walker.currentNode);
+      targets.forEach(function (node) {
+        var frag = document.createDocumentFragment();
+        var parts = node.nodeValue.split(/(\[\[[^\]]+\]\])/);
+        parts.forEach(function (part) {
+          var m = part.match(/^\[\[([^\]]+)\]\]$/);
+          if (m) {
+            var slug = m[1].split('|')[0].split('/').pop().replace(/\.md$/, '');
+            var span = document.createElement('span');
+            span.className = 'wikilink' + (knownSet[slug] ? '' : ' missing');
+            span.textContent = slug;
+            frag.appendChild(span);
+          } else if (part) {
+            frag.appendChild(document.createTextNode(part));
+          }
+        });
+        node.parentNode.replaceChild(frag, node);
+      });
+    }
+
+    if (window.marked) marked.setOptions({ gfm: true, breaks: false });
+    var srcs = document.querySelectorAll('script[type="text/markdown"]');
+    srcs.forEach(function (s) {
+      var target = document.getElementById(s.dataset.target);
+      if (!target) return;
+      if (window.marked) {
+        target.innerHTML = marked.parse(s.textContent);
+        highlightWikilinks(target);
+      } else {
+        target.textContent = s.textContent;
+      }
+    });
+  })();
+</script>
+</body>
+</html>
