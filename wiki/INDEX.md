@@ -67,6 +67,10 @@
 - [[connection-pool-sizing]] — DB 커넥션 풀 사이즈 공식(코어×2+스핀들) + USL 역설 + Little's Law 진단 + WAS 분배 + maxconn 한계
 - [[connection-pool-pitfalls]] — 커넥션 풀 4대 함정(롱 트랜잭션·maxLifetime 미스매치·CM>1 데드락·누수)
 
+### 품질 평가 (학습)
+
+- [[document-parsing-quality-evaluation]] — 문서 파싱 품질 평가 방법론 스펙트럼(회귀→golden→NED→docling-eval→LLM-judge), 비용·깊이로 조합
+
 ### 운영·트러블슈팅 (실전)
 
 상위 주제: [[operations-troubleshooting]]
@@ -128,6 +132,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-16 (하네스 강화 — 전용 agent·pitfalls 파일-per-패턴·부트스트랩 체크리스트 3 concept)
+- 마지막 brain-add: 2026-06-17 (문서 파싱 품질 평가 방법론 — 회귀·NED·docling-eval·LLM-judge 스펙트럼)
 - 마지막 lint: 2026-05-19
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
