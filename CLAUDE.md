@@ -191,7 +191,7 @@ brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
 규모가 커지면 `grep` 으로는 한계가 있다.
 Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
 
-- 등록 컬렉션: `brain-wiki`(fos-brain/wiki), `brain-raw`(fos-brain/raw)
+- 등록 컬렉션: `brain-wiki`(fos-brain/wiki), `brain-raw`(fos-brain/raw), `brain-work-nhn`(work/nhn/wiki, 로컬 전용), `brain-private`(private/wiki, 로컬 전용)
 - 1차 검색(BM25): `qmd search "<keyword>" -c brain-wiki`
 - 의미 검색(벡터): `qmd vsearch "<text>" -c brain-wiki`
 - 하이브리드 + rerank(권장): `qmd query "<question>"`
