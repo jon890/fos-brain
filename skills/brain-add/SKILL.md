@@ -74,7 +74,7 @@ raw 파일 상단에 출처 메타(원본 URL·수집일·소스 종류)를 fron
 - **유사 지식 검색 (필수)** — 추출할 핵심 개념·주제마다 brain 을 검색해 기존 페이지가 있는지 본다.
   - public: `qmd query "<개념>"`(BM25+벡터+rerank) 또는 `qmd search "<키워드>" -c brain-wiki`.
   - 의미·동의어로 겹치는 페이지를 놓치지 않도록 `qmd vsearch "<문장>" -c brain-wiki`(벡터)도 함께 본다.
-  - 비공개(private·work)는 qmd 컬렉션이 없으면 grep: `grep -rli "<키워드>" <ns>/wiki/`.
+  - 비공개도 qmd 컬렉션이 있다 — private 는 `brain-private`, work 는 `brain-work-nhn`. `qmd query "..." -c brain-private` 로 검색한다. 컬렉션이 아직 없는 네임스페이스만 grep 폴백: `grep -rli "<키워드>" <ns>/wiki/`.
 - **검색 결과 라우팅**:
   - 의미가 겹치는 페이지가 있으면 → **신규 생성 금지, 그 페이지 보강**으로(4단계·7단계).
   - 부분만 겹치면 → 새 페이지 + 기존 페이지에 양방향 백링크.
@@ -214,14 +214,27 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 - 새 페이지 등록, 한 줄 요약 갱신
 - "마지막 brain-add" 메타에 오늘 날짜
-- public 네임스페이스면 검색 인덱스 갱신: `qmd update && qmd embed`
+- public·private·work(qmd 인덱싱 대상) 네임스페이스면 검색 인덱스 갱신: `qmd update && qmd embed` (private 는 `brain-private` 컬렉션 — `~/.config/qmd/index.yml` 에 없으면 먼저 등록)
 - **카테고리 비대 점검 (topic 분리)** — 새 concept 을 등록하며 INDEX 한 카테고리가 비대해졌는지 본다.
   - 한 카테고리에 concept 이 대략 **7개를 넘고**, 그중 일부가 한 주제를 이루면 `topics/` 페이지로 묶을지 검토한다.
   - 이미 적합한 topic 이 있으면 그 Concepts 에 편입, 없으면 신설 제안.
   - **자동 분리 금지** — 주제 경계·이름은 사용자에게 확인한 뒤 진행한다.
   - 성격이 다른 항목이 한 카테고리에 섞여 있으면(예: 학습 개념 + 실전 장애) 개수와 무관하게 분리를 검토한다.
 
-## 10단계 — log append (필수)
+## 10단계 — 검색 검증 (query test, 필수)
+
+등록·인덱싱이 끝나면 **실제로 검색되는지 확인**한다.
+인덱싱 누락·컬렉션 미등록이면 다른 세션이 영영 못 찾으므로, 등록과 검색 확인을 한 묶음으로 본다(등록만 하고 검색 확인을 빠뜨리면 "넣었는데 안 나오는" 결함이 조용히 남는다).
+
+- 등록한 핵심 개념마다 brain 을 조회해 그 페이지가 상위로 나오는지 본다.
+  - public·private·work: `qmd query "<개념 문장>"`, 필요하면 `-c <컬렉션>` 한정(예: `-c brain-private`).
+  - 비교 기준: 의도한 페이지가 1~2위로, 엉뚱한 기존 페이지보다 높은 점수로 나와야 한다.
+- 안 나오면 인덱싱 경로를 점검한다.
+  - 컬렉션이 `~/.config/qmd/index.yml` 에 등록됐는지 → 없으면 `path`·`pattern` 추가.
+  - `qmd update && qmd embed` 를 돌렸는지 → 재실행 후 재조회.
+- 검증 결과(나온 페이지·점수)를 12단계 요약 보고에 한 줄 남긴다.
+
+## 11단계 — log append (필수)
 
 `<ns>/wiki/log.md` 하단에:
 
@@ -231,9 +244,10 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 신규 N 페이지, 보강 M 페이지
 ```
 
-## 11단계 — 요약 보고
+## 12단계 — 요약 보고
 
 만든/보강한/건너뛴 페이지를 표로 보고. 건너뛴 개념은 이유 명시.
+query test(10단계) 결과 — 의도한 페이지가 상위로 나왔는지 — 도 한 줄 포함한다.
 
 ## 금지
 
