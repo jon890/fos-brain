@@ -150,10 +150,15 @@ brain 은 LLM 이 쓰고 사람이 같이 읽으며 고치는 문서다. 모든 
 
 ## 워크플로우 진입점 (Skill)
 
-brain 스킬의 **실제 파일은 이 저장소 `skills/` 에** 있다(관심사를 brain repo 에 모음 + 버전관리). 각 머신의 전역 `~/.claude/skills/` 는 이 repo 를 가리키는 **symlink** 다.
+brain 스킬의 **실제 파일은 이 저장소 `.agents/skills/` 에 단일 원본으로** 둔다(관심사를 brain repo 에 모음 + 버전관리 + 에이전트 중립). 각 소비처는 이 원본을 가리키는 **symlink** 로 연결한다 — Claude 는 직접 파일을 복사하지 않는다.
+
+- 프로젝트 Claude: 저장소 `.claude/skills` → `../.agents/skills` (상대 symlink, 추적·이식 가능)
+- 전역 Claude: 각 머신 `~/.claude/skills/<skill>` → `.agents/skills/<skill>` (절대 symlink, 머신별)
+- 다른 에이전트(codex·cursor 등)도 같은 `.agents/skills` 원본을 자기 디렉터리에서 symlink 로 공유한다.
 
 - `brain-add` — 소스를 가져와 `raw/` 로 저장한 뒤 `wiki/` 로 컴파일
 - `brain-search` — INDEX → wiki → raw 순으로 답변, 결과는 wiki 로 환원
+- `brain-curate` — Claude Code 세션 기록을 증분 분석해 durable 지식 후보를 추출, 승인분만 brain-add 로 통합
 - `brain-lint` — 무결성 점검(백링크·고아·중복·Sources·frontmatter·INDEX 동기화·모순·교차 참조·공개/비공개 누출)
 - `brain-delete` — wiki 페이지를 안전하게 제거(백링크·INDEX·log 정리 동반, 완전 삭제/archive 선택). raw 원본은 기본 보존
 
@@ -161,11 +166,13 @@ brain 스킬의 **실제 파일은 이 저장소 `skills/` 에** 있다(관심�
 
 ### 새 머신 설정
 
-repo 를 clone 한 뒤 전역 skills 에 symlink 를 건다:
+프로젝트 `.claude/skills` 심링크는 저장소에 추적되므로 clone 만으로 따라온다.
+전역 Claude 에서도 쓰려면 각 머신에서 `~/.claude/skills/` 에 symlink 를 건다:
 
 ```bash
-for s in brain-add brain-search brain-lint brain-delete; do
-  ln -s "$HOME/personal/fos-brain/skills/$s" "$HOME/.claude/skills/$s"
+mkdir -p "$HOME/.claude/skills"
+for s in brain-add brain-curate brain-search brain-lint brain-delete; do
+  ln -sfn "$HOME/personal/fos-brain/.agents/skills/$s" "$HOME/.claude/skills/$s"
 done
 ```
 
