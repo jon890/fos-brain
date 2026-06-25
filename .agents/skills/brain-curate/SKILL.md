@@ -160,7 +160,7 @@ python3 ~/personal/fos-brain/scripts/brain-readability.py <페이지파일...>
 선택된 후보만 `brain-add` 로 넘긴다. 후보의 정보(제목·요약·핵심·네임스페이스·근거 세션)를 brain-add 의 입력으로 정리해 호출한다.
 
 - 근거 세션 경로를 Sources 로 남기되, raw 출처가 세션 기록이므로 핵심 요약을 `<ns>/raw/notes/` 에 대화 요약으로 저장한 뒤 컴파일한다(원문 jsonl 전체가 아니라 재사용 가치 있는 핵심만).
-- brain-add 가 백링크·INDEX·log·가독성 검증을 처리한다 — 중복 구현하지 않는다.
+- brain-add 가 백링크·INDEX·log·가독성 검증·재색인(qmd update/embed)·검색 검증(query test)을 처리한다 — 중복 구현하지 않는다. brain-add 를 호출하면 9·10단계까지 끝까지 돌려 재색인·검색 검증이 누락되지 않게 한다.
 
 ## 9단계 — 마무리
 
