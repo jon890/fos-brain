@@ -12,6 +12,7 @@ description: Claude Code 세션 기록(~/.claude/projects/**/*.jsonl)을 증분 
 
 - 세션 jsonl 은 한 파일이 수 MB~십수 MB 이고 대부분이 tool 출력이다. 통째로 LLM 에 못 넣는다 → 전처리 스크립트가 필수다.
 - 세션은 일회성 작업의 연속이라 그대로 옮기면 brain 이 오염된다 → 작업이 아니라 **거기서 배운 재사용 가능한 것**을 뽑는다.
+- 특히 회사 work 세션은 코드 diff 보다 **사내에서만 통하는 운영 방식·조회법·판단 기준**을 우선한다. 코드에 이미 남는 구현 세부는 제외하거나 기존 페이지의 짧은 근거로만 둔다.
 - 자동 등록은 절대 하지 않는다 (fos-brain 철칙) → 항상 미리보기 → 선택 → 등록.
 
 ## 대상 디렉터리
@@ -86,6 +87,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 - `references/extraction-criteria.md` 를 읽으라는 지시
 - 출력은 스키마대로의 JSON 만 (`{"candidates": [...]}`, durable 후보 없으면 빈 배열)
 - 세션의 프로젝트 경로 (네임스페이스 1차 추정용)
+- work 후보는 "회사 내부 운영 지식인가, 코드·git 으로 자명한 구현 기록인가" 를 반드시 판정하라는 지시
 
 각 후보에 출처 세션 경로를 붙여 둔다(나중에 Sources 추적·중복 판단에 쓴다).
 
@@ -96,6 +98,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 - public: `qmd query "<후보 제목·핵심>"` 또는 `qmd search "<키워드>" -c brain-wiki`. 의미 중복은 `qmd vsearch` 도 본다.
 - 회사: `qmd query "..." ` 에 `brain-work-nhn` 컬렉션, 없으면 `grep -rli "<키워드>" work/*/wiki/`.
 - 분류: **신규** / **기존 보강**(어느 페이지) / **후보끼리 중복**(여러 세션이 같은 걸 말함 → 하나로 병합).
+- work 후보는 신규 노드 수를 보수적으로 잡는다. 사내 로그 조회법, admin 화면 의미, 운영 판단 기준은 남기고, 코드 변경 사실은 기존 노드의 Sources 근거나 제외 항목으로 처리한다.
 
 여러 세션에서 같은 후보가 나오면 병합해 한 항목으로 만들고, 근거 세션을 모두 모은다.
 
@@ -118,6 +121,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 | 2 | ... | concept | 보강: [[기존페이지]] | work | ... | ... |
 
 - 함정에만 편중되지 않았는지 점검한다(개념·결정·도메인 지식이 같이 있는가).
+- work 후보는 "회사 내부 운영 지식" / "코드로 자명해 제외" / "skill 로 라우팅" 중 하나를 표에 드러낸다.
 - `verified:false` 후보는 "미검증 — 확인 필요" 로 표시한다.
 - 표가 길면 핵심 후보 위주로 추리고 나머지는 접어 둔다.
 
