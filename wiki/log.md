@@ -6,6 +6,11 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ---
 
+## [2026-06-25] lint | 구조 무결성 점수 0점 감점으로 복구
+- 검사: brain_score 구조 8축 / 결과: visibility leak 0, broken backlink 0, path wikilink 0, missing Sources 0, frontmatter 0, index desync 0, orphan 0, style tilde 0
+- 수정: public→work 전용 wikilink 제거, 경로형 wikilink 2건 제거, docker-compose-config-reload Sources 보강
+- 도구 보정: `brain_score.py` 의 Sources 판정을 wikilink 필수에서 비어 있지 않은 Sources 섹션으로 변경해 외부 repo·실측 로그 출처 오탐을 제거
+
 ## [2026-06-16] ingest | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
 - Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업 + 독립 평가에서 도출한 일반화 학습
 - 신규 1 섹션: "인라인 라인 계산 — read-only 리뷰봇의 함정" (hunk 헤더 누적 계산법·422 는 entry 만 빼고 재시도·실패해도 요약 게시)

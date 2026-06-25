@@ -31,7 +31,7 @@ updated: 2026-05-28
 - 배치: `~/.claude/rules/korean-style.md` (외래어 매핑 표·종결 규칙·자가 점검) + `~/.claude/CLAUDE.md` 에서 `@~/.claude/rules/korean-style.md` import.
 - `~/.claude/rules/` 는 내 모든 레포에 자동 적용되므로 레포마다 복제할 필요가 없다 ([[claude-code-memory-rules]]).
 - **레포 문서가 이 개인 룰을 참조하지 않게 한다** — 팀원에겐 `~/.claude/...` 파일이 없어 깨진 참조가 된다. 레포 CLAUDE.md 에서 한국어 정책 언급·링크를 제거하고 "작성자 개인 환경에 맡김" 으로 둔다 (docu-parser 에서 실제로 그렇게 분리).
-- 대비: PR·Dooray 컨벤션은 팀 공유라 레포 `.claude/rules/` 에 둔다 ([[pr-body-convention]], [[dooray-task-convention]]). 개인 취향(한국어·가독성)과 팀 공유를 위치로 가른다.
+- 대비: PR 컨벤션은 팀 공유라 레포 `.claude/rules/` 에 둔다 ([[pr-body-convention]]). Dooray 컨벤션처럼 회사 전용 규칙은 work 네임스페이스에 둔다. 개인 취향(한국어·가독성)과 팀 공유를 위치로 가른다.
 
 ## 관련 개념
 

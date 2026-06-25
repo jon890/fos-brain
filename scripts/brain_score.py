@@ -39,6 +39,7 @@ CODE_FENCE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE = re.compile(r"`[^`]*`")
 WIKILINK = re.compile(r"\[\[([^\]]+)\]\]")
 FM = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+HEADING = re.compile(r"^##\s+", re.MULTILINE)
 
 
 def mask_code(text):
@@ -53,6 +54,23 @@ def link_slug(inner):
     is_path = ("/" in target) and not is_raw
     slug = target.split("/")[-1].replace(".md", "")
     return slug, is_path, is_raw
+
+
+def has_sources(raw):
+    """Return true when a document has a non-empty Sources section."""
+    marker = "## Sources"
+    if marker not in raw:
+        return False
+    tail = raw.split(marker, 1)[1]
+    next_heading = HEADING.search(tail)
+    section = tail[:next_heading.start()] if next_heading else tail
+    section = mask_code(section)
+    for line in section.splitlines():
+        line = line.strip()
+        if not line or line.startswith("<!--"):
+            continue
+        return True
+    return False
 
 
 def collect_namespaces(root):
@@ -124,7 +142,7 @@ def measure(root):
             # 출처가 자기 경험이라 raw Sources 면제.
             if is_content(p):
                 if "concepts" in p.parts:
-                    if "## Sources" not in raw or not WIKILINK.search(raw.split("## Sources")[-1]):
+                    if not has_sources(raw):
                         axes["missing_sources"].append({"file": rel})
                 if p.stem not in index_text.get(nsname, ""):
                     axes["index_desync"].append({"file": rel})

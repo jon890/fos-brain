@@ -1,1 +1,2 @@
 {"timestamp": "2026-06-11T04:52:55.237698+00:00", "pages_scanned": 86, "counts": {"visibility_leak": 1, "broken_backlink": 0, "path_wikilink": 2, "missing_sources": 10, "frontmatter": 1, "index_desync": 0, "orphan_note": 0, "style_tilde": 1}, "penalty": 53, "score": -53}
+{"timestamp": "2026-06-25T08:27:37.869889+00:00", "pages_scanned": 140, "counts": {"visibility_leak": 0, "broken_backlink": 0, "path_wikilink": 0, "missing_sources": 0, "frontmatter": 0, "index_desync": 0, "orphan_note": 0, "style_tilde": 0}, "penalty": 0, "score": 0}

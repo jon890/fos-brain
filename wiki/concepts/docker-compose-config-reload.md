@@ -61,3 +61,7 @@ k8s 도 ConfigMap 을 마운트한 Pod 는 ConfigMap 변경만으로 자동 재�
 
 - [[operations-troubleshooting]] — 이 함정이 속한 운영 트러블슈팅 주제
 - [[k8s-run-tmpfs-containerd]] — 같은 컨테이너 운영 영역의 함정
+
+## Sources
+
+- wiki log: 2026-05-29 ingest, docu-parser Vector 사이드카 로그 유실 디버깅 세션에서 범용 Docker Compose 패턴만 추출

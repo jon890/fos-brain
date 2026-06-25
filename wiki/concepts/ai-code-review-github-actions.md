@@ -13,7 +13,7 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 - **marketplace action** (`anthropics/claude-code-action`) — 설정이 쉽다. 단 action wrapper 가 내부에서 `git add -A` 등을 돌려 임시파일이 PR 에 휩쓸리는 함정이 있다.
 - **self-hosted CLI** — runner 에 `claude login` 해두고 워크플로에서 `claude` 바이너리를 직접 호출한다. action 의존이 없고 모델·도구·프롬프트를 완전히 제어한다. 대신 인증·도구 차단을 직접 챙겨야 한다.
 
-엔터프라이즈(GitHub Enterprise Server)·사내망에서는 CLI 방식이 흔하다. 그 환경 특화 함정은 [[../work 네임스페이스]] 의 GHE 운영 노트를 참조(공개 네임스페이스에는 일반 패턴만 둔다).
+엔터프라이즈(GitHub Enterprise Server)·사내망에서는 CLI 방식이 흔하다. 그 환경 특화 함정은 work 네임스페이스의 GHE 운영 노트를 참조한다(공개 네임스페이스에는 일반 패턴만 둔다).
 
 ## 신규 레포 구축 순서 (즉시 따라 만들기)
 

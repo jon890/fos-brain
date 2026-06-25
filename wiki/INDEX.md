@@ -133,5 +133,5 @@
 
 - 전체 활동 연대기: [[log]] (append-only)
 - 마지막 brain-add: 2026-06-17 (문서 파싱 품질 평가 방법론 — 회귀·NED·docling-eval·LLM-judge 스펙트럼)
-- 마지막 lint: 2026-05-19
-- 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 [[../CLAUDE]] 의 "검색 도구: qmd" 섹션 참조.
+- 마지막 lint: 2026-06-25
+- 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
