@@ -30,6 +30,9 @@
 - [[pitfalls-file-per-pattern]] — 회피 패턴 wiki 를 파일-per-패턴 + INDEX 라우터로 운영 (카테고리=소비 시점, 축적 게이트, prune·automate)
 - [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
 - [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
+- [[gnosis-agent-autonomous-growth]] — LLM 가중치가 아니라 외부 기억·스킬·가치 레이어를 갱신하는 성장형 에이전트 프레임워크
+- [[agent-autonomy-growth-levels]] — AI 에이전트 자율성을 L0 단순 응답부터 L5 헌법 수준 자기 수정까지 나누는 단계 모델
+- [[constitutional-growth-gate]] — 성장형 에이전트 업데이트를 적용하기 전 constitution 위반 여부를 검사하는 hard gate
 - [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
 - [[claude-code-memory-rules]] — Claude Code 메모리: CLAUDE.md·.claude/rules 자동 로드 규칙(frontmatter·paths·우선순위) + 규칙을 여러 레포에 재사용하는 법 + 강제는 hook
 - [[pr-body-convention]] — PR 본문 공통 양식(Summary/Changes/Verification, Commits·프로세스이력 제외, 자가점검) + .claude/rules 적용법
@@ -127,11 +130,11 @@
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
-- `raw/videos/` — 유튜브 자막 정리본 (1개: 자산제곱 달러 패권·미중 패권전쟁)
+- `raw/videos/` — 유튜브 자막 정리본 (2개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-17 (문서 파싱 품질 평가 방법론 — 회귀·NED·docling-eval·LLM-judge 스펙트럼)
+- 마지막 brain-add: 2026-06-25 (NAVER D2 GNOSIS 에이전트 자율 성장 프레임워크 — 신규 3·보강 2)
 - 마지막 lint: 2026-06-25
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

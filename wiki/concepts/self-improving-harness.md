@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-06-12
+updated: 2026-06-25
 ---
 
 # 자기개선 하네스 (메타 피드백 루프)
@@ -11,7 +11,8 @@ updated: 2026-06-12
 ## 핵심 포인트
 
 - **리뷰 학습 누적** — PR 리뷰 댓글을 필수/권장으로 분류해 자동 반영하고, 일반화 가능한 교훈을 `_shared/common-pitfalls.md` 에 번호로 적재한다(fos-blog `BLG1~26`).
-- **스킬 자기수정**: 스킬 실행 중 발견한 안티패턴을 해당 `SKILL.md`·`CLAUDE.md` 에 즉시 반영한다(fos-blog/fos-study 의 "함정 N 강화" 커밋 다수).
+- **스킬 자기수정**: 스킬 실행 중 발견한 안티패턴을 해당 skill 문서와 `CLAUDE.md` 에 즉시 반영한다.
+  fos-blog 와 fos-study 에서 "함정 N 강화" 커밋이 다수 있었다.
 - **self-healing-teams** — build-with-teams 위에 메타 오케스트레이터를 두어 4가지 자가치유를 수행한다. 실행 후 회고는 스킬 파일에 기록한다.
 - **작성↔검증 분리 제도화**: critic·docs-verifier 가 "자기 면제" 문구를 쓰지 못하도록 명시 금지한다.
 - **docs-audit Quality Loop** — 문서를 5단계로 분류해 주기적으로 흡수·폐기한다.
@@ -39,11 +40,11 @@ updated: 2026-06-12
 - 트리거 — 해당 평가자가 1회 이상 지적하면 의무 실행, 1-shot 통과면 skip, 0건이라도 자문.
 - 반복 가능성 판정 — 아래 축적 점검 4조건.
 - 갱신 위치 — 역할별로 다른 단일 소스.
-- 작성 형식 + 커밋 규약 — 회고 commit 은 작업 브랜치에서 PR 에 포함, main 직접 commit 금지.
+- 작성 형식과 커밋 규약 — 회고 commit 은 작업 브랜치에서 PR 에 포함, main 직접 commit 금지.
 
 ## 회피 패턴 wiki 의 운영 (파일 per 패턴 + 라우터)
 
-리뷰 학습을 한 큰 파일이 아니라 카테고리 디렉터리 + 라우터(INDEX)로 운영하면 누적이 컨텍스트를 잠식하지 않는다.
+리뷰 학습을 한 큰 파일이 아니라 카테고리 디렉터리와 라우터(INDEX)로 운영하면 누적이 컨텍스트를 잠식하지 않는다.
 구조 패턴 자체는 [[merge-conflict-free-append]] 이고, 자기개선 루프 관점의 운영 규율은 다음이다.
 
 - **소비 3단계** — (1) 라우터 표에서 이번 작업의 변경 유형 행을 찾고, (2) 가리키는 파일만 self-check, (3) 애매하면 카테고리 디렉터리 통째로(과소선택보다 안전). 전부 읽지 않는 progressive disclosure 다.
@@ -57,6 +58,23 @@ updated: 2026-06-12
   - prune — 가리키는 코드가 사라진 stale 파일 삭제, 같은 커널 중복 파일 병합.
   - automate — 도구로 승격 가능한 패턴은 린터 규칙·ast-grep·테스트로 옮기고 파일 삭제.
 
+## 추가 (2026-06-25) — 건강한 망각과 스킬 생명주기
+
+GNOSIS 발표는 성장형 에이전트가 스킬을 무제한 누적하면 안 된다고 본다.
+스킬에는 생명주기가 있어야 한다.
+
+- seed
+- developing
+- active
+- degrading
+- archived
+
+이 관점은 기존 자기개선 하네스의 `prune·automate 패스`와 맞닿아 있다.
+학습은 추가만으로 완성되지 않는다.
+오래된 패턴을 삭제하거나 자동 검사로 승격하고, 더 이상 유효하지 않은 규칙은 archive 해야 한다.
+
+따라서 회고 루프의 품질 기준은 "얼마나 많이 배웠는가"가 아니라 "살아 있는 규칙과 죽은 규칙을 구분했는가"까지 포함해야 한다.
+
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 루프가 붙는 베이스 하네스
@@ -65,9 +83,12 @@ updated: 2026-06-12
 - [[docs-six-axis-audit]] — docs 품질 분류·흡수가 누적되는 점검 단계
 - [[korean-readability-policy]] — 문체 위반도 누적 점검 대상
 - [[skillopt-trainable-skill-document]] — 이 수동 루프를 자동화·형식화한 외부 방법론(SkillOpt)
-- [[merge-conflict-free-append]] — 회피 패턴 wiki 의 파일 per 패턴 + INDEX 구조 (이 루프가 운영 규율을 더한다)
+- [[merge-conflict-free-append]] — 회피 패턴 wiki 의 파일 per 패턴과 INDEX 구조 (이 루프가 운영 규율을 더한다)
+- [[gnosis-agent-autonomous-growth]] — 외부 레이어 갱신으로 성장하는 에이전트 프레임워크
+- [[constitutional-growth-gate]] — 자기개선이 넘어서는 안 되는 invariant를 검사하는 hard gate
 
 ## Sources
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
 - [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 역할별 회고 거울 구조·회피 패턴 wiki 운영 규율 보강
+- [[../../raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md]] — 스킬 생명주기와 archive를 건강한 망각으로 설명

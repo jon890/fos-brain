@@ -195,3 +195,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-06-17] add | 문서 파싱 품질 평가 방법론 (brain-curate 증분, public)
 - Source: raw/web/2026-06-17-parsing-quality-eval.md (docling-eval·NED 공개 출처)
 - 신규 1 page(document-parsing-quality-evaluation), 품질 평가 소분류 신설
+
+## [2026-06-25] add | NAVER D2 GNOSIS 에이전트 자율 성장 프레임워크
+- Source: raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md (YouTube 자동자막 기반, 수치·실험은 발표자 자체 평가로 취급)
+- 신규 3 페이지: gnosis-agent-autonomous-growth, agent-autonomy-growth-levels, constitutional-growth-gate
+- 보강 2 페이지: ai-harness-pattern, self-improving-harness
