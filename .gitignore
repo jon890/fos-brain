@@ -14,5 +14,8 @@ quartz-local/public/
 # 로컬 에이전트 상태 (OMC)
 .omc/
 
+# brain 플러그인 — 세션 포인터(개인 경로·session id 포함, 공개 저장소에 커밋 금지)
+.agents/plugin/fos-brain/staging/*.jsonl
+
 # 잡파일
 .DS_Store

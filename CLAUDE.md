@@ -148,26 +148,47 @@ brain 은 LLM 이 쓰고 사람이 같이 읽으며 고치는 문서다. 모든 
 
 자가 점검(쓰기 직후): `+`·`·`·`&` 인라인 연결이 있나? 콤마 3+ 나열이 있나? 한 bullet 에 정보가 3개 이상인가? 있으면 분리한다.
 
-## 워크플로우 진입점 (Skill)
+## 워크플로우 진입점 (Skill) + `fos-brain` 플러그인
 
-brain 스킬의 **실제 파일은 이 저장소 `.agents/skills/` 에 단일 원본으로** 둔다(관심사를 brain repo 에 모음 + 버전관리 + 에이전트 중립). 각 소비처는 이 원본을 가리키는 **symlink** 로 연결한다 — Claude 는 직접 파일을 복사하지 않는다.
+brain 스킬 5종과 hook 스크립트는 모두 **`.agents/plugin/fos-brain/` 에 단일 원본으로** 묶여 있다(관심사를 brain repo 에 모음 + 버전관리 + 에이전트 중립). `.agents/skills` 는 `.agents/plugin/fos-brain/skills` 를 가리키는 symlink 다 — 실제 스킬 파일은 플러그인 하위에서만 존재한다.
 
-- 프로젝트 Claude: 저장소 `.claude/skills` → `../.agents/skills` (상대 symlink, 추적·이식 가능)
-- 전역 Claude: 각 머신 `~/.claude/skills/<skill>` → `.agents/skills/<skill>` (절대 symlink, 머신별)
-- 다른 에이전트(codex·cursor 등)도 같은 `.agents/skills` 원본을 자기 디렉터리에서 symlink 로 공유한다.
+- 프로젝트 Claude: `.claude/skills` → `../.agents/skills` → `plugin/fos-brain/skills` (심링크 2단, 추적·이식 가능)
+- 전역 Claude / Codex: `fos-brain` 플러그인을 **로컬 디렉터리 마켓플레이스**로 등록하면 스킬 5종 + hook 이 한 번에 설치된다(아래 "새 머신 설정" 참고). 심링크 방식도 여전히 동작한다.
+
+스킬:
 
 - `brain-add` — 소스를 가져와 `raw/` 로 저장한 뒤 `wiki/` 로 컴파일
 - `brain-search` — INDEX → wiki → raw 순으로 답변, 결과는 wiki 로 환원
-- `brain-curate` — Claude Code 세션 기록을 증분 분석해 durable 지식 후보를 추출, 승인분만 brain-add 로 통합
+- `brain-curate` — Claude Code·Codex 세션 기록을 증분 분석해 durable 지식 후보를 추출, 승인분만 brain-add 로 통합
 - `brain-lint` — 무결성 점검(백링크·고아·중복·Sources·frontmatter·INDEX 동기화·모순·교차 참조·공개/비공개 누출)
 - `brain-delete` — wiki 페이지를 안전하게 제거(백링크·INDEX·log 정리 동반, 완전 삭제/archive 선택). raw 원본은 기본 보존
 
 모든 skill 은 `wiki/log.md` 에 append-only 로 활동 기록을 남긴다. 모든 skill 의 대상 디렉터리는 이 저장소(`~/personal/fos-brain`)다.
 
+`fos-brain` 플러그인의 hook(`.agents/plugin/fos-brain/hooks/hooks.json`, Claude Code·Codex 공용):
+
+- `SessionStart` → `scripts/setup-check.cjs` — qmd 설치 여부 확인(없으면 bun/npm 으로 best-effort 설치), `brain-wiki`/`brain-raw`/`brain-private`/`brain-work-nhn` 컬렉션이 미등록이면 존재하는 디렉터리만 자동 등록. 새 머신에서 수동 설정 없이 동작하게 하는 자가 점검.
+- `UserPromptSubmit` → `scripts/recall.cjs` — 매 prompt 마다 qmd 로 brain(wiki/private/work) 을 검색해 관련 기억을 컨텍스트로 자동 주입. 등록된 컬렉션이 실제 존재하는 것만 걸러 쿼리한다(부분 클론 환경에서도 에러 없이 동작).
+- `Stop` → `scripts/track-session.cjs` — 세션 종료 시 `staging/pending-sessions.jsonl` 에 세션 포인터(도구·session_id·transcript 경로)만 append. **wiki 에 직접 쓰지 않는다** — "승인 없이 자동 쓰기 금지" 규칙 유지. 실제 지식 추출·등록은 여전히 `brain-curate` 의 미리보기·승인 절차를 거친다.
+
 ### 새 머신 설정
 
-프로젝트 `.claude/skills` 심링크는 저장소에 추적되므로 clone 만으로 따라온다.
-전역 Claude 에서도 쓰려면 각 머신에서 `~/.claude/skills/` 에 symlink 를 건다:
+**권장 — 플러그인으로 설치** (스킬 + hook 동시 적용):
+
+```bash
+# Claude Code (~/.claude/settings.json)
+#   "extraKnownMarketplaces": {"fos-brain": {"source": {"source": "directory", "path": "<repo>/.agents/plugin/fos-brain"}}}
+#   "enabledPlugins": {"fos-brain@fos-brain": true}
+# 등록 후에는 재시작(또는 /hooks 1회 열기)이 필요하다 — 세션 도중 반영된 hook 은 즉시 감지되지 않는다.
+
+# Codex CLI
+codex plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
+codex plugin add fos-brain@fos-brain
+```
+
+Codex 는 로컬 마켓플레이스도 `~/.codex/plugins/cache/fos-brain/` 에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 `codex plugin add fos-brain@fos-brain` 를 다시 실행해 재설치한다.
+
+**대안 — 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
 
 ```bash
 mkdir -p "$HOME/.claude/skills"

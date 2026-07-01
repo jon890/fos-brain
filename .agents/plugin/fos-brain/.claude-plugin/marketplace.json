@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "fos-brain",
+  "description": "fos-brain 개인 지식 기반 hook·스킬 통합 로컬 마켓플레이스",
+  "owner": {
+    "name": "jon890"
+  },
+  "plugins": [
+    {
+      "name": "fos-brain",
+      "description": "매 prompt마다 fos-brain(qmd)을 검색해 관련 기억을 자동 주입하고, 세션 종료 시 brain-curate가 나중에 소화할 세션 포인터를 기록한다. brain-add/brain-search/brain-curate/brain-lint/brain-delete 스킬을 함께 배포한다.",
+      "version": "0.1.0",
+      "author": {
+        "name": "jon890"
+      },
+      "source": "./"
+    }
+  ],
+  "version": "0.1.0"
+}
