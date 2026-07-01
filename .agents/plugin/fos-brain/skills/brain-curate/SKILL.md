@@ -1,6 +1,6 @@
 ---
 name: brain-curate
-description: Claude Code 세션 기록(~/.claude/projects/**/*.jsonl)을 증분 분석해 개인 지식 기반(brain, ~/personal/fos-brain)에 올릴 durable 지식 후보를 자동 추출하고, 통합 리포트로 미리보기한 뒤 사용자가 고른 것만 brain-add로 통합한다. "세션 분석해서 brain에 올려", "claude 대화 정리해서 brain", "지난 세션들 brain 큐레이션", "세션에서 지식 추출", "대화 세션 분석해서 지식 정리", "brain curate", "세션 하베스트", "내 작업 세션들 brain에 반영" 같은 요청 시 반드시 이 스킬을 사용한다. 단일 소스(URL·영상·메모·현재 대화)를 직접 넣는 것은 brain-add를 쓴다 — 이 스킬은 여러 과거 세션을 훑어 후보를 발굴하는 큐레이션 전용이다.
+description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/sessions/**/*.jsonl) 세션 기록을 증분 분석해 개인 지식 기반(brain, ~/personal/fos-brain)에 올릴 durable 지식 후보를 자동 추출하고, 통합 리포트로 미리보기한 뒤 사용자가 고른 것만 brain-add로 통합한다. "세션 분석해서 brain에 올려", "claude 대화 정리해서 brain", "codex 세션 정리해서 brain", "지난 세션들 brain 큐레이션", "세션에서 지식 추출", "대화 세션 분석해서 지식 정리", "brain curate", "세션 하베스트", "내 작업 세션들 brain에 반영" 같은 요청 시 반드시 이 스킬을 사용한다. 단일 소스(URL·영상·메모·현재 대화)를 직접 넣는 것은 brain-add를 쓴다 — 이 스킬은 여러 과거 세션을 훑어 후보를 발굴하는 큐레이션 전용이다.
 ---
 
 # brain-curate
@@ -18,7 +18,13 @@ description: Claude Code 세션 기록(~/.claude/projects/**/*.jsonl)을 증분 
 ## 대상 디렉터리
 
 `~/personal/fos-brain` — brain 본체. 다른 곳에서 호출됐으면 사용자에게 확인한다.
-세션 기록은 `~/.claude/projects/<인코딩된-경로>/<세션id>.jsonl` 에 있다.
+
+세션 기록은 두 소스에서 온다 — `--tool` 로 선택한다(기본 `both`).
+
+- Claude Code: `~/.claude/projects/<인코딩된-경로>/<세션id>.jsonl`
+- Codex CLI: `~/.codex/sessions/<yyyy>/<mm>/<dd>/rollout-*.jsonl` (OpenAI Responses API 계열 스키마 — `event_msg.user_message`/`agent_message`, `response_item.function_call`/`function_call_output`)
+
+`extract_transcript.py` 는 첫 줄을 보고 두 포맷을 자동 감지한다(`--format`으로 강제 가능).
 
 ## 상태 파일 (증분 워터마크)
 
@@ -52,6 +58,8 @@ python3 scripts/list_sessions.py --since <last_curated> --min-bytes 51200
 
 노이즈 필터(`--exclude-temp`)는 기본 끈다 — 가치 판단은 추출 단계 sub-agent 에 맡긴다.
 단 대상이 너무 많으면(수십 개 이상) 사용자에게 규모를 알리고 `--exclude-temp` 나 범위 축소를 제안한다.
+
+`brain` 플러그인(`.agents/plugin/brain`)의 Stop hook 이 세션 종료마다 `staging/pending-sessions.jsonl` 에 포인터(도구·session_id·transcript 경로)를 남긴다. 이건 발굴 데이터 소스가 아니라 "세션이 끝났다"는 트리거 신호일 뿐이다 — 실제 대상 목록은 항상 `list_sessions.py` 의 디렉터리 스캔으로 만든다(더 정확하고 mtime 기준 정렬도 된다).
 
 대상 목록(개수·크기·네임스페이스 추정·경로)을 사용자에게 간단히 보고하고 진행한다.
 

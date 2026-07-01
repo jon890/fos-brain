@@ -101,17 +101,25 @@ def block_text(content) -> list[tuple[str, str]]:
     return out
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("session", help="세션 jsonl 경로")
-    ap.add_argument("--max-result-chars", type=int, default=1500,
-                    help="tool_result 절단 상한 (기본 1500자)")
-    ap.add_argument("--keep-thinking", action="store_true",
-                    help="assistant thinking 을 절단 보존 (기본 제외)")
-    args = ap.parse_args()
+def detect_format(path: str) -> str:
+    """첫 몇 줄을 보고 claude/codex jsonl 포맷을 구분한다."""
+    with open(path, encoding="utf-8") as fh:
+        for _ in range(5):
+            line = fh.readline()
+            if not line:
+                break
+            try:
+                o = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if o.get("type") in ("session_meta", "response_item", "event_msg", "turn_context"):
+                return "codex"
+    return "claude"
 
+
+def extract_claude(path: str, args) -> list[str]:
     out_lines = []
-    with open(args.session, encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
@@ -145,6 +153,80 @@ def main():
                             )
                     elif kind == "tool_use":
                         out_lines.append(text)
+    return out_lines
+
+
+def summarize_codex_call(p: dict) -> str:
+    """Codex function_call payload 를 도구명 + 핵심 인자 한 줄로 압축한다."""
+    name = p.get("name", "tool")
+    raw_args = p.get("arguments", "")
+    hint = ""
+    try:
+        parsed = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+        if isinstance(parsed, dict):
+            for key in ("command", "file_path", "path", "pattern", "query", "workdir"):
+                if key in parsed and parsed[key]:
+                    hint = str(parsed[key]).replace("\n", " ")[:120]
+                    break
+    except (json.JSONDecodeError, TypeError):
+        hint = str(raw_args)[:120]
+    return f"[tool:{name}] {hint}".rstrip()
+
+
+def extract_codex(path: str, args) -> list[str]:
+    """Codex CLI rollout jsonl (~/.codex/sessions/**/*.jsonl) 정제.
+
+    event_msg.user_message/agent_message 를 텍스트 소스로 쓰고, response_item.message 는
+    environment_context 등 하네스 wrapper 가 섞여 있어 건너뛴다(user_message/agent_message 와 중복).
+    """
+    out_lines = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                o = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            p = o.get("payload", {}) or {}
+            pt = p.get("type")
+            if pt == "user_message":
+                cleaned = clean_user_text(p.get("message", ""))
+                if cleaned:
+                    out_lines.append(f"## USER\n{cleaned}")
+            elif pt == "agent_message":
+                text = (p.get("message", "") or "").strip()
+                if text:
+                    out_lines.append(f"## ASSISTANT\n{text}")
+            elif pt == "agent_reasoning":
+                if args.keep_thinking:
+                    text = (p.get("text", "") or "")[: args.max_result_chars].strip()
+                    if text:
+                        out_lines.append(f"[thinking]\n{text}")
+            elif pt in ("function_call", "custom_tool_call"):
+                out_lines.append(summarize_codex_call(p))
+            elif pt in ("function_call_output", "custom_tool_call_output"):
+                output = str(p.get("output", ""))
+                if output:
+                    body = truncate_result(output, args.max_result_chars)
+                    out_lines.append(f"[tool_result]\n{body}")
+    return out_lines
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("session", help="세션 jsonl 경로")
+    ap.add_argument("--format", choices=["auto", "claude", "codex"], default="auto",
+                    help="세션 jsonl 포맷 (기본: 자동 감지)")
+    ap.add_argument("--max-result-chars", type=int, default=1500,
+                    help="tool_result 절단 상한 (기본 1500자)")
+    ap.add_argument("--keep-thinking", action="store_true",
+                    help="assistant thinking 을 절단 보존 (기본 제외)")
+    args = ap.parse_args()
+
+    fmt = args.format if args.format != "auto" else detect_format(args.session)
+    out_lines = extract_codex(args.session, args) if fmt == "codex" else extract_claude(args.session, args)
 
     sys.stdout.write("\n\n".join(out_lines) + "\n")
 

@@ -22,6 +22,7 @@ import time
 from pathlib import Path
 
 PROJECTS = Path.home() / ".claude" / "projects"
+CODEX_SESSIONS = Path.home() / ".codex" / "sessions"
 TEMP_RE = re.compile(r"(/T/|-T-|skillopt|worktree|/tmp|var-folders)", re.IGNORECASE)
 
 
@@ -47,31 +48,21 @@ def guess_namespace(decoded: str) -> str:
     return "unknown"
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--since", type=float, default=None,
-                    help="이 epoch 이후 수정된 세션만 (증분 워터마크)")
-    ap.add_argument("--days", type=int, default=None,
-                    help="최근 N 일 이내 수정된 세션만")
-    ap.add_argument("--project", action="append", default=[],
-                    help="폴더명에 이 문자열이 든 프로젝트만 (반복 가능)")
-    ap.add_argument("--min-bytes", type=int, default=0,
-                    help="이 크기 미만 세션 제외")
-    ap.add_argument("--exclude-temp", action="store_true",
-                    help="temp/skillopt/worktree 경로 제외")
-    args = ap.parse_args()
+def codex_session_cwd(jf: Path) -> str:
+    """rollout jsonl 첫 줄(session_meta)에서 cwd 를 읽는다. 실패하면 빈 문자열."""
+    try:
+        with open(jf, encoding="utf-8") as fh:
+            first = fh.readline()
+        o = json.loads(first)
+        return o.get("payload", {}).get("cwd", "") or ""
+    except (OSError, json.JSONDecodeError):
+        return ""
 
-    cutoff = None
-    if args.since is not None:
-        cutoff = args.since
-    elif args.days is not None:
-        cutoff = time.time() - args.days * 86400
 
+def list_claude_sessions(args, cutoff) -> list[dict]:
     rows = []
     if not PROJECTS.exists():
-        sys.stdout.write("[]\n")
-        return
-
+        return rows
     for folder in PROJECTS.iterdir():
         if not folder.is_dir():
             continue
@@ -91,6 +82,7 @@ def main():
                 continue
             decoded = decode_folder(fname)
             rows.append({
+                "tool": "claude",
                 "path": str(jf),
                 "folder": fname,
                 "decoded": decoded,
@@ -100,6 +92,68 @@ def main():
                 "size": st.st_size,
                 "namespace_guess": guess_namespace(decoded),
             })
+    return rows
+
+
+def list_codex_sessions(args, cutoff) -> list[dict]:
+    rows = []
+    if not CODEX_SESSIONS.exists():
+        return rows
+    for jf in CODEX_SESSIONS.rglob("*.jsonl"):
+        try:
+            st = jf.stat()
+        except OSError:
+            continue
+        if cutoff is not None and st.st_mtime <= cutoff:
+            continue
+        if st.st_size < args.min_bytes:
+            continue
+        cwd = codex_session_cwd(jf)
+        if args.project and not any(p in cwd for p in args.project):
+            continue
+        if args.exclude_temp and TEMP_RE.search(cwd):
+            continue
+        rows.append({
+            "tool": "codex",
+            "path": str(jf),
+            "folder": cwd or jf.parent.name,
+            "decoded": cwd,
+            "mtime": st.st_mtime,
+            "mtime_iso": time.strftime("%Y-%m-%d %H:%M",
+                                       time.localtime(st.st_mtime)),
+            "size": st.st_size,
+            "namespace_guess": guess_namespace(cwd),
+        })
+    return rows
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--since", type=float, default=None,
+                    help="이 epoch 이후 수정된 세션만 (증분 워터마크)")
+    ap.add_argument("--days", type=int, default=None,
+                    help="최근 N 일 이내 수정된 세션만")
+    ap.add_argument("--project", action="append", default=[],
+                    help="폴더명(또는 codex cwd)에 이 문자열이 든 프로젝트만 (반복 가능)")
+    ap.add_argument("--min-bytes", type=int, default=0,
+                    help="이 크기 미만 세션 제외")
+    ap.add_argument("--exclude-temp", action="store_true",
+                    help="temp/skillopt/worktree 경로 제외")
+    ap.add_argument("--tool", choices=["claude", "codex", "both"], default="both",
+                    help="세션 소스 선택 (기본: 둘 다)")
+    args = ap.parse_args()
+
+    cutoff = None
+    if args.since is not None:
+        cutoff = args.since
+    elif args.days is not None:
+        cutoff = time.time() - args.days * 86400
+
+    rows = []
+    if args.tool in ("claude", "both"):
+        rows += list_claude_sessions(args, cutoff)
+    if args.tool in ("codex", "both"):
+        rows += list_codex_sessions(args, cutoff)
 
     rows.sort(key=lambda r: r["mtime"], reverse=True)
     sys.stdout.write(json.dumps(rows, ensure_ascii=False, indent=2) + "\n")
