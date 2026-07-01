@@ -176,17 +176,18 @@ brain 스킬 5종과 hook 스크립트는 모두 **`.agents/plugin/fos-brain/` �
 **권장 — 플러그인으로 설치** (스킬 + hook 동시 적용):
 
 ```bash
-# Claude Code (~/.claude/settings.json)
-#   "extraKnownMarketplaces": {"fos-brain": {"source": {"source": "directory", "path": "<repo>/.agents/plugin/fos-brain"}}}
-#   "enabledPlugins": {"fos-brain@fos-brain": true}
-# 등록 후에는 재시작(또는 /hooks 1회 열기)이 필요하다 — 세션 도중 반영된 hook 은 즉시 감지되지 않는다.
+# Claude Code — settings.json 을 직접 편집하는 것만으로는 반영되지 않는다. CLI 로 등록·설치까지 실행한다.
+claude plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
+claude plugin install fos-brain@fos-brain
 
 # Codex CLI
 codex plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
 codex plugin add fos-brain@fos-brain
 ```
 
-Codex 는 로컬 마켓플레이스도 `~/.codex/plugins/cache/fos-brain/` 에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 `codex plugin add fos-brain@fos-brain` 를 다시 실행해 재설치한다.
+두 도구 모두 로컬 마켓플레이스도 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code 는 `claude plugin update fos-brain` 도 가능).
+
+**`.claude-plugin/plugin.json` 에 `hooks`/`skills` 필드를 넣지 않는다** — Claude Code 는 플러그인 루트의 `hooks/hooks.json` 과 `skills/` 를 관례로 자동 로드한다. manifest 에 `"hooks": "./hooks/hooks.json"` 처럼 명시하면 "Duplicate hooks file detected" 로 설치가 실패한다. Codex 쪽 루트 `plugin.json` 은 반대로 이 필드가 필수다(oh-my-codex 관례) — 두 매니페스트가 다르게 생긴 이유.
 
 **대안 — 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
 
