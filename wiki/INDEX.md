@@ -136,5 +136,5 @@
 
 - 전체 활동 연대기: [[log]] (append-only)
 - 마지막 brain-add: 2026-06-25 (NAVER D2 GNOSIS 에이전트 자율 성장 프레임워크 — 신규 3·보강 2)
-- 마지막 lint: 2026-06-25
+- 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

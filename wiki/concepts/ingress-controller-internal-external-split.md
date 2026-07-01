@@ -36,4 +36,4 @@ ingress-nginx의 admission webhook(`ValidatingWebhookConfiguration`)은 cluster-
 
 ## Sources
 
-- [[../raw/notes/ingress-controller-internal-external-split]]
+- [[../../raw/notes/ingress-controller-internal-external-split.md]]

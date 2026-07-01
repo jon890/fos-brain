@@ -200,3 +200,7 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - Source: raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md (YouTube 자동자막 기반, 수치·실험은 발표자 자체 평가로 취급)
 - 신규 3 페이지: gnosis-agent-autonomous-growth, agent-autonomy-growth-levels, constitutional-growth-gate
 - 보강 2 페이지: ai-harness-pattern, self-improving-harness
+
+## [2026-07-01] lint | brain-lint stale 마커 축 추가 후 첫 실행 (public/private/work 통합)
+- 검사: 11개 항목 / 발견: Sources 링크 포맷 이탈 1건(수정) + 모순 후보 1건(오탐 확인, 조치 없음)
+- 수정: ingress-controller-internal-external-split.md Sources 링크를 `[[../../raw/notes/....md]]` 표준 포맷으로 정정
