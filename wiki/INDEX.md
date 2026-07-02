@@ -52,6 +52,10 @@
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 
+### 면접 준비
+
+- [[executive-personality-interview-risk-frame]] — 임원·인성면접을 조직 리스크 관리 관점에서 준비하는 프레임
+
 ### 자동화 시스템 (ai-nodes)
 
 - [[multi-workspace-monorepo]] — 워크스페이스 격리 + _shared 규율
@@ -123,6 +127,7 @@
 - [[fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
 - [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
 - [[coding-engineer-tv]] — 유튜버 코딩하는기술사(@codingpe), 성능·아키텍처 자료 추적 허브
+- [[career-strategy-youtube]] — 유튜버 취업전략:통념을 파괴하는 합격자의 관점, 면접·취업 전략 자료 추적 허브
 
 ## Raw 인벤토리 요약
 
@@ -130,11 +135,11 @@
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
-- `raw/videos/` — 유튜브 자막 정리본 (2개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장)
+- `raw/videos/` — 유튜브 자막 정리본 (4개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-06-25 (NAVER D2 GNOSIS 에이전트 자율 성장 프레임워크 — 신규 3·보강 2)
+- 마지막 brain-add: 2026-07-02 (취업전략 임원 면접 리스크 프레임 — 신규 2)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
