@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-06-16
+updated: 2026-07-02
 ---
 
 # GitHub Actions AI 코드 리뷰 워크플로우 패턴
@@ -121,6 +121,7 @@ c 부터 추가(`+`)·context 라인을 누적해 라인을 구하되 삭제(`-`
 
 ## 관련 개념
 
+- [[ai-generated-code-acceptance-criteria]] — 자동 리뷰와 CI가 통과해도 사람이 최종 채택 여부를 판단하는 기준
 - [[ai-harness-pattern]] — review-fix 스킬이 이 워크플로우가 단 봇 리뷰를 읽어 코드로 반영한다.
 - [[self-improving-harness]] — 리뷰에서 반복되는 지적을 pitfalls 문서에 누적해 다음 리뷰의 부담을 줄인다.
 - [[commit-convention-style]] — 리뷰가 점검하는 커밋·PR 메시지 규약.

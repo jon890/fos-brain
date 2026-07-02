@@ -2,6 +2,11 @@
 
 Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다. `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
+## [2026-07-02] add | AI 생성 코드 채택 기준
+
+- Source: [[../raw/web/2026-06-20-vinicius-ai-code-rejection.md]] / https://vinibrasil.com/when-i-reject-ai-code-even-if-it-works/
+- 신규 1 페이지, 보강 2 페이지
+
 ## [2026-07-02] add | 취업전략 임원 면접 리스크 프레임
 
 - Source: [[../raw/videos/2026-06-01-final-executive-interview-strategy.md]] / https://www.youtube.com/watch?v=nNZltIpzKxc&t=351s

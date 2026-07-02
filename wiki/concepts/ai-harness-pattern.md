@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-06-25
+updated: 2026-07-02
 ---
 
 # AI 하네스 패턴
@@ -73,6 +73,7 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 - 회피 패턴은 [[pitfalls-file-per-pattern]]로 분리된다.
 - 프로젝트 전용 지식은 [[custom-domain-agent]]에 모인다.
 - 자동 리뷰와 점검은 [[ai-code-review-github-actions]], [[docs-six-axis-audit]]로 닫힌다.
+- AI 생성 코드의 최종 채택은 [[ai-generated-code-acceptance-criteria]]처럼 사람의 설명 가능성과 변경 범위 판단을 남긴다.
 
 다만 GNOSIS식 완전한 성장형 에이전트와는 차이가 있다.
 현재 하네스는 LLM 가중치를 바꾸지 않는다는 점은 같지만, constitution gate와 fitness auditor가 형식화되어 있지는 않다.
@@ -89,6 +90,7 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 - [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출
 - [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
 - [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
+- [[ai-generated-code-acceptance-criteria]] — 자동화된 구현 결과를 사람이 채택할지 결정하는 기준
 - [[agent-friendly-cli-design]] — 하네스가 다루는 도구(CLI)를 에이전트가 안정적으로 호출하도록 만드는 설계
 - [[merge-conflict-free-append]] — 하네스가 쌓는 누적 docs(ADR·pitfalls)의 머지 충돌을 파일 per 항목과 INDEX 로 없애는 구조 패턴
 - [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor/docs-verifier)
@@ -102,3 +104,4 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 - [[../../raw/repos/2026-06-01-dooray-cli-tool-analysis.md]]
 - [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 커스텀 도메인 에이전트 단일 소스 보강
 - [[../../raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md]] — GNOSIS의 도구형 AI vs 성장형 에이전트 구분을 기존 하네스에 매핑
+- [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]] — AI 생성 코드의 채택 기준 보강

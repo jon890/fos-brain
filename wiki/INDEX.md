@@ -34,6 +34,7 @@
 - [[agent-autonomy-growth-levels]] — AI 에이전트 자율성을 L0 단순 응답부터 L5 헌법 수준 자기 수정까지 나누는 단계 모델
 - [[constitutional-growth-gate]] — 성장형 에이전트 업데이트를 적용하기 전 constitution 위반 여부를 검사하는 hard gate
 - [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식 + 신규 구축 레시피 + 프롬프트 설계 + 함정)
+- [[ai-generated-code-acceptance-criteria]] — AI 생성 코드가 동작해도 사람이 설명 가능성과 변경 규모를 기준으로 채택 여부를 판단하는 기준
 - [[claude-code-memory-rules]] — Claude Code 메모리: CLAUDE.md·.claude/rules 자동 로드 규칙(frontmatter·paths·우선순위) + 규칙을 여러 레포에 재사용하는 법 + 강제는 hook
 - [[pr-body-convention]] — PR 본문 공통 양식(Summary/Changes/Verification, Commits·프로세스이력 제외, 자가점검) + .claude/rules 적용법
 
@@ -131,7 +132,7 @@
 
 ## Raw 인벤토리 요약
 
-- `raw/web/` — Web Clipper 로 수집한 웹 기사 (현재 비어있음)
+- `raw/web/` — Web Clipper 로 수집한 웹 기사 (2개: 문서 파싱 품질 평가, AI 생성 코드 채택 기준)
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
@@ -140,6 +141,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-02 (취업전략 임원 면접 리스크 프레임 — 신규 2)
+- 마지막 brain-add: 2026-07-02 (AI 생성 코드 채택 기준 — 신규 1·보강 2)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
