@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-06-25
-updated: 2026-06-25
+updated: 2026-07-03
 ---
 
 # AI 에이전트 자율 성장 단계
@@ -42,12 +42,18 @@ L3부터는 세션을 넘는 기억, 평가, 안전 장치가 필요하다.
 이 단계 모델은 AI 개발 하네스를 설계할 때 목표 수준을 명시하는 용도로 쓸 수 있다.
 예를 들어 `planning`만 자동화하는 하네스는 L2에 가깝고, PR 리뷰 학습을 다음 스킬에 환원하는 하네스는 제한된 L3 성격을 가진다.
 
+조코딩의 OpenAI 인터뷰는 이 단계 모델을 제품과 조직 전략으로 읽는 실무 관점을 보강한다.
+모델이 더 긴 작업을 수행하고 도구를 연결할수록 [[ai-native-startup-strategy]]에서는 작은 팀, 고객 워크플로우, forward-deployed engineer의 중요성이 커진다.
+
 ## 관련 개념
 
 - [[gnosis-agent-autonomous-growth]] — 이 단계 모델을 포함하는 GNOSIS 프레임워크
 - [[ai-dev-harness]] — 에이전트가 자율 실행할 환경을 갖추는 주제
 - [[self-improving-harness]] — 제한된 L3 성격을 가진 기존 자기개선 루프
+- [[ai-native-startup-strategy]] — 모델 능력 증가를 스타트업 제품·조직 전략으로 읽는 관점
+- [[codex-general-work-agent]] — 여러 도구를 연결해 더 긴 업무를 수행하는 실행 표면
 
 ## Sources
 
 - [[../../raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md]]
+- [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]]

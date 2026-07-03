@@ -45,6 +45,12 @@
 - [[reward-detector-false-positive]] — reward detector 오탐을 먼저 잡기(잘못된 그래디언트 방어)
 - [[two-tier-reward-static-llm-judge]] — 정적 정규식 바닥 + LLM judge 천장 2계층 reward
 
+### AI 네이티브 작업 방식
+
+- [[codex-general-work-agent]] — Codex를 코드 생성기보다 넓은 데이터 분석·리서치·협업 도구 탐색 업무 에이전트로 쓰는 패턴
+- [[ai-native-startup-strategy]] — 기반 모델 시대에 스타트업이 고객 워크플로우와 미래 모델 능력으로 방어력을 만드는 전략
+- [[ai-era-tinkerer-talent]] — AI 도구를 자주 실험하는 팅커러 태도와 기초 체력을 함께 가진 인재상
+
 ### 개인 코딩 규율·취향
 
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
@@ -129,6 +135,7 @@
 - [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
 - [[coding-engineer-tv]] — 유튜버 코딩하는기술사(@codingpe), 성능·아키텍처 자료 추적 허브
 - [[career-strategy-youtube]] — 유튜버 취업전략:통념을 파괴하는 합격자의 관점, 면접·취업 전략 자료 추적 허브
+- [[jocoding-youtube]] — 유튜버 조코딩 JoCoding, AI·개발·창업·기술 인터뷰 자료 추적 허브
 
 ## Raw 인벤토리 요약
 
@@ -136,11 +143,11 @@
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
-- `raw/videos/` — 유튜브 자막 정리본 (4개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접)
+- `raw/videos/` — 유튜브 자막 정리본 (5개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-02 (AI 생성 코드 채택 기준 — 신규 1·보강 2)
+- 마지막 brain-add: 2026-07-03 (조코딩 OpenAI AGI·Codex 인터뷰 — 신규 4·보강 3)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

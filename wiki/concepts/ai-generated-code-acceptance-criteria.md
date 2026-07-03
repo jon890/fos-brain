@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-07-02
-updated: 2026-07-02
+updated: 2026-07-03
 ---
 
 # AI 생성 코드 채택 기준
@@ -43,7 +43,16 @@ AI 생성 변경을 리뷰할 때는 먼저 "무엇이 바뀌었는가"보다 "�
 [[ai-code-review-github-actions]]는 자동 리뷰와 큰 diff false negative를 다루고, 이 기준은 사람이 최종 채택 여부를 결정할 때의 판단 기준을 다룬다.
 [[ai-harness-pattern]]에서 구현, 리뷰, 검증 루프를 자동화하더라도 최종 채택에는 사람의 설명 가능성이 남아야 한다.
 
+## 업무 에이전트 연결
+
+[[codex-general-work-agent]]처럼 Codex가 코드 밖 업무 흐름까지 다루면 채택 기준도 넓어진다.
+결과가 맞아 보이는지만 볼 것이 아니라, 어떤 도구를 어떤 권한으로 사용했고 어떤 검증으로 완료를 판단했는지 사람이 설명할 수 있어야 한다.
+
+따라서 업무 자동화 산출물도 코드 변경과 같은 질문을 통과해야 한다.
+내가 이 접근을 리뷰 자리에서 설명할 수 있는가, 실패했을 때 어디를 고쳐야 하는가, 자동화한 판단이 사람 승인 경계를 넘지 않았는가를 확인한다.
+
 ## Sources
 
 - [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]]
 - Vinicius Brasil, "When I reject AI code even if it works" (2026-06-20): https://vinibrasil.com/when-i-reject-ai-code-even-if-it-works/
+- [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]] — Codex가 코드 밖 업무 흐름까지 다루는 사례 보강

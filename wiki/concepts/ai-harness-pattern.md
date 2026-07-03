@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-07-02
+updated: 2026-07-03
 ---
 
 # AI 하네스 패턴
@@ -79,6 +79,14 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 현재 하네스는 LLM 가중치를 바꾸지 않는다는 점은 같지만, constitution gate와 fitness auditor가 형식화되어 있지는 않다.
 따라서 다음 개선 방향은 "무엇을 자동 학습해도 되는가"와 "무엇은 사람이 승인해야 하는가"를 [[constitutional-growth-gate]]처럼 gate로 분리하는 것이다.
 
+## 추가 (2026-07-03) — Codex를 업무 에이전트로 쓰는 하네스 관점
+
+조코딩의 OpenAI 인터뷰는 Codex를 코드 작성뿐 아니라 데이터 분석, 피드백 요약, 리서치, 협업 도구 탐색에 쓰는 사례를 보여준다.
+이 관점에서 [[codex-general-work-agent]]는 하네스의 실행 표면을 IDE 밖 업무 흐름으로 넓힌다.
+
+하네스 쪽 핵심은 변하지 않는다.
+업무 에이전트가 다루는 도구가 늘어날수록 목표, 완료 조건, 검증 방법, 사람 승인 경계가 더 명확해야 한다.
+
 ## 관련 개념
 
 - [[ai-dev-harness]] — 이 패턴과 단계별 방법론을 묶는 상위 주제
@@ -97,6 +105,8 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 - [[pitfalls-file-per-pattern]] — 회피 패턴을 파일-per-패턴과 INDEX 라우터로 운영하는 구조
 - [[harness-bootstrap-checklist]] — 이 파이프라인을 새 레포에 까는 조립 순서 체크리스트
 - [[gnosis-agent-autonomous-growth]] — 외부 기억·스킬·가치 레이어를 갱신하는 성장형 에이전트 프레임워크
+- [[codex-general-work-agent]] — Codex를 코드 생성기보다 넓은 업무 에이전트로 쓰는 패턴
+- [[ai-native-startup-strategy]] — 작은 팀이 하네스와 업무 에이전트로 레버리지를 얻는 전략
 
 ## Sources
 
@@ -105,3 +115,4 @@ NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트
 - [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 커스텀 도메인 에이전트 단일 소스 보강
 - [[../../raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md]] — GNOSIS의 도구형 AI vs 성장형 에이전트 구분을 기존 하네스에 매핑
 - [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]] — AI 생성 코드의 채택 기준 보강
+- [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]] — Codex를 업무 에이전트로 쓰는 OpenAI 내부 활용 사례
