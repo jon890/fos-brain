@@ -219,3 +219,16 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-07-01] lint | brain-lint stale 마커 축 추가 후 첫 실행 (public/private/work 통합)
 - 검사: 11개 항목 / 발견: Sources 링크 포맷 이탈 1건(수정) + 모순 후보 1건(오탐 확인, 조치 없음)
 - 수정: ingress-controller-internal-external-split.md Sources 링크를 `[[../../raw/notes/....md]]` 표준 포맷으로 정정
+
+## [2026-07-07] add | 하용호 AI 시대 전문성 인프런 PDF
+- Source: raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md + raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.pdf
+- 신규 6 페이지: topic(ai-era-professionalism), concepts(ax-j-curve-trap, ai-era-debt-triad, ai-verification-layer, ai-native-company, ai-era-professional-operator)
+- 보강 4 페이지: ai-generated-code-acceptance-criteria, ai-era-tinkerer-talent, agent-autonomy-growth-levels, ai-dev-harness
+- 평가: 공개 발표자료 기반이라 public 으로 등록. AX 도입 단계, AI 시대 부채, 검증 레이어, AI-native 회사, 전문성 재정의는 기존 노드와 부분 연결되지만 별도 durable 개념으로 분리할 가치가 있음.
+
+## [2026-07-14] add | 공용 스킬 코어 + 오버레이 (planning 이관 세션)
+- Source: raw/notes/2026-07-14-shared-skill-core-overlay-session.md
+- 신규 1 페이지: shared-skill-core-overlay
+- 보강 1 페이지: planning-eight-step-design (배포 진화형 링크)
+- 함께 정리: planning 원칙에서 "빠른 MVP 트레이드오프" 제거, 복잡도 검증 균형화, 규모별 skip 표 제거, ADR "게이트"→"점검"
+- 평가: 스킬 배포·유지보수 일반 기법이라 public. 함정 2개(전역 override·이관 결합점)는 별도 페이지 없이 코어 페이지에 인라인(사용자 요청).

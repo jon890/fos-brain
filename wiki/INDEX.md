@@ -12,6 +12,7 @@
 - [[operations-troubleshooting]] — 운영 중 실제로 터진 인프라·컨테이너 장애와 해결 사례
 - [[rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
 - [[openclaw]] — 자가호스팅 게이트웨이로 채팅 채널을 AI 에이전트에 연결하는 시스템의 운영·설정 지식
+- [[ai-era-professionalism]] — AI 시대 전문성이 생산 숙련에서 검증·판단·운영 책임으로 이동하는 변화
 
 ## Concepts
 
@@ -21,7 +22,8 @@
 
 - [[ai-harness-pattern]] — 기획→구현→리뷰반영→릴리스 전 주기를 스킬로 자동화한 재사용 하네스 (핵심 허브)
 - [[harness-bootstrap-checklist]] — 새 레포에 하네스를 까는 조립 순서 체크리스트 (메모리→스킬→전용 agent→pitfalls→docs→CI→자기개선)
-- [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 게이트 (새 하네스 seed)
+- [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론 + ADR 자명성 점검 (새 하네스 seed)
+- [[shared-skill-core-overlay]] — 복제 스킬을 단일 코어와 레포 오버레이로 나눠 개선을 한 곳에서만 반영 (전역 override 함정 포함)
 - [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
 - [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor·docs-verifier, self-check grep 내장)
 - [[pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
@@ -50,6 +52,11 @@
 - [[codex-general-work-agent]] — Codex를 코드 생성기보다 넓은 데이터 분석·리서치·협업 도구 탐색 업무 에이전트로 쓰는 패턴
 - [[ai-native-startup-strategy]] — 기반 모델 시대에 스타트업이 고객 워크플로우와 미래 모델 능력으로 방어력을 만드는 전략
 - [[ai-era-tinkerer-talent]] — AI 도구를 자주 실험하는 팅커러 태도와 기초 체력을 함께 가진 인재상
+- [[ax-j-curve-trap]] — AX 도입 뒤 환호와 사용량 증가를 지나 검증·부채·파이프라인 재설계의 구덩이를 통과하는 단계 모델
+- [[ai-era-debt-triad]] — AI 시대에 기술부채·인지부채·의도부채가 결합해 조직 속도와 신뢰를 갉아먹는 구조
+- [[ai-verification-layer]] — AI 산출물을 전부 이해하려 하기보다 통과 기준과 자동 검증 구조로 신뢰를 만드는 방식
+- [[ai-native-company]] — 회사 지식과 업무 시스템을 AI가 검색·참조·반복 개선할 수 있게 재편한 조직
+- [[ai-era-professional-operator]] — 전문가가 산출물 숙련자에서 자기 도메인의 AI 운영 책임자로 바뀌는 인재상
 
 ### 개인 코딩 규율·취향
 
@@ -140,7 +147,7 @@
 ## Raw 인벤토리 요약
 
 - `raw/web/` — Web Clipper 로 수집한 웹 기사 (2개: 문서 파싱 품질 평가, AI 생성 코드 채택 기준)
-- `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (1개: RAG 아키텍처 분석)
+- `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (2개: RAG 아키텍처 분석, AI 시대 전문성)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
 - `raw/videos/` — 유튜브 자막 정리본 (5개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰)
@@ -148,6 +155,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-03 (조코딩 OpenAI AGI·Codex 인터뷰 — 신규 4·보강 3)
+- 마지막 brain-add: 2026-07-07 (하용호 AI 시대 전문성 인프런 PDF — 신규 6·보강 4)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
