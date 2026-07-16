@@ -131,6 +131,20 @@
 
 - [[simple-store-bought-naengmyeon]] — 시판 냉면사리와 시판 육수로 물냉면을 만들 때의 준비·면 삶기·간 맞추기
 
+### 일반 엔지니어링 교훈 (실전)
+
+- [[pydantic-invalid-kwarg-silent-ignore]] — Pydantic 무효 kwarg 는 조용히 버려진다 (옵션 적용은 결과 객체로 검증)
+- [[review-bot-suggestion-verify]] — 리뷰 봇 제안의 명령·정규식은 실측 없이 적용하면 검증을 조용히 무력화한다
+- [[vendor-bug-wrapper-vs-replace]] — vendor 라이브러리 버그, 상속 wrapper 우회 vs 라이브러리 교체 판단 기준
+- [[removal-plan-grep-gate]] — 제거 작업의 grep 게이트 함정과 docs 부패
+- [[append-only-doc-file-per-item-split]] — append-only 단일 문서를 파일-per-항목 + INDEX 라우터로 분리
+- [[helm-null-annotation-render]] — Helm 공통 values 의 annotation 을 환경별로 제거할 때 null 처리 함정
+- [[jenkins-logrotator-daystokeep-numtokeep]] — Jenkins LogRotator daysToKeep(일수)·numToKeep(개수) 오해로 디스크 축적
+- [[pid1-zombie-tini]] — 컨테이너 PID 1 좀비 reaping 과 tini 도입
+- [[prometheus-multiproc-histogram]] — Prometheus 멀티프로세스 Histogram 은 메인 프로세스에서 lazy create 안 됨
+- [[torch-cuda-multiprocess-vram]] — torch.cuda 메모리 메트릭은 멀티프로세스 워커의 실제 VRAM 을 못 본다 (DCGM 이 정확)
+- [[hwp-v5-extended-record]] — HWP v5 확장 레코드(0xFFF) 미처리로 인한 장문 단락 파싱 실패
+
 ## Entities
 
 - [[dooray-cli]] — Dooray API CLI, 하네스 원형(6스킬)

@@ -13,7 +13,6 @@ const EXPECTED_COLLECTIONS = [
   { name: "brain-wiki", relPath: "wiki" },
   { name: "brain-raw", relPath: "raw" },
   { name: "brain-private", relPath: "private/wiki" },
-  { name: "brain-work-nhn", relPath: "work/nhn/wiki" },
 ];
 
 function hasCommand(cmd) {
@@ -87,7 +86,7 @@ function ensureCollectionsRegistered(notes) {
   for (const { name, relPath } of EXPECTED_COLLECTIONS) {
     if (existing.has(name)) continue;
     const abs = path.join(BRAIN_ROOT, relPath);
-    if (!fs.existsSync(abs)) continue; // private/work 미클론 등, 정상 상황
+    if (!fs.existsSync(abs)) continue; // private 미클론 등, 정상 상황
     try {
       execFileSync("qmd", ["collection", "add", abs, "--name", name], {
         stdio: "ignore",

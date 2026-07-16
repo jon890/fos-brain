@@ -1,6 +1,6 @@
 ---
 name: brain-add
-description: 개인 지식 기반(brain, ~/personal/fos-brain) 에 소스를 가져와 컴파일한다. URL·유튜브·PDF·GitHub·이미지·메모·붙여넣은 텍스트를 raw/ 로 저장하고 wiki/ 의 개념 그래프에 통합(백링크·INDEX·log 갱신). "brain add", "brain 추가", "brain 에 정리", "지식 추가", "brain 에 넣어줘", "이 링크 정리해줘", "이 영상 정리", "wiki ingest", "위키 컴파일", "raw 처리해줘" 같은 요청 시 사용. 공개/개인비공개/회사 네임스페이스 선택 지원.
+description: 개인 지식 기반(brain, ~/personal/fos-brain) 에 소스를 가져와 컴파일한다. URL·유튜브·PDF·GitHub·이미지·메모·붙여넣은 텍스트를 raw/ 로 저장하고 wiki/ 의 개념 그래프에 통합(백링크·INDEX·log 갱신). "brain add", "brain 추가", "brain 에 정리", "지식 추가", "brain 에 넣어줘", "이 링크 정리해줘", "이 영상 정리", "wiki ingest", "위키 컴파일", "raw 처리해줘" 같은 요청 시 사용. 공개/개인비공개 네임스페이스 선택 지원.
 ---
 
 # brain-add
@@ -18,9 +18,10 @@ Karpathy 스타일 지식 기반의 ingest 단계. 소스를 brain 으로 가져
 
 - `public` — 루트(`raw/`, `wiki/`). git commit + Quartz 공개 대상.
 - `private` — `private/`. gitignore(개인 비공개).
-- `work` — `work/<회사>/`. gitignore(회사 자료). **work 선택 시 회사도 함께 받는다**(현재 `nhn`). 없는 회사면 `work/<회사>/{raw,wiki}` 골격을 먼저 만든다.
 
-이후 모든 경로의 `<ns>` 는 선택된 네임스페이스 루트다(public=루트, private=`private/`, work=`work/<회사>/`).
+회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키 기반) 대상이면 등록을 건너뛰고 사용자에게 알린다.
+
+이후 모든 경로의 `<ns>` 는 선택된 네임스페이스 루트다(public=루트, private=`private/`).
 
 ## 1단계 — 소스 선택 (필수)
 
@@ -74,7 +75,7 @@ raw 파일 상단에 출처 메타(원본 URL·수집일·소스 종류)를 fron
 - **유사 지식 검색 (필수)** — 추출할 핵심 개념·주제마다 brain 을 검색해 기존 페이지가 있는지 본다.
   - public: `qmd query "<개념>"`(BM25+벡터+rerank) 또는 `qmd search "<키워드>" -c brain-wiki`.
   - 의미·동의어로 겹치는 페이지를 놓치지 않도록 `qmd vsearch "<문장>" -c brain-wiki`(벡터)도 함께 본다.
-  - 비공개도 qmd 컬렉션이 있다 — private 는 `brain-private`, work 는 `brain-work-nhn`. `qmd query "..." -c brain-private` 로 검색한다. 컬렉션이 아직 없는 네임스페이스만 grep 폴백: `grep -rli "<키워드>" <ns>/wiki/`.
+  - 비공개도 qmd 컬렉션이 있다 — private 는 `brain-private`. `qmd query "..." -c brain-private` 로 검색한다. 컬렉션이 아직 없는 네임스페이스만 grep 폴백: `grep -rli "<키워드>" <ns>/wiki/`.
 - **검색 결과 라우팅**:
   - 의미가 겹치는 페이지가 있으면 → **신규 생성 금지, 그 페이지 보강**으로(4단계·7단계).
   - 부분만 겹치면 → 새 페이지 + 기존 페이지에 양방향 백링크.
@@ -117,26 +118,13 @@ raw 파일 상단에 출처 메타(원본 URL·수집일·소스 종류)를 fron
 - **인물·개체** — 사람, 프로젝트, 목표 같은 entity.
 - **개인 기록** — 일지, 목표, 건강, 취미 등. 이 brain 은 기술에 한정되지 않은 범용 brain 이다.
 
-### 회사 work 지식의 강한 우선순위
+### 회사·팀 지식은 이 brain 의 범위 밖
 
-work 네임스페이스에서는 "코드에 남는 구현 지식" 보다 **회사 내부에서만 통하는 운영 방식**을 우선한다.
-다음 조건을 만족하면 brain 가치가 높다.
-
-- 사내 시스템에서 어디를 어떻게 조회해야 하는가.
-- 로그, admin 화면, Dooray, Netric, APMS, hcon, nssh 같은 내부 도구의 실제 사용 맥락이다.
-- 같은 에러 코드나 표면 증상을 어떤 root cause 로 나눠야 하는가.
-- 코드만 읽어서는 알기 어려운 과금, 미터링, 운영 정책, 배포 상태, 권한 경계다.
-- 다음 장애 triage, 운영 문의, 사내 자동화 작업에서 검색어로 다시 찾을 수 있다.
-
-반대로 아래는 기본 제외한다.
-
-- 특정 파일을 고친 사실, 함수 위치, PR 진행 상황처럼 git 과 코드 리뷰 기록에 남는 것.
-- Dockerfile 한 줄, 테스트 한 줄처럼 구현 diff 자체가 지식의 전부인 것.
-- 일회성 대시보드 상태, 특정 날짜의 업무 보고, 이미 배포되어 코드로 확인 가능한 변경.
-- 실행 절차가 핵심이면 brain 이 아니라 skill 로 보낸다.
+회사 내부에서만 통하는 운영 방식·조회법·업무 기록은 이 brain 이 아니라 `nbrain`(Dooray 위키 기반 사내 지식 검색)의 대상이다.
+그런 후보가 나오면 brain-add 로 통합하지 않고, 사용자에게 nbrain·Dooray 위키에 등록하라고 안내한다.
 
 판정 문구는 미리보기 표에 명시한다.
-예: `회사 내부 운영 지식`, `코드로 자명해 제외`, `기존 work 노드 보강`, `skill 로 라우팅`.
+예: `코드로 자명해 제외`, `nbrain 대상 — 등록 제외`, `skill 로 라우팅`.
 
 > **⚠️ 함정 편향 경고** — LLM 은 "함정·교훈"이 가장 식별하기 쉬워서 거기로 쏠리는 경향이 있다. 한 소스에서 함정만 여러 개 뽑고, 정작 그 소스가 가르치는 **개념·도메인 지식·결정**을 빠뜨리지 않았는지 매번 자문한다. 함정은 일곱 유형 중 하나일 뿐이며, brain 의 주된 목적이 아니다. 미리보기 단계에서 "이번 추출이 함정에만 편중되지 않았나"를 점검한다.
 
@@ -158,8 +146,8 @@ work 네임스페이스에서는 "코드에 남는 구현 지식" 보다 **회�
 
 **출처별 공개 기본값 (네임스페이스 과잉 플래그 방지)**
 
-- **fos-study 출처는 public-OK 가 기본.** fos-study 콘텐츠는 `blog-post-writer` 스킬이 민감정보를 제거해 외부 공개용으로 이미 검증한 자료다(회사명·내부 URL → 일반화). 본문에 회사·제품명이 보여도 이미 공개 수준이면 work 로 과잉 분류하지 않는다.
-- 그 외 출처(사내 레포·내부 문서·미검증 대화)는 회사 운영 세부가 있으면 work, 개인 비공개면 private 로.
+- **fos-study 출처는 public-OK 가 기본.** fos-study 콘텐츠는 `blog-post-writer` 스킬이 민감정보를 제거해 외부 공개용으로 이미 검증한 자료다(회사명·내부 URL → 일반화). 본문에 회사·제품명이 보여도 이미 공개 수준이면 private 로 과잉 분류하지 않는다.
+- 그 외 출처(사내 레포·내부 문서·미검증 대화)는 회사 운영 세부가 있으면 nbrain 대상이므로 등록 제외, 개인 비공개면 private 로.
 - 애매하면 보수적으로 비공개 쪽 + 사용자 확인.
 
 ## 6단계 — 핵심 요약 미리보기 (사용자 개입)
@@ -187,7 +175,7 @@ wiki 에 쓰기 전에 **두 가지를 함께** 보여준다 — 채팅 인라�
 
 ```bash
 python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
-  --ns <public|private|work> \
+  --ns <public|private> \
   --title "<요약 제목>" \
   --summary "<한 줄 설명>" \
   --new /tmp/brain-new/*.md \
@@ -197,7 +185,7 @@ python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
 cmux browser open "file:///tmp/brain-preview.html"
 ```
 
-- `--ns` 가 private·work 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`, `~/personal/fos-brain/work/<회사>/wiki`).
+- `--ns` 가 private 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`).
 - `--new` 는 새로 만들 페이지, `--update` 는 기존 보강 페이지. 보강본은 실제 brain 파일을 복사해 보강 내용을 얹은 버전을 넘긴다.
 - 주의: 본문에 `</script>` 가 있으면 생성기가 거부한다. CDN 로드라 오프라인이면 스타일이 빠진다.
 - 빨간 🔗 배지는 아직 없는 백링크 대상이다 — 신규 생성 예정이거나 slug 오타다. 의도와 맞는지 확인한다.
@@ -216,7 +204,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 보강: 기존 페이지 하단 `## 추가 (YYYY-MM-DD)` 로 append, Sources 갱신
 - 모든 페이지에 양방향 백링크
 - **wikilink 는 bare-slug 로**: 다른 wiki 페이지는 경로 없이 파일명만 — `[[work-style]]` (O), `[[topics/work-style]]`·`[[../concepts/X]]` (X). 경로형은 로컬 전체 빌드에서 prefix 누락으로 404. 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 경로형 유지(빌드 대상 아님). (CLAUDE.md 작업 원칙 3 참조)
-- **링크 방향 규칙**: 공개(public) 페이지는 private·work 를 링크하지 않는다. 비공개 → 공개는 허용.
+- **링크 방향 규칙**: 공개(public) 페이지는 private 를 링크하지 않는다. 비공개 → 공개는 허용.
 
 ## 8단계 — 가독성 검증 (필수)
 
@@ -235,7 +223,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 - 새 페이지 등록, 한 줄 요약 갱신
 - "마지막 brain-add" 메타에 오늘 날짜
-- public·private·work(qmd 인덱싱 대상) 네임스페이스면 검색 인덱스 갱신: `qmd update && qmd embed` (private 는 `brain-private` 컬렉션 — `~/.config/qmd/index.yml` 에 없으면 먼저 등록)
+- public·private(qmd 인덱싱 대상) 네임스페이스면 검색 인덱스 갱신: `qmd update && qmd embed` (private 는 `brain-private` 컬렉션 — `~/.config/qmd/index.yml` 에 없으면 먼저 등록)
 - **카테고리 비대 점검 (topic 분리)** — 새 concept 을 등록하며 INDEX 한 카테고리가 비대해졌는지 본다.
   - 한 카테고리에 concept 이 대략 **7개를 넘고**, 그중 일부가 한 주제를 이루면 `topics/` 페이지로 묶을지 검토한다.
   - 이미 적합한 topic 이 있으면 그 Concepts 에 편입, 없으면 신설 제안.
@@ -248,7 +236,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 인덱싱 누락·컬렉션 미등록이면 다른 세션이 영영 못 찾으므로, 등록과 검색 확인을 한 묶음으로 본다(등록만 하고 검색 확인을 빠뜨리면 "넣었는데 안 나오는" 결함이 조용히 남는다).
 
 - 등록한 핵심 개념마다 brain 을 조회해 그 페이지가 상위로 나오는지 본다.
-  - public·private·work: `qmd query "<개념 문장>"`, 필요하면 `-c <컬렉션>` 한정(예: `-c brain-private`).
+  - public·private: `qmd query "<개념 문장>"`, 필요하면 `-c <컬렉션>` 한정(예: `-c brain-private`).
   - 비교 기준: 의도한 페이지가 1~2위로, 엉뚱한 기존 페이지보다 높은 점수로 나와야 한다.
 - 안 나오면 인덱싱 경로를 점검한다.
   - 컬렉션이 `~/.config/qmd/index.yml` 에 등록됐는지 → 없으면 `path`·`pattern` 추가.
@@ -273,7 +261,7 @@ query test(10단계) 결과 — 의도한 페이지가 상위로 나왔는지 �
 ## 금지
 
 - raw 파일 수정·삭제
-- 공개 페이지에서 private·work 링크
+- 공개 페이지에서 private 링크
 - `.gitignore` 수정해 비공개를 공개로 전환
 - 출처 없는 주장
 - 한 번에 raw 전체 훑기

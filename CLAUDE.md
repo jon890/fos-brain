@@ -9,46 +9,41 @@
 
 ## 네임스페이스 (공개·비공개 분리)
 
-brain 은 세 네임스페이스로 나뉜다. 각 네임스페이스는 독립된 mini-brain(자체 `raw/` + `wiki/` + INDEX + log)이다.
+brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립된 mini-brain(자체 `raw/` + `wiki/` + INDEX + log)이다.
 
 | 네임스페이스 | 경로 | git | Quartz 공개 | 용도 |
 | --- | --- | --- | --- | --- |
 | public | 루트(`raw/`, `wiki/`) | commit | 게시 | 공개 가능한 개인 자료 |
 | private | `private/` | **gitignore** | 제외 | 개인 비공개 자료 |
-| work | `work/<회사>/` | **gitignore** | 제외 | 회사 자료 (회사별 분리) |
 
-`work` 는 **회사별 서브레벨**을 둔다 — 각 회사는 `work/<회사>/{raw,wiki}` 자체 mini-brain.
-현재: `work/nhn/`. 이직·복수 소속 시 `work/<회사>/` 를 추가한다.
+회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키 기반 사내 지식 검색)으로 관리한다.
 
 규칙:
 
-1. **라우팅**: brain-add 는 호출 시 네임스페이스를 선택받아 해당 트리에만 저장·컴파일한다. work 선택 시 회사(`<회사>`)도 함께 받는다.
-2. **링크 방향**: 공개 페이지는 비공개(private·work)를 링크하지 않는다(공개 빌드 깨짐·유출 방지). 비공개 → 공개 링크는 허용.
-3. **검색**: brain-search 는 로컬에서 세 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
-4. **gitignore 불변**: `private/`, `work/` 를 commit 대상에 올리지 않는다. `.gitignore` 를 수정해 비공개를 공개로 바꾸지 않는다.
-5. **네임스페이스 간 매핑**(비공개 작업 ↔ 공개 지식 연결): 비공개 → 공개 방향만 건다.
+1. **라우팅**: brain-add 는 호출 시 네임스페이스를 선택받아 해당 트리에만 저장·컴파일한다.
+2. **링크 방향**: 공개 페이지는 비공개(private)를 링크하지 않는다(공개 빌드 깨짐·유출 방지). 비공개 → 공개 링크는 허용.
+3. **검색**: brain-search 는 로컬에서 두 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
+4. **gitignore 불변**: `private/` 를 commit 대상에 올리지 않는다. `.gitignore` 를 수정해 비공개를 공개로 바꾸지 않는다.
+5. **네임스페이스 간 매핑**(비공개 ↔ 공개 지식 연결): 비공개 → 공개 방향만 건다.
    - 비공개 페이지에서 **bare-slug** `[[개념명]]` 으로 공개 개념을 가리킨다(경로 없이). 병합 빌드에서 slug 로 해석된다.
-   - 이 cross-link 는 **로컬 전체 그래프(`quartz-local`)에서만** 렌더된다. 공개 빌드(`quartz`)엔 비공개 노드가 없어 보이지 않는다(회사·개인 쪽 비공개 유지).
-   - 예: `work/nhn` 의 OCR 배포 incident 페이지 → 공개 `[[k8s-run-tmpfs-containerd]]` 개념.
+   - 이 cross-link 는 **로컬 전체 그래프(`quartz-local`)에서만** 렌더된다. 공개 빌드(`quartz`)엔 비공개 노드가 없어 보이지 않는다(개인 비공개 유지).
    - 반대(공개 → 비공개)는 금지(규칙 2).
 
 ### 형상관리 (네임스페이스별 독립 VC)
 
-각 네임스페이스는 **독립된 git repo** 로 버전관리한다. 공개 repo 가 `private/`·`work/` 를 gitignore 하므로 중첩 독립 repo 라도 서로 섞이지 않는다(submodule 포인터·URL 노출 없음).
+각 네임스페이스는 **독립된 git repo** 로 버전관리한다. 공개 repo 가 `private/` 를 gitignore 하므로 중첩 독립 repo 라도 서로 섞이지 않는다(submodule 포인터·URL 노출 없음).
 
 | 네임스페이스 | git repo | 비고 |
 | --- | --- | --- |
 | public | `github.com/jon890/fos-brain` (PUBLIC) | 루트 repo |
 | private | `github.com/jon890/fos-brain-private` (PRIVATE) | `private/` 안 중첩 `.git`, SSH |
-| work | **로컬 전용** git (원격 없음) | `work/` 안 중첩 `.git`. **외부 push 절대 금지** |
 
 불변 규칙:
 
-- **work 에 remote 를 추가하지 않는다.** 회사 자료는 이 컴퓨터 로컬에만 둔다.
 - private repo 는 **PRIVATE visibility** 유지(개인 커리어·건강·투자 포함).
-- 개인·회사 repo 생성은 반드시 `github.com`(개인 계정) 또는 로컬에. 회사 GitHub Enterprise 에 개인 brain 을 올리지 않는다.
+- 개인 repo 생성은 반드시 `github.com`(개인 계정) 또는 로컬에. 회사 GitHub Enterprise 에 개인 brain 을 올리지 않는다.
 
-아래 디렉터리·스키마 설명은 한 네임스페이스 내부 구조를 가리킨다(public 기준이며 private·work 도 동일).
+아래 디렉터리·스키마 설명은 한 네임스페이스 내부 구조를 가리킨다(public 기준이며 private 도 동일).
 
 ## 디렉터리 역할
 
@@ -70,7 +65,7 @@ brain 은 세 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
 3. **wikilink 는 bare-slug 로 작성 (필수)**: 다른 wiki 페이지를 가리킬 땐 경로 없이 파일명만 쓴다.
    - O: `[[work-style]]` · `[[ai-harness-pattern]]`
    - X: `[[topics/work-style]]` · `[[../concepts/ai-harness-pattern]]` (경로형 금지)
-   - 이유: 로컬 전체 빌드(`quartz-local`)는 네임스페이스를 하위 폴더(`public/`·`_work_nhn/`·`_private/`)로 병합한다. 경로형 링크는 이 prefix 를 모른 채 루트 기준으로 풀려 404 가 된다. bare-slug 는 quartz 가 파일명으로 전역 매칭해 공개 빌드·로컬 빌드 양쪽 모두 정확한 경로를 만든다.
+   - 이유: 로컬 전체 빌드(`quartz-local`)는 네임스페이스를 하위 폴더(`public/`·`_private/`)로 병합한다. 경로형 링크는 이 prefix 를 모른 채 루트 기준으로 풀려 404 가 된다. bare-slug 는 quartz 가 파일명으로 전역 매칭해 공개 빌드·로컬 빌드 양쪽 모두 정확한 경로를 만든다.
    - 파일명이 전역 고유하므로 bare-slug 로 충분하다. alias·heading 은 붙여도 된다: `[[work-style|개발 스타일]]`.
    - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 빌드 대상이 아니므로 경로형 그대로 둔다.
 4. **raw 는 출처**: wiki 의 주장은 raw 로 추적 가능해야 한다. 출처 없는 주장 금지.
@@ -168,8 +163,8 @@ brain 스킬 5종과 hook 스크립트는 모두 **`.agents/plugin/fos-brain/` �
 
 `fos-brain` 플러그인의 hook(`.agents/plugin/fos-brain/hooks/hooks.json`, Claude Code·Codex 공용):
 
-- `SessionStart` → `scripts/setup-check.cjs` — qmd 설치 여부 확인(없으면 bun/npm 으로 best-effort 설치), `brain-wiki`/`brain-raw`/`brain-private`/`brain-work-nhn` 컬렉션이 미등록이면 존재하는 디렉터리만 자동 등록. 새 머신에서 수동 설정 없이 동작하게 하는 자가 점검.
-- `UserPromptSubmit` → `scripts/recall.cjs` — 매 prompt 마다 qmd 로 brain(wiki/private/work) 을 검색해 관련 기억을 컨텍스트로 자동 주입. 등록된 컬렉션이 실제 존재하는 것만 걸러 쿼리한다(부분 클론 환경에서도 에러 없이 동작).
+- `SessionStart` → `scripts/setup-check.cjs` — qmd 설치 여부 확인(없으면 bun/npm 으로 best-effort 설치), `brain-wiki`/`brain-raw`/`brain-private` 컬렉션이 미등록이면 존재하는 디렉터리만 자동 등록. 새 머신에서 수동 설정 없이 동작하게 하는 자가 점검.
+- `UserPromptSubmit` → `scripts/recall.cjs` — 매 prompt 마다 qmd 로 brain(wiki/private) 을 검색해 관련 기억을 컨텍스트로 자동 주입. 등록된 컬렉션이 실제 존재하는 것만 걸러 쿼리한다(부분 클론 환경에서도 에러 없이 동작).
 - `Stop` → `scripts/track-session.cjs` — 세션 종료 시 `staging/pending-sessions.jsonl` 에 세션 포인터(도구·session_id·transcript 경로)만 append. **wiki 에 직접 쓰지 않는다** — "승인 없이 자동 쓰기 금지" 규칙 유지. 실제 지식 추출·등록은 여전히 `brain-curate` 의 미리보기·승인 절차를 거친다.
 
 ### 새 머신 설정
@@ -221,7 +216,7 @@ brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
 규모가 커지면 `grep` 으로는 한계가 있다.
 Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
 
-- 등록 컬렉션: `brain-wiki`(fos-brain/wiki), `brain-raw`(fos-brain/raw), `brain-work-nhn`(work/nhn/wiki, 로컬 전용), `brain-private`(private/wiki, 로컬 전용)
+- 등록 컬렉션: `brain-wiki`(fos-brain/wiki), `brain-raw`(fos-brain/raw), `brain-private`(private/wiki, 로컬 전용)
 - 1차 검색(BM25): `qmd search "<keyword>" -c brain-wiki`
 - 의미 검색(벡터): `qmd vsearch "<text>" -c brain-wiki`
 - 하이브리드 + rerank(권장): `qmd query "<question>"`
@@ -253,14 +248,14 @@ qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **
 
 ### 공개 빌드 (`quartz/`)
 
-- content: `quartz/content` → 루트 `wiki/` 심볼릭 링크(public 만). private·work 는 config `ignorePatterns` 로 제외.
+- content: `quartz/content` → 루트 `wiki/` 심볼릭 링크(public 만). private 는 config `ignorePatterns` 로 제외.
 - 기능: 그래프 뷰 + 전문 검색 + 백링크 패널
 - 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
 - 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
 
 ### 로컬 전체 빌드 (`quartz-local/`)
 
-- content: public + private + work 전체 그래프. 비공개 폴더는 `_private`/`_work` 로 병합(공개 config 의 ignore 회피).
+- content: public + private 전체 그래프. 비공개 폴더는 `_private` 로 병합(공개 config 의 ignore 회피).
 - 병합 content 는 repo 밖 temp 에 생성(repo 안이면 `.gitignore` 때문에 입력이 걸러짐).
 - **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
 - 서빙: `./quartz-local/serve.sh` (포트 8081)

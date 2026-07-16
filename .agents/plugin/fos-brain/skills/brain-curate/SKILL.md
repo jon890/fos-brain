@@ -12,7 +12,7 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 
 - 세션 jsonl 은 한 파일이 수 MB~십수 MB 이고 대부분이 tool 출력이다. 통째로 LLM 에 못 넣는다 → 전처리 스크립트가 필수다.
 - 세션은 일회성 작업의 연속이라 그대로 옮기면 brain 이 오염된다 → 작업이 아니라 **거기서 배운 재사용 가능한 것**을 뽑는다.
-- 특히 회사 work 세션은 코드 diff 보다 **사내에서만 통하는 운영 방식·조회법·판단 기준**을 우선한다. 코드에 이미 남는 구현 세부는 제외하거나 기존 페이지의 짧은 근거로만 둔다.
+- 회사·팀 지식(사내에서만 통하는 운영 방식·조회법·업무 기록)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키) 대상이므로 후보에서 제외한다.
 - 자동 등록은 절대 하지 않는다 (fos-brain 철칙) → 항상 미리보기 → 선택 → 등록.
 
 ## 대상 디렉터리
@@ -95,7 +95,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 - `references/extraction-criteria.md` 를 읽으라는 지시
 - 출력은 스키마대로의 JSON 만 (`{"candidates": [...]}`, durable 후보 없으면 빈 배열)
 - 세션의 프로젝트 경로 (네임스페이스 1차 추정용)
-- work 후보는 "회사 내부 운영 지식인가, 코드·git 으로 자명한 구현 기록인가" 를 반드시 판정하라는 지시
+- 회사·팀 지식(사내 운영 방식·업무 기록)으로 보이는 후보는 nbrain 대상이므로 제외하라는 지시
 
 각 후보에 출처 세션 경로를 붙여 둔다(나중에 Sources 추적·중복 판단에 쓴다).
 
@@ -104,18 +104,17 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 추출된 각 후보를 brain 에서 검색해 신규/보강을 가른다. 같은 지식이 이미 있으면 새로 만들지 않는다.
 
 - public: `qmd query "<후보 제목·핵심>"` 또는 `qmd search "<키워드>" -c brain-wiki`. 의미 중복은 `qmd vsearch` 도 본다.
-- 회사: `qmd query "..." ` 에 `brain-work-nhn` 컬렉션, 없으면 `grep -rli "<키워드>" work/*/wiki/`.
 - 분류: **신규** / **기존 보강**(어느 페이지) / **후보끼리 중복**(여러 세션이 같은 걸 말함 → 하나로 병합).
-- work 후보는 신규 노드 수를 보수적으로 잡는다. 사내 로그 조회법, admin 화면 의미, 운영 판단 기준은 남기고, 코드 변경 사실은 기존 노드의 Sources 근거나 제외 항목으로 처리한다.
+- 회사·팀 지식으로 판단되는 후보는 이 brain 이 아니라 nbrain 대상이므로 제외한다.
 
 여러 세션에서 같은 후보가 나오면 병합해 한 항목으로 만들고, 근거 세션을 모두 모은다.
 
 ## 5단계 — 네임스페이스 라우팅
 
-각 후보의 네임스페이스를 확정한다. 1차 추정(경로 기반)을 검토하고, 회사 운영 세부가 있으면 보수적으로 `work` 로 둔다.
+각 후보의 네임스페이스를 확정한다. 1차 추정(경로 기반)을 검토한다.
 
 - fos-study 출처처럼 이미 공개 검증된 내용은 `public` 기본.
-- 사내 레포·내부 문서·미공개 아키텍처는 `work`.
+- 사내 레포·내부 문서·미공개 아키텍처·회사 운영 세부는 이 brain 대상이 아니다 — nbrain 으로 안내하고 제외한다.
 - 개인 비공개는 `private`.
 - 애매하면 미리보기에서 사용자에게 묻는다.
 
@@ -126,10 +125,10 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 | # | 후보 | 타입 | 신규/보강 | NS | 근거 세션 | durable 이유 |
 |---|------|------|-----------|----|-----------|--------------|
 | 1 | ... | concept | 신규 | public | docu-parser 2건 | ... |
-| 2 | ... | concept | 보강: [[기존페이지]] | work | ... | ... |
+| 2 | ... | concept | 보강: [[기존페이지]] | private | ... | ... |
 
 - 함정에만 편중되지 않았는지 점검한다(개념·결정·도메인 지식이 같이 있는가).
-- work 후보는 "회사 내부 운영 지식" / "코드로 자명해 제외" / "skill 로 라우팅" 중 하나를 표에 드러낸다.
+- 회사·팀 지식으로 제외한 후보는 "nbrain 대상 — 등록 제외" / "코드로 자명해 제외" / "skill 로 라우팅" 중 하나를 표에 드러낸다.
 - `verified:false` 후보는 "미검증 — 확인 필요" 로 표시한다.
 - 표가 길면 핵심 후보 위주로 추리고 나머지는 접어 둔다.
 
@@ -143,7 +142,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 ```
 
 - 입력 JSON: `{title, namespace, stats, candidates[], pages[]}`. candidates(후보 표)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
-- 템플릿은 `templates/preview.html` — Quartz 실측 색(`#faf8f8`·`#284b63`)·폰트(Schibsted Grotesk·Source Sans 3). 네임스페이스 색 뱃지(public·work·private) 지원.
+- 템플릿은 `templates/preview.html` — Quartz 실측 색(`#faf8f8`·`#284b63`)·폰트(Schibsted Grotesk·Source Sans 3). 네임스페이스 색 뱃지(public·private) 지원.
 - 폰트는 Google Fonts CDN — 오프라인이면 시스템 폰트로 대체된다.
 - 본문에 `</script>` 가 있으면 생성기가 거부한다.
 
@@ -182,5 +181,5 @@ python3 ~/personal/fos-brain/scripts/brain-readability.py <페이지파일...>
 - 자동 등록 (미리보기·선택 없이 brain 에 쓰기).
 - 세션 원문 jsonl 전체를 raw 로 저장 (핵심 요약만).
 - 일회성 작업 기록을 durable 지식으로 등록 (git 으로 자명한 것).
-- 공개 페이지에서 private·work 링크.
+- 공개 페이지에서 private 링크.
 - 한 번에 너무 많은 세션을 무차별 처리 (규모를 사용자에게 알리고 범위를 좁힌다).

@@ -3,7 +3,7 @@
 
 const { execFileSync } = require("node:child_process");
 
-const COLLECTIONS = ["brain-wiki", "brain-private", "brain-work-nhn"];
+const COLLECTIONS = ["brain-wiki", "brain-private"];
 const MAX_RESULTS = 3;
 const MIN_PROMPT_LENGTH = 12;
 
