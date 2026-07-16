@@ -66,6 +66,10 @@
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 
+### 학습 방법
+
+- [[self-directed-learning]] — 읽기·토론·글쓰기·피드백으로 스스로 배우는 능력을 기르는 학습 프레임
+
 ### 면접 준비
 
 - [[executive-personality-interview-risk-frame]] — 임원·인성면접을 조직 리스크 관리 관점에서 준비하는 프레임
@@ -169,6 +173,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-07 (하용호 AI 시대 전문성 인프런 PDF — 신규 6·보강 4)
+- 마지막 brain-add: 2026-07-16 (서울대 박주용 교수의 자기주도 학습 영상 — 신규 1)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
