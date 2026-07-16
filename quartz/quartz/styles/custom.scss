@@ -1,3 +1,45 @@
 @use "./base.scss";
 
 // put your custom CSS here!
+
+:root {
+  --graph-current-ring: color-mix(in srgb, var(--secondary) 72%, var(--light));
+}
+
+body {
+  letter-spacing: 0;
+}
+
+.page-title {
+  letter-spacing: 0;
+}
+
+.page article {
+  line-height: 1.72;
+}
+
+a.internal {
+  border: 1px solid color-mix(in srgb, var(--secondary) 14%, transparent);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.sidebar {
+  --sidepanel-muted-border: color-mix(in srgb, var(--lightgray) 72%, transparent);
+}
+
+.sidebar.left,
+.sidebar.right {
+  border-color: var(--sidepanel-muted-border);
+}
+
+.explorer,
+.backlinks,
+.toc {
+  font-size: 0.94rem;
+}
+
+button,
+input {
+  font-family: var(--bodyFont);
+}

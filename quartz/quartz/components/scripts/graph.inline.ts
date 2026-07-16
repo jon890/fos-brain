@@ -374,6 +374,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   for (const n of graphData.nodes) {
     const nodeId = n.id
 
+    const isCurrentNode = nodeId === slug
     const label = new Text({
       interactive: false,
       eventMode: "none",
@@ -400,6 +401,11 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     })
       .circle(0, 0, nodeRadius(n))
       .fill({ color: isTagNode ? computedStyleMap["--light"] : color(n) })
+      .stroke({
+        width: isCurrentNode ? 3 : 1.15,
+        color: isCurrentNode ? computedStyleMap["--secondary"] : computedStyleMap["--light"],
+        alpha: isCurrentNode ? 0.95 : 0.8,
+      })
       .on("pointerover", (e) => {
         updateHoverInfo(e.target.label)
         oldLabelOpacity = label.alpha
@@ -416,7 +422,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       })
 
     if (isTagNode) {
-      gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"] })
+      gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"], alpha: 0.9 })
     }
 
     nodesContainer.addChild(gfx)
@@ -542,7 +548,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       l.gfx.moveTo(linkData.source.x! + width / 2, linkData.source.y! + height / 2)
       l.gfx
         .lineTo(linkData.target.x! + width / 2, linkData.target.y! + height / 2)
-        .stroke({ alpha: l.alpha, width: 1, color: l.color })
+        .stroke({ alpha: l.alpha, width: l.active ? 2 : 1.15, color: l.color })
     }
 
     tweens.forEach((t) => t.update(time))
