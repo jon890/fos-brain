@@ -1,7 +1,7 @@
 ---
 type: topic
 created: 2026-06-01
-updated: 2026-06-12
+updated: 2026-07-07
 ---
 
 # AI 개발 하네스
@@ -32,3 +32,4 @@ updated: 2026-06-12
 ## 관련 Topics
 
 - [[work-style]] — 이 하네스를 포함하는 상위 개발 스타일
+- [[ai-era-professionalism]] — 하네스를 조직과 개인 전문성 변화로 확장한 관점

@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-07-03
-updated: 2026-07-03
+updated: 2026-07-07
 ---
 
 # AI 시대 팅커러 인재
@@ -41,13 +41,23 @@ AI 시대의 커뮤니케이션은 사람에게 설명하는 능력에 더해, �
 따라서 설명력은 단순한 소프트 스킬이 아니다.
 [[codex-general-work-agent]]를 잘 쓰기 위한 실행 인터페이스이며, [[ai-generated-code-acceptance-criteria]]에서 요구하는 설명 가능성의 기반이다.
 
+## 전문성의 재정의
+
+하용호의 AI 시대 전문성 발표는 팅커러 태도에 운영 책임을 더한다.
+AI 도구를 잘 만지는 것만으로는 부족하고, 문제를 쪼개고 실패를 빠르게 판별하며 일이 되게 하는 구조를 만들어야 한다.
+
+이 관점에서 팅커러는 단순 실험가가 아니라 [[ai-era-professional-operator]]로 자라야 한다.
+도구 실험은 시작점이고, 검증 레이어와 취향과 책임 있는 판단이 전문성의 중심이 된다.
+
 ## 관련 개념
 
 - [[codex-general-work-agent]] — 설명력과 도구 실험을 실제 업무 자동화로 연결하는 표면
 - [[ai-native-startup-strategy]] — 팅커러 태도가 조직 전략으로 확장되는 맥락
 - [[ai-generated-code-acceptance-criteria]] — AI 결과를 사람이 설명하고 책임질 수 있어야 한다는 기준
+- [[ai-era-professional-operator]] — AI 시대 전문성이 운영 책임으로 이동하는 인재상
 - [[jocoding-youtube]] — 이 개념을 가져온 인터뷰 출처
 
 ## Sources
 
 - [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]]
+- [[../../raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md]]

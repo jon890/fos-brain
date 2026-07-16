@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-07-02
-updated: 2026-07-03
+updated: 2026-07-07
 ---
 
 # AI 생성 코드 채택 기준
@@ -51,8 +51,17 @@ AI 생성 변경을 리뷰할 때는 먼저 "무엇이 바뀌었는가"보다 "�
 따라서 업무 자동화 산출물도 코드 변경과 같은 질문을 통과해야 한다.
 내가 이 접근을 리뷰 자리에서 설명할 수 있는가, 실패했을 때 어디를 고쳐야 하는가, 자동화한 판단이 사람 승인 경계를 넘지 않았는가를 확인한다.
 
+## AI 시대 부채 연결
+
+하용호의 AI 시대 전문성 발표는 이 기준을 조직 차원의 부채 관리로 확장한다.
+AI가 만든 코드가 동작해도 사람이 설명하지 못하면 [[ai-era-debt-triad]]의 인지부채가 쌓이고, 결정 이유가 남지 않으면 의도부채가 쌓인다.
+
+따라서 채택 기준은 코드 품질 리뷰를 넘어 [[ai-verification-layer]]를 설계하는 문제다.
+사람은 모든 산출물을 직접 생산하지 않더라도, 어떤 검증을 통과했기에 믿을 수 있는지 설명해야 한다.
+
 ## Sources
 
 - [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]]
 - Vinicius Brasil, "When I reject AI code even if it works" (2026-06-20): https://vinibrasil.com/when-i-reject-ai-code-even-if-it-works/
 - [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]] — Codex가 코드 밖 업무 흐름까지 다루는 사례 보강
+- [[../../raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md]] — AI 시대 부채와 검증 레이어 관점 보강
