@@ -2,7 +2,6 @@
 name: brain-curate
 description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/sessions/**/*.jsonl) 세션 기록을 증분 분석해 개인 지식 기반(brain, ~/personal/fos-brain)에 올릴 durable 지식 후보를 자동 추출하고, 통합 리포트로 미리보기한 뒤 사용자가 고른 것만 brain-add로 통합한다. "세션 분석해서 brain에 올려", "claude 대화 정리해서 brain", "codex 세션 정리해서 brain", "지난 세션들 brain 큐레이션", "세션에서 지식 추출", "대화 세션 분석해서 지식 정리", "brain curate", "세션 하베스트", "내 작업 세션들 brain에 반영" 같은 요청 시 반드시 이 스킬을 사용한다. 단일 소스(URL·영상·메모·현재 대화)를 직접 넣는 것은 brain-add를 쓴다 — 이 스킬은 여러 과거 세션을 훑어 후보를 발굴하는 큐레이션 전용이다.
 ---
-
 # brain-curate
 
 여러 Claude Code 세션 기록을 훑어 brain 에 올릴 가치가 있는 durable 지식을 발굴하는 큐레이션 워크플로우.
@@ -16,8 +15,6 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 - 자동 등록은 절대 하지 않는다 (fos-brain 철칙) → 항상 미리보기 → 선택 → 등록.
 
 ## 대상 디렉터리
-
-`~/personal/fos-brain` — brain 본체. 다른 곳에서 호출됐으면 사용자에게 확인한다.
 
 세션 기록은 두 소스에서 온다 — `--tool` 로 선택한다(기본 `both`).
 
@@ -85,9 +82,6 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 
 - 대상이 **8개 이하**: `Agent` 도구를 한 메시지에 여러 개 띄워 병렬 처리한다.
 - 대상이 많으면: `Workflow` 로 fan-out 한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
-  - **Workflow `args` 함정 (실측)**: 이 런타임에서 `args` 가 스크립트에 배열로 전달되지 않아 `items.map` 이 `undefined is not a function` 으로 깨진다. 대상 목록을 `args` 로 넘기지 말고 **스크립트 본문에 데이터 배열을 직접 임베드**한다(`const items = [{txt, project, ns}, ...]`). 스크립트는 파일시스템 접근이 안 되므로 정제본 경로를 이렇게 박아 넣는 게 유일한 방법이다.
-  - 각 agent 에 `schema` 를 주면 검증된 JSON(`{candidates:[...]}`)으로 반환된다. 큰 정제본(1MB+)도 agent 가 `Read` 로 읽으면 처리된다.
-  - **대량 fan-out rate limit (실측)**: 50개 이상을 한 Workflow 에 parallel 로 주면 16-concurrent 로 빠르게 쏟아져 서버측 일시 rate limit(`Server is temporarily limiting requests · not your usage limit`)에 걸려 다수가 빈 결과로 실패한다. **20개씩 배치로 나눠** 여러 Workflow 로 순차 실행한다. 실패해도 `.then` 이 빈 candidates 를 반환하므로, **빈 결과 세션만 추려 다음 배치에서 재시도**하면 된다(이미 성공한 세션은 건너뛴다).
 
 각 추출 agent 프롬프트에 담을 것:
 
@@ -122,10 +116,12 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 
 후보 전체를 채팅 본문에 **인라인 표**로 보여준다. 파일로만 저장하지 않는다(사용자가 검토·수정해야 한다).
 
-| # | 후보 | 타입 | 신규/보강 | NS | 근거 세션 | durable 이유 |
-|---|------|------|-----------|----|-----------|--------------|
-| 1 | ... | concept | 신규 | public | docu-parser 2건 | ... |
-| 2 | ... | concept | 보강: [[기존페이지]] | private | ... | ... |
+
+| #   | 후보  | 타입      | 신규/보강         | NS      | 근거 세션          | durable 이유 |
+| --- | --- | ------- | ------------- | ------- | -------------- | ---------- |
+| 1   | ... | concept | 신규            | public  | docu-parser 2건 | ...        |
+| 2   | ... | concept | 보강: [[기존페이지]] | private | ...            | ...        |
+
 
 - 함정에만 편중되지 않았는지 점검한다(개념·결정·도메인 지식이 같이 있는가).
 - 회사·팀 지식으로 제외한 후보는 "nbrain 대상 — 등록 제외" / "코드로 자명해 제외" / "skill 로 라우팅" 중 하나를 표에 드러낸다.
@@ -155,9 +151,6 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 선택된 후보만 `brain-add` 로 넘긴다. 후보의 정보(제목·요약·핵심·네임스페이스·근거 세션)를 brain-add 의 입력으로 정리해 호출한다.
 
-- 근거 세션 경로를 Sources 로 남기되, raw 출처가 세션 기록이므로 핵심 요약을 `<ns>/raw/notes/` 에 대화 요약으로 저장한 뒤 컴파일한다(원문 jsonl 전체가 아니라 재사용 가치 있는 핵심만).
-- brain-add 가 백링크·INDEX·log·재색인(qmd update/embed)·검색 검증(query test)을 처리한다 — 중복 구현하지 않는다. brain-add 를 호출하면 8·9단계까지 끝까지 돌려 재색인·검색 검증이 누락되지 않게 한다.
-
 ## 9단계 — 마무리
 
 - **워터마크 갱신**: `~/.claude/brain-curate.state.json` 의 `last_curated` 를 이번 실행 시작 시각으로, `runs` 에 요약 추가.
@@ -172,3 +165,4 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 일회성 작업 기록을 durable 지식으로 등록 (git 으로 자명한 것).
 - 공개 페이지에서 private 링크.
 - 한 번에 너무 많은 세션을 무차별 처리 (규모를 사용자에게 알리고 범위를 좁힌다).
+
