@@ -17,13 +17,13 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 
 ## 신규 레포 구축 순서 (즉시 따라 만들기)
 
-1. **트리거** — `pull_request: [opened]` + `issue_comment: [created]` 둘 다. 전자는 자동 리뷰, 후자는 `/review` 댓글로 수동 재실행.
+1. **트리거** — `pull_request: [opened]`, `issue_comment: [created]` 둘 다. 전자는 자동 리뷰, 후자는 `/review` 댓글로 수동 재실행.
 2. **봇·중복 제어** — `if: !endsWith(github.actor, '[bot]')` 로 모든 봇 트리거 제외(무한 루프·소음 방지). `concurrency` 그룹으로 같은 PR 의 이전 run 취소.
 3. **권한** — `contents: read`, `pull-requests: write`, `issues: write` 만. `checks: write` 는 check-run 을 쓸 때만(아래 함정 참조).
-4. **CLI 경로 + 모델 smoke** — `which claude` 로 바이너리를 찾고 `claude --model <별칭> --print -p ok` 로 모델 인식을 사전 확인(실패 시 조기 fail).
+4. **CLI 경로, 모델 smoke** — `which claude` 로 바이너리를 찾고 `claude --model <별칭> --print -p ok` 로 모델 인식을 사전 확인(실패 시 조기 fail).
 5. **프롬프트** — 외부 파일로 분리(아래 "프롬프트 설계").
-6. **claude 실행** — `--allowedTools Bash` + `--disallowedTools "Agent,Read,Write,Edit,..."` 로 read-only + gh 만 허용.
-7. **게시** — 인라인 리뷰(reviews API) + 요약 댓글 1개(`gh pr comment --body-file -`). 매 실행 전 이전 봇 댓글을 DELETE 해 중복을 막는다.
+6. **claude 실행** — `--allowedTools Bash`, `--disallowedTools "Agent,Read,Write,Edit,..."` 로 read-only, gh 만 허용.
+7. **게시** — 인라인 리뷰(reviews API), 요약 댓글 1개(`gh pr comment --body-file -`). 매 실행 전 이전 봇 댓글을 DELETE 해 중복을 막는다.
 8. **진행 표시** — `/review` 댓글에 👀(시작)/✅(종료) reaction.
 
 ## 트리거와 실행 제어
@@ -52,7 +52,7 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 
 - prompt 는 `.txt` 외부 파일 — `.md` 금지(포맷터가 glob `*.lock`·식별자 escape 깨뜨림).
 - `--model opus` 별칭 — 고정 태그(`claude-opus-4-7`) 금지.
-- `envsubst '$PR_NUMBER $REPO'` 화이트리스트 — 파일이 YAML 밖이라 `${{ }}` 가 안 먹으므로 `$VAR` placeholder + 명시 치환. 화이트리스트를 줘야 프롬프트 안 다른 `$` 표현이 안 깨진다.
+- `envsubst '$PR_NUMBER $REPO'` 화이트리스트 — 파일이 YAML 밖이라 `${{ }}` 가 안 먹으므로 `$VAR` placeholder, 명시 치환. 화이트리스트를 줘야 프롬프트 안 다른 `$` 표현이 안 깨진다.
 
 marketplace action 의 멀티라인 output 패턴:
 
@@ -129,5 +129,5 @@ c 부터 추가(`+`)·context 라인을 누적해 라인을 구하되 삭제(`-`
 ## Sources
 
 - [[../../raw/notes/2026-05-28-ai-code-review-github-actions.md]]
-- [[../../raw/notes/2026-05-29-claude-code-review-cli-recipe.md]] (self-hosted CLI 방식 + 신규 구축 레시피 + 함정 보강)
-- github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml` (2026-06-02: marketplace action 방식으로 prompt 를 `code-review-prompt.txt` 외부 분리 + `--model opus` 별칭 적용, 일반 리뷰 우선 개방형 프레이밍 반영)
+- [[../../raw/notes/2026-05-29-claude-code-review-cli-recipe.md]] (self-hosted CLI 방식, 신규 구축 레시피, 함정 보강)
+- github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml` (2026-06-02: marketplace action 방식으로 prompt 를 `code-review-prompt.txt` 외부 분리, `--model opus` 별칭 적용, 일반 리뷰 우선 개방형 프레이밍 반영)

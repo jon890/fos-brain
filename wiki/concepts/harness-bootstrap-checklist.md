@@ -27,10 +27,10 @@ updated: 2026-06-16
 3. **전용 agent** — `.claude/agents/<repo>-{executor,docs-verifier}.md` 에 도메인 지식을 캡슐화한다([[custom-domain-agent]]).
    - 코딩 규칙·환경 함정·ADR 범위를 프롬프트에 내장한다.
    - 검증 agent 는 tools 를 read-only 로 좁힌다.
-4. **회피 패턴 wiki** — `_shared/pitfalls/` 에 파일-per-패턴 + INDEX 라우터를 둔다([[pitfalls-file-per-pattern]]).
-   - 초기엔 비어 있어도 된다. 회고가 게이트 통과분만 누적한다.
+4. **회피 패턴 wiki** — `_shared/pitfalls/` 에 파일-per-패턴, INDEX 라우터를 둔다([[pitfalls-file-per-pattern]]).
+   - 초기엔 비어 있어도 된다. 회고가 통과 조건을 넘긴 분만 누적한다.
 5. **docs 골격** — ADR 과 표준 docs 세트, docs-first 규율([[docs-first-adr]]).
-   - ADR 은 자명성 게이트를 통과한 결정만 담는다. 가독성 6원칙을 적용한다.
+   - ADR 은 자명성 통과 조건을 넘긴 결정만 담는다. 가독성 6원칙을 적용한다.
 6. **CI 자동 리뷰** — PR 자동 코드 리뷰를 CI 에 붙여 루프를 닫는다([[ai-code-review-github-actions]]).
 7. **자기개선 루프** — 리뷰 학습을 pitfalls·스킬에 환원한다([[self-improving-harness]]).
 

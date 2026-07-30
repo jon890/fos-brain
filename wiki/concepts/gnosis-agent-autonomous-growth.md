@@ -40,7 +40,7 @@ GNOSIS에서 갱신되는 것은 기반 LLM의 transformer weight가 아니다.
 - constitution 검증 시나리오
 
 이 구조는 모델 제공자가 바뀌어도 오케스트레이션 레이어가 유지될 수 있다는 장점을 준다.
-반대로 실제 성능은 외부 기억 검색, 평가 함수, 안전 게이트 품질에 크게 의존한다.
+반대로 실제 성능은 외부 기억 검색, 평가 함수, 안전 점검 품질에 크게 의존한다.
 
 ## 성장의 정의
 
@@ -67,7 +67,7 @@ GNOSIS가 목표로 하는 성장은 후자에 가깝다.
 ## 관련 개념
 
 - [[agent-autonomy-growth-levels]] — 도구형 AI에서 자율 성장형 에이전트로 가는 L0-L5 단계
-- [[constitutional-growth-gate]] — 업데이트를 허용하기 전에 constitution 위반 여부를 검사하는 hard gate
+- [[constitutional-growth-gate]] — 업데이트를 허용하기 전에 constitution 위반 여부를 검사하는 강제 점검 장치
 - [[ai-harness-pattern]] — 에이전트가 자율 실행할 환경을 갖추는 기존 하네스 패턴
 - [[self-improving-harness]] — 리뷰·실패 학습을 스킬과 문서에 누적하는 기존 메타 루프
 

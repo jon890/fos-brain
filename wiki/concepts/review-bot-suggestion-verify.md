@@ -21,7 +21,7 @@ updated: 2026-06-12
 ## 관련 개념
 
 - [[pydantic-invalid-kwarg-silent-ignore]] — 마찬가지로 "적용됐다고 가정 금지, 결과로 검증" 하는 패턴
-- [[removal-plan-grep-gate]] — grep 성공 기준이 실제 작업 범위와 어긋날 때 생기는 게이트 함정
+- [[removal-plan-grep-gate]] — grep 성공 기준이 실제 작업 범위와 어긋날 때 생기는 통과 조건 함정
 
 ## Sources
 

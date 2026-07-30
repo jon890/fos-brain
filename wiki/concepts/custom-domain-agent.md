@@ -32,7 +32,7 @@ model: sonnet   # 검증 agent 는 read-only, 실행 agent 는 작업 모델
 - `<Domain_Rules>` — 환경 함정 표, 코딩 규칙 N항, 상황별 ADR 참조 표, 빌드 검증 명령.
 - `<Self_Check>` — 작업 완료 직전 실행할 카테고리별 grep 을 박아두고 "0건 보장 후 보고".
 - `<Verification_Protocol>` — 완료 보고 형식(변경 파일·검증 결과)과 차단 조건(import 실패 등).
-- `<Self_Discipline>` — git 금지·작업 디렉터리 격리·외과적 변경·단일 소스 존중.
+- `<Self_Discipline>` — git 금지·작업 디렉터리 격리·꼭 필요한 곳만 고치는 변경·단일 소스 존중.
 
 ## executor 의 phase 분리
 

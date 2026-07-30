@@ -1,6 +1,6 @@
 # Wiki Log
 
-Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다. `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
+Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다. `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
 ## [2026-07-30] maintain | 마크다운 가독성 관련 내용 제거 (hooks 로 이관)
 
@@ -39,7 +39,7 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 도구 보정: `brain_score.py` 의 Sources 판정을 wikilink 필수에서 비어 있지 않은 Sources 섹션으로 변경해 외부 repo·실측 로그 출처 오탐을 제거
 
 ## [2026-06-16] ingest | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
-- Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업 + 독립 평가에서 도출한 일반화 학습
+- Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업, 독립 평가에서 도출한 일반화 학습
 - 신규 1 섹션: "인라인 라인 계산 — read-only 리뷰봇의 함정" (hunk 헤더 누적 계산법·422 는 entry 만 빼고 재시도·실패해도 요약 게시)
 - 함정 3 bullet: 큰 diff false negative(규모 판단 후 전수 못 하면 명시), 구체 체크리스트의 오탐 역효과(read-only↔구체성 trade-off), 빈 배열 API 차단 > 자연어 sanity
 - 범위: repo 무관 일반 방법론만. fos-blog 프롬프트 전문·도메인 특화 항목은 repo 에 두고 미등록
@@ -47,18 +47,18 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-06-12] ingest | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
 - Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (한 프로젝트 하네스가 plan 43개 진행하며 발전한 분석 중 기존 concept 보강분, repo 무관 일반화)
 - 보강 5 concept: build-with-teams-rules(스폰 안전·재시도 한도·spawn-shutdown·특이사항 4종·마킹 사고 역검증), self-improving-harness(역할별 회고 거울 구조·회피 패턴 wiki 운영 규율), ai-harness-pattern(커스텀 도메인 에이전트=단일 소스), planning-eight-step-design(번호 충돌 방지·docs↔코드 식별자 정합), merge-conflict-free-append(축적 점검·prune 운영 규율 한 줄 연결)
-- 운영 개념(격리 검증·카나리 rolling·에러 분류)은 사용자 결정으로 brain 신설 보류 — 보강분만 반영
+- 운영 개념(격리 검증·인스턴스 순차 배포 검증 rolling·에러 분류)은 사용자 결정으로 brain 신설 보류 — 보강분만 반영
 - 맥락: 2026-06-01 노트는 planning/review-fix/docs-check 3스킬만 추출 → 그 후 발전한 (1)자기개선 인프라 (2)평가자 다단 파이프라인 보강분을 환원. docu-parser 구체(인스턴스명·도메인·사내 식별자)는 전부 제거
 
 ## [2026-06-12] lint | public 연결·stale 점검 — 건강 확인, 실질 수정 0
-- 검사: 구조 10항 + stale 품질축 / 발견: 실질 0 (brain_score -53 은 대부분 오탐)
+- 검사: 구조 10항, stale 품질축 / 발견: 실질 0 (brain_score -53 은 대부분 오탐)
 - 연결: 깨진 백링크 0, 고아 0, 경로형 0(raw Sources 면제), 누출 0 (work-style 은 public topics 인데 score 가 work/ slug 로 오인)
-- stale: 하네스 concept 다 최근·역할 분명 → prune 불필요. openclaw 는 이미 topics/openclaw + INDEX 카테고리로 분리 완료(비대 오판)
+- stale: 하네스 concept 다 최근·역할 분명 → prune 불필요. openclaw 는 이미 topics/openclaw, INDEX 카테고리로 분리 완료(비대 오판)
 - 미수정(면제): docker-compose-config-reload Sources(실측 함정 ADR류), frontmatter 1(미미), style_tilde 1(범위표기·홈경로 오탐)
 
 ## [2026-06-12] ingest | 누적 파일 머지 충돌 구조 제거 패턴 신규 + planning phase/docs 함정 보강
 - Source: raw/notes/2026-06-12-adr-directory-split.md
-- 신규 1 페이지: concept(merge-conflict-free-append) — append 파일 충돌을 파일 per 항목 + INDEX 라우터로 제거, 번호 glob 으로 발견성 보존
+- 신규 1 페이지: concept(merge-conflict-free-append) — append 파일 충돌을 파일 per 항목, INDEX 라우터로 제거, 번호 glob 으로 발견성 보존
 - 보강 2 페이지: planning-eight-step-design (phase = 코드 작업 only 섹션에 "결정 docs 는 planning 책임, phase 아님" 함정), ai-harness-pattern (백링크)
 - 맥락: docu-parser plan043 — adr.md 단일 파일이 PR 마다 끝줄 충돌(PR #166 ADR-028 vs 029) → pitfalls 의 파일 per 패턴 구조를 ADR 로 이식
 
@@ -81,7 +81,7 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ## [2026-05-19] ingest | RAG 시스템 사례 비교 (Toss, 우아한형제들, Sionic AI)
 - Sources: `raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf` (15p), `raw/notes/다른 기업의 RAG 시스템 발표자료.md`
-- 신규 5 concept + 1 topic. INDEX 신규 등록.
+- 신규 5 concept, 1 topic. INDEX 신규 등록.
 
 ## [2026-05-19] query | 토스·우아한형제들·Sionic 의 핵심 차이는?
 - 답변 근거: `topics/rag-system-architecture-strategies`. raw 하강 불필요.
@@ -119,11 +119,11 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 ## [2026-05-28] add | fos-study 관측성 클러스터 (observability + k8s /run tmpfs)
 - Source: fos-study `architecture/observability-basics.md`, `devops/k8s/gpu-node-run-tmpfs-full.md` (외부 repo, 경로 인용)
 - 신규 7 페이지: topic 1(observability), concept 6(observability-three-pillars, latency-percentiles, red-use-metrics, prometheus-histogram-vs-summary, slo-burn-rate-alerting, k8s-run-tmpfs-containerd)
-- 게이트: gpu-tmpfs 는 fos-study(blog-post-writer 검증 완료)가 출처라 public 으로. 코드 스니펫·체크리스트는 제외(원본 참조).
+- 통과 조건: gpu-tmpfs 는 fos-study(blog-post-writer 검증 완료)가 출처라 public 으로. 코드 스니펫·체크리스트는 제외(원본 참조).
 
 ## [2026-05-28] add | fos-claw(ai-nodes) 자동화 시스템 아키텍처
 - Source: github.com/jon890/fos-claw AGENTS.md/README.md (public repo, 경로 인용)
-- 신규 4 페이지: entity(ai-nodes) + concept 3(multi-workspace-monorepo, script-skill-separation, task-run-tracking)
+- 신규 4 페이지: entity(ai-nodes), concept 3(multi-workspace-monorepo, script-skill-separation, task-run-tracking)
 - 범위: 아키텍처·패턴만(개인 워크스페이스 데이터 제외). work-style 하네스 클러스터와 cross-link.
 
 ## [2026-05-28] add | GitHub Actions AI 코드 리뷰 워크플로우 패턴
@@ -144,25 +144,25 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ## [2026-06-01] add | docu-parser 워크플로 스킬 3종 방법론
 - Source: raw/notes/2026-06-01-docu-parser-workflow-skills.md (ai-playground-docu-parser .claude/skills/{planning,review-fix,docs-check})
-- 신규 3 페이지: concept(planning-eight-step-design, pr-review-fix-workflow, docs-six-axis-audit), 보강 1(ai-harness-pattern 인라인 백링크 + 관련 개념 3건)
-- 범위: 새 프로젝트에 포팅 가능한 절차·결정 규칙만 (8단계 골격·ADR 자명성 게이트·6축·봇 루프 방지·학습 누적). 명령어 시퀀스·docu-parser 특화 세부 제외.
+- 신규 3 페이지: concept(planning-eight-step-design, pr-review-fix-workflow, docs-six-axis-audit), 보강 1(ai-harness-pattern 인라인 백링크, 관련 개념 3건)
+- 범위: 새 프로젝트에 포팅 가능한 절차·결정 규칙만 (8단계 골격·ADR 자명성 통과 조건·6축·봇 루프 방지·학습 누적). 명령어 시퀀스·docu-parser 특화 세부 제외.
 - release-flow/test-flow 는 NHN 인프라 특화라 work/nhn 으로 분리.
 
 ## [2026-06-01] add | 운영 트러블슈팅 topic 신설 — concepts 주제 분리
 - 신규 1 페이지: topic(operations-troubleshooting)
 - 보강: k8s-run-tmpfs-containerd·docker-compose-config-reload 에 topic 역백링크
-- INDEX: "관측성·운영(학습)" → "관측성(학습)" + "운영·트러블슈팅(실전)" 분리, Topics 등록
+- INDEX: "관측성·운영(학습)" → "관측성(학습)", "운영·트러블슈팅(실전)" 분리, Topics 등록
 
 ## [2026-06-01] add | dooray-cli 도구 지식 — 사용·설계 패턴·MVP 방법론
 - Source: raw/repos/2026-06-01-dooray-cli-tool-analysis.md (github.com/jon890/dooray-cli)
 - 신규 1 페이지: concept(agent-friendly-cli-design)
-- 보강 3 페이지: dooray-cli(도구 섹션 — 무엇/어떻게/어디에), ai-harness-pattern(하네스 정의 + MVP 3단계 워크플로), nhncloud-cli(agent-friendly 백링크)
+- 보강 3 페이지: dooray-cli(도구 섹션 — 무엇/어떻게/어디에), ai-harness-pattern(하네스 정의, MVP 3단계 워크플로), nhncloud-cli(agent-friendly 백링크)
 - 평가: 도구 사용 지식은 비어 있고 하네스 관점만 있었음 → 도구 정체성·사용·설계 패턴을 채움. 개별 명령 문법은 --help/README 로 충분하여 제외
 
 ## [2026-06-01] add | AI 개발 하네스 topic 신설 — "업무 스타일" 카테고리 분리
 - 신규 1 페이지: topic(ai-dev-harness)
 - 보강: ai-harness-pattern 역백링크
-- INDEX: "업무 스타일"(13개 비대) → "AI 개발 하네스"(8) + "개인 코딩 규율·취향"(5) 분리, Topics 등록
+- INDEX: "업무 스타일"(13개 비대) → "AI 개발 하네스"(8), "개인 코딩 규율·취향"(5) 분리, Topics 등록
 - 계기: 카테고리 비대 규약(brain-add 9단계) 작동
 
 ## [2026-06-01] move | OCR-docs → work/nhn 이동 + entity repo 링크 추가
@@ -179,8 +179,8 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
   - 개인/팀 규칙 위치 분리(개인=~/.claude, 팀=레포 .claude/rules)
 
 ## [2026-06-02] add | OpenClaw topic 신설 — 게이트웨이 운영·설정 지식
-- Source: raw/notes/2026-06-02-openclaw-knowledge-session.md (공식 docs + GitHub 소스 + doctor/CLI 실측)
-- 신규 10 페이지: topic openclaw + concept 9개(overview, architecture, sessions, channels-routing, tool-policy, config, gateway-ops, cli-reference, message-tool)
+- Source: raw/notes/2026-06-02-openclaw-knowledge-session.md (공식 docs, GitHub 소스, doctor/CLI 실측)
+- 신규 10 페이지: topic openclaw, concept 9개(overview, architecture, sessions, channels-routing, tool-policy, config, gateway-ops, cli-reference, message-tool)
 - 보강 1 페이지: ai-nodes entity 에 [[openclaw]] 교차링크
 - 계기: "작업 요청 → 관련 지식 탐색" 플로우용 일반 지식 누적(함정만 X). tool-policy allow 교집합 함정·웹UI↔Discord 미러링 한계 포함
 
@@ -211,13 +211,13 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 
 ## [2026-06-16] add | DB 커넥션 풀 사이징·함정 + 코딩하는기술사 채널 entity
 - Source: raw/videos/2026-06-15-connection-pool-sizing.md (코딩하는기술사 유튜브, 멤버십·자동자막)
-- 신규 2 concept(connection-pool-sizing, connection-pool-pitfalls) + 1 entity(coding-engineer-tv)
+- 신규 2 concept(connection-pool-sizing, connection-pool-pitfalls), 1 entity(coding-engineer-tv)
 - 보강 1: red-use-metrics (Saturation↔커넥션 풀 한계 연결)
 
 ## [2026-06-16] add | 하네스 강화 — 전용 agent·pitfalls 구조·부트스트랩 (3 concept)
-- Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (섹션 1·5) + docu-parser .claude/ 실측
+- Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (섹션 1·5), docu-parser .claude/ 실측
 - 신규 3 concept(custom-domain-agent, pitfalls-file-per-pattern, harness-bootstrap-checklist), 보강 1(ai-harness-pattern 백링크 3)
-- 2026-06-12 raw note 의 보강-보류분을 정식 concept 으로 승격. brain-add 에 HTML 미리보기(6b) + brain-preview 생성기 번들화(scripts/+templates/) 반영.
+- 2026-06-12 raw note 의 보강-보류분을 정식 concept 으로 승격. brain-add 에 HTML 미리보기(6b), brain-preview 생성기 번들화(scripts/+templates/) 반영.
 
 ## [2026-06-17] add | 문서 파싱 품질 평가 방법론 (brain-curate 증분, public)
 - Source: raw/web/2026-06-17-parsing-quality-eval.md (docling-eval·NED 공개 출처)
@@ -229,11 +229,11 @@ Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한�
 - 보강 2 페이지: ai-harness-pattern, self-improving-harness
 
 ## [2026-07-01] lint | brain-lint stale 마커 축 추가 후 첫 실행 (public/private/work 통합)
-- 검사: 11개 항목 / 발견: Sources 링크 포맷 이탈 1건(수정) + 모순 후보 1건(오탐 확인, 조치 없음)
+- 검사: 11개 항목 / 발견: Sources 링크 포맷 이탈 1건(수정), 모순 후보 1건(오탐 확인, 조치 없음)
 - 수정: ingress-controller-internal-external-split.md Sources 링크를 `[[../../raw/notes/....md]]` 표준 포맷으로 정정
 
 ## [2026-07-07] add | 하용호 AI 시대 전문성 인프런 PDF
-- Source: raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md + raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.pdf
+- Source: raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md, raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.pdf
 - 신규 6 페이지: topic(ai-era-professionalism), concepts(ax-j-curve-trap, ai-era-debt-triad, ai-verification-layer, ai-native-company, ai-era-professional-operator)
 - 보강 4 페이지: ai-generated-code-acceptance-criteria, ai-era-tinkerer-talent, agent-autonomy-growth-levels, ai-dev-harness
 - 평가: 공개 발표자료 기반이라 public 으로 등록. AX 도입 단계, AI 시대 부채, 검증 레이어, AI-native 회사, 전문성 재정의는 기존 노드와 부분 연결되지만 별도 durable 개념으로 분리할 가치가 있음.

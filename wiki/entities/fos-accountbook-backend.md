@@ -27,7 +27,7 @@ updated: 2026-06-01
     - status Enum soft-delete
     - `@ValidateFamilyAccess` AOP
     - `@TransactionalEventListener(AFTER_COMMIT)` 이벤트
-    - domain 인터페이스 + infra 구현 분리
+    - domain 인터페이스, infra 구현 분리
 - 하네스
   - 스킬 6개
     - planning

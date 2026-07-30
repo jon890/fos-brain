@@ -15,7 +15,7 @@ updated: 2026-05-28
 - containerd shim v2 는 **컨테이너당 task 디렉터리**를 `/run/containerd/.../` 에 만든다.
   - `config.json`(OCI 스펙), `log`(FIFO), `address`(소켓), `rootfs/`(overlay 마운트 포인트)
 - overlay 마운트 포인트가 `/run` 에 있어, 커널이 그 아래 **dentry·inode 메타데이터**를 tmpfs 공간에 생성한다.
-- 이미지 레이어가 많을수록(예: LLM 이미지 약 50 lowerdir) + 컨테이너 수가 많을수록 메타데이터가 누적돼 tmpfs 를 소진한다.
+- 이미지 레이어가 많을수록(예: LLM 이미지 약 50 lowerdir), 컨테이너 수가 많을수록 메타데이터가 누적돼 tmpfs 를 소진한다.
 
 ## 진단
 

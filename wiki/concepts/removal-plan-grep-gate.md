@@ -4,13 +4,13 @@ created: 2026-06-12
 updated: 2026-06-12
 ---
 
-# 제거(removal) 작업의 grep 게이트 함정과 docs 부패
+# 제거(removal) 작업의 grep 통과 조건 함정과 docs 부패
 
-코드 구조물만 제거하는 작업에서 성공 기준을 "grep 결과 0건" 으로 잡으면 작업 범위 밖 텍스트 참조가 게이트를 막고, 제거된 객체를 설명하던 docs 본문이 부패한다.
+코드 구조물만 제거하는 작업에서 성공 기준을 "grep 결과 0건" 으로 잡으면 작업 범위 밖 텍스트 참조가 통과를 막고, 제거된 객체를 설명하던 docs 본문이 부패한다.
 
-## grep 게이트가 작업 목록보다 넓을 때
+## grep 통과 조건이 작업 목록보다 넓을 때
 
-- 제거 작업에서 "grep -rn 0건" 성공 기준은 작업 목록이 실제 편집하는 파일 범위와 일치해야 한다 — 더 넓으면 docstring·주석·타 phase 파일이 매치되어 게이트가 깨진다.
+- 제거 작업에서 "grep -rn 0건" 성공 기준은 작업 목록이 실제 편집하는 파일 범위와 일치해야 한다 — 더 넓으면 docstring·주석·타 phase 파일이 매치되어 통과 조건이 깨진다.
 - 흔히 놓치는 잔존 참조
   - 제거 대상 심볼을 언급하는 모듈 docstring.
   - 한 phase 앞에서 다른 phase 가 지울 안내 줄을 검증하는 비대칭.
@@ -29,7 +29,7 @@ updated: 2026-06-12
 ## 관련 개념
 
 - [[review-bot-suggestion-verify]] — grep 패턴을 실측 검증해야 하는 같은 계열의 함정
-- behavior invariant refactor scope — 검증 게이트가 작업 범위와 어긋날 때의 비대칭
+- behavior invariant refactor scope — 검증 통과 조건이 작업 범위와 어긋날 때의 비대칭
 
 ## Sources
 

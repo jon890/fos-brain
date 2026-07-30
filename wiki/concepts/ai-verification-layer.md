@@ -45,7 +45,7 @@ AI는 자신이 만든 결과를 옹호하는 경향이 있다.
 - [[ai-era-debt-triad]] — 검증 레이어가 줄이려는 인지부채와 의도부채
 - [[ai-generated-code-acceptance-criteria]] — 사람이 최종 채택을 설명할 수 있어야 한다는 기준
 - [[agent-autonomy-growth-levels]] — 자율성이 높아질수록 필요한 검증과 안전 장치
-- [[constitutional-growth-gate]] — 성장형 에이전트 업데이트 전 hard gate
+- [[constitutional-growth-gate]] — 성장형 에이전트 업데이트 전 강제 점검 장치
 - [[ai-era-professional-operator]] — 검증 레이어를 설계하고 운영하는 전문가상
 
 ## Sources

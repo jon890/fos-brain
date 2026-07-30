@@ -10,7 +10,7 @@ updated: 2026-05-28
 
 ## 핵심 포인트
 
-- **형식**: `type(scope): 설명` — 영문 type/scope + **한국어 본문 설명**.
+- **형식**: `type(scope): 설명` — 영문 type/scope, **한국어 본문 설명**.
 - **type 분포** — chore 가 가장 많고, 이하 순서로 사용한다.
   - chore
   - docs

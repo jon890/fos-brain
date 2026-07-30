@@ -23,7 +23,7 @@ updated: 2026-05-19
 ## 관련 개념
 
 - [[woowa-mulebose-text-to-sql]] — 본 패턴의 대표 구현 사례
-- [[toss-park-ssi-rag]] — 단일 체인 + Context Injection 만 사용하는 더 단순한 RAG 와 대조
+- [[toss-park-ssi-rag]] — 단일 체인, Context Injection 만 사용하는 더 단순한 RAG 와 대조
 
 ## 관련 주제
 

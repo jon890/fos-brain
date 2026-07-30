@@ -22,7 +22,7 @@ updated: 2026-05-28
 ## Multi-window, multi-burn-rate
 
 - SLO budget 소진 속도로 긴급도를 가른다.
-- "1시간 14.4배 burn" + "6시간 6배 burn" 을 동시에 만족하면 긴급 페이지(fast burn).
+- "1시간 14.4배 burn", "6시간 6배 burn" 을 동시에 만족하면 긴급 페이지(fast burn).
 - 한쪽만이면 덜 긴급한 티켓.
 
 ## Flapping 억제

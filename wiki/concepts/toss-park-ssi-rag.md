@@ -19,7 +19,7 @@ updated: 2026-05-19
 ## 관련 개념
 
 - [[docflow-code-to-doc]] — Ingestion 단계의 문서 최신성 강제 메커니즘
-- [[multi-chain-rag-architecture]] — Toss 는 단일 체인 + Context Injection 위주, 우아한형제들 사례와 대비
+- [[multi-chain-rag-architecture]] — Toss 는 단일 체인, Context Injection 위주, 우아한형제들 사례와 대비
 - [[sionic-vlm-document-parsing]] — Toss 는 텍스트 문서 중심이라 파싱 이슈가 적음, 데이터 품질 축의 대조
 
 ## 관련 주제

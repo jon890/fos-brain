@@ -23,7 +23,7 @@ Microsoft 가 공개한, 타깃 모델은 frozen 으로 두고 별도 옵티마�
   - 거부 편집 버퍼 = momentum·history
   - epoch 단위 meta 업데이트 = slow weights
 - SkillOpt-Sleep — 코딩 에이전트용 야간 정리 사이클
-  - 세션 기록 채굴 → 오프라인 재실행 → 게이트 통과 편집만 staging → 사람이 채택
+  - 세션 기록 채굴 → 오프라인 재실행 → 통과 조건을 넘긴 편집만 staging → 사람이 채택
   - Claude Code `/sleep` 플러그인을 공식 제공한다
 
 > 성능 수치(7모델 × 6벤치 × 3환경 52조합 전부 1위, 무스킬 대비 +19~25점)는 README 주장이며 직접 재현하지 않았다.
