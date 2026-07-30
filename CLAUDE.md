@@ -1,20 +1,20 @@
-# fos-brain — Claude Code 작업 규칙
+# fos-brain
 
 이 저장소는 Karpathy 스타일 LLM 지식 기반(brain)이다.
 원본(`raw/`)은 사용자가 수집하거나 brain-add 로 가져오고, 위키(`wiki/`)는 Claude Code 가 컴파일·유지한다.
 
 범용 개인 brain 이다 — 기술 연구뿐 아니라 일지·목표·건강·취미 등 개인 지식 전반을 다룬다.
 
-메모는 별도 공간(`~/personal/obsidian`)에서 작성하고, 그중 brain 에 통합할 가치가 있는 것만 brain-add 로 이 저장소에 가져온다.
-
 ## 네임스페이스 (공개·비공개 분리)
 
 brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립된 mini-brain(자체 `raw/` + `wiki/` + INDEX + log)이다.
 
-| 네임스페이스 | 경로 | git | Quartz 공개 | 용도 |
-| --- | --- | --- | --- | --- |
-| public | 루트(`raw/`, `wiki/`) | commit | 게시 | 공개 가능한 개인 자료 |
-| private | `private/` | **gitignore** | 제외 | 개인 비공개 자료 |
+
+| 네임스페이스  | 경로                  | git           | Quartz 공개 | 용도           |
+| ------- | ------------------- | ------------- | --------- | ------------ |
+| public  | 루트(`raw/`, `wiki/`) | commit        | 게시        | 공개 가능한 개인 자료 |
+| private | `private/`          | **gitignore** | 제외        | 개인 비공개 자료    |
+
 
 회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키 기반 사내 지식 검색)으로 관리한다.
 
@@ -25,18 +25,20 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
 3. **검색**: brain-search 는 로컬에서 두 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
 4. **gitignore 불변**: `private/` 를 commit 대상에 올리지 않는다. `.gitignore` 를 수정해 비공개를 공개로 바꾸지 않는다.
 5. **네임스페이스 간 매핑**(비공개 ↔ 공개 지식 연결): 비공개 → 공개 방향만 건다.
-   - 비공개 페이지에서 **bare-slug** `[[개념명]]` 으로 공개 개념을 가리킨다(경로 없이). 병합 빌드에서 slug 로 해석된다.
-   - 이 cross-link 는 **로컬 전체 그래프(`quartz-local`)에서만** 렌더된다. 공개 빌드(`quartz`)엔 비공개 노드가 없어 보이지 않는다(개인 비공개 유지).
-   - 반대(공개 → 비공개)는 금지(규칙 2).
+  - 비공개 페이지에서 **bare-slug** `[[개념명]]` 으로 공개 개념을 가리킨다(경로 없이). 병합 빌드에서 slug 로 해석된다.
+  - 이 cross-link 는 **로컬 전체 그래프(`quartz-local`)에서만** 렌더된다. 공개 빌드(`quartz`)엔 비공개 노드가 없어 보이지 않는다(개인 비공개 유지).
+  - 반대(공개 → 비공개)는 금지(규칙 2).
 
 ### 형상관리 (네임스페이스별 독립 VC)
 
 각 네임스페이스는 **독립된 git repo** 로 버전관리한다. 공개 repo 가 `private/` 를 gitignore 하므로 중첩 독립 repo 라도 서로 섞이지 않는다(submodule 포인터·URL 노출 없음).
 
-| 네임스페이스 | git repo | 비고 |
-| --- | --- | --- |
-| public | `github.com/jon890/fos-brain` (PUBLIC) | 루트 repo |
+
+| 네임스페이스  | git repo                                        | 비고                          |
+| ------- | ----------------------------------------------- | --------------------------- |
+| public  | `github.com/jon890/fos-brain` (PUBLIC)          | 루트 repo                     |
 | private | `github.com/jon890/fos-brain-private` (PRIVATE) | `private/` 안 중첩 `.git`, SSH |
+
 
 불변 규칙:
 
@@ -48,7 +50,6 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
 ## 디렉터리 역할
 
 - `raw/` — **원본**. LLM 은 읽기 전용으로 취급한다. 수정·삭제 금지(사용자 명시 지시 예외).
-  - 하위 카테고리는 자유롭게 추가 가능: `web/`, `papers/`, `repos/`, `notes/`, 그리고 개인 brain 용 `journal/`, `health/`, `articles/`, `videos/` 등.
 - `wiki/INDEX.md` — 전체 목차 + 한 줄 요약. 모든 brain-add / brain-lint 후 최신 상태로 유지.
 - `wiki/concepts/` — 개념 단위 페이지. 백링크 의무.
 - `wiki/topics/` — 여러 개념을 묶는 상위 narrative 페이지.
@@ -59,15 +60,15 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
 
 1. **사용자 편집 최소화**: wiki 의 모든 변경은 LLM 책임. 사용자가 wiki 를 직접 고친 흔적이 보이면 덮어쓰기 전에 확인.
 2. **백링크 의무**: 새 페이지를 만들면 다음을 모두 한다.
-   - `INDEX.md` 에 등록
-   - 관련 다른 페이지에 양방향 링크 추가
-   - 어떤 `raw/` 출처에서 왔는지 페이지 하단 "Sources" 섹션에 기록
+  - `INDEX.md` 에 등록
+  - 관련 다른 페이지에 양방향 링크 추가
+  - 어떤 `raw/` 출처에서 왔는지 페이지 하단 "Sources" 섹션에 기록
 3. **wikilink 는 bare-slug 로 작성 (필수)**: 다른 wiki 페이지를 가리킬 땐 경로 없이 파일명만 쓴다.
-   - O: `[[work-style]]` · `[[ai-harness-pattern]]`
-   - X: `[[topics/work-style]]` · `[[../concepts/ai-harness-pattern]]` (경로형 금지)
-   - 이유: 로컬 전체 빌드(`quartz-local`)는 네임스페이스를 하위 폴더(`public/`·`_private/`)로 병합한다. 경로형 링크는 이 prefix 를 모른 채 루트 기준으로 풀려 404 가 된다. bare-slug 는 quartz 가 파일명으로 전역 매칭해 공개 빌드·로컬 빌드 양쪽 모두 정확한 경로를 만든다.
-   - 파일명이 전역 고유하므로 bare-slug 로 충분하다. alias·heading 은 붙여도 된다: `[[work-style|개발 스타일]]`.
-   - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 빌드 대상이 아니므로 경로형 그대로 둔다.
+  - O: `[[work-style]]` · `[[ai-harness-pattern]]`
+  - X: `[[topics/work-style]]` · `[[../concepts/ai-harness-pattern]]` (경로형 금지)
+  - 이유: 로컬 전체 빌드(`quartz-local`)는 네임스페이스를 하위 폴더(`public/`·`_private/`)로 병합한다. 경로형 링크는 이 prefix 를 모른 채 루트 기준으로 풀려 404 가 된다. bare-slug 는 quartz 가 파일명으로 전역 매칭해 공개 빌드·로컬 빌드 양쪽 모두 정확한 경로를 만든다.
+  - 파일명이 전역 고유하므로 bare-slug 로 충분하다. alias·heading 은 붙여도 된다: `[[work-style|개발 스타일]]`.
+  - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 빌드 대상이 아니므로 경로형 그대로 둔다.
 4. **raw 는 출처**: wiki 의 주장은 raw 로 추적 가능해야 한다. 출처 없는 주장 금지.
 5. **점진적 컴파일**: 한 번에 raw 전체를 처리하지 않는다. 새 raw 파일 또는 사용자가 지정한 범위만 처리.
 6. **lint 는 별도 호출**: 무결성 점검은 사용자가 brain-lint 를 명시 요청할 때만 실행.
@@ -128,45 +129,6 @@ updated: YYYY-MM-DD
 
 사람·프로젝트·목표 등. `type: entity` frontmatter. 관련 concept·topic 과 양방향 링크.
 
-## 가독성 표준 (필수)
-
-brain 은 LLM 이 쓰고 사람이 같이 읽으며 고치는 문서다. 모든 페이지는 다음을 지킨다.
-
-- **인라인 연결 금지** — `A + B`, `A · B`, `A & B` 로 항목을 묶지 않는다. 두 개 이상이면 bullet list.
-- **콤마 3+ 나열 금지** — 한 bullet 에 항목이 3개 이상이면 sub-bullet 으로 분리.
-- **한 bullet = 한 정보** — 서로 다른 사실 3개를 한 bullet 에 압축하지 않는다.
-- **목록은 그룹 라벨 + sub-bullet** — 스택·구성요소처럼 항목이 많으면 범주별로 묶는다.
-  - 예: `스택` 아래 `프레임워크 / UI / 인증 / 테스트` sub-bullet.
-- **표 셀 4+ 정보** → `<br>` 로 분리.
-- **종결** — bullet·표·헤더 항목은 명사구 OK. paragraph 평문 문장은 동사로 끝맺는다.
-- **헤더 + 1줄 요약 + 본문** 순서. 헤더 바로 뒤 긴 줄글 금지.
-- **한국어 사용자에게 와닿는 용어** — 영어 개념을 직역하지 말고, 한국어 독자가 바로 이해할 표현을 우선한다. 예: `수용 게이트`보다 `채택 기준`, `승인 기준`, `검토 기준`처럼 실제 판단 행위를 드러내는 말을 쓴다. 낯선 번역어를 쓰기 전에 후보 2~3개를 비교하고 가장 자연스러운 표현을 고른다.
-
-자가 점검(쓰기 직후): `+`·`·`·`&` 인라인 연결이 있나? 콤마 3+ 나열이 있나? 한 bullet 에 정보가 3개 이상인가? 있으면 분리한다.
-
-## 워크플로우 진입점 (Skill) + `fos-brain` 플러그인
-
-brain 스킬 5종과 hook 스크립트는 모두 **`.agents/plugin/fos-brain/` 에 단일 원본으로** 묶여 있다(관심사를 brain repo 에 모음 + 버전관리 + 에이전트 중립). `.agents/skills` 는 `.agents/plugin/fos-brain/skills` 를 가리키는 symlink 다 — 실제 스킬 파일은 플러그인 하위에서만 존재한다.
-
-- 프로젝트 Claude: `.claude/skills` → `../.agents/skills` → `plugin/fos-brain/skills` (심링크 2단, 추적·이식 가능)
-- 전역 Claude / Codex: `fos-brain` 플러그인을 **로컬 디렉터리 마켓플레이스**로 등록하면 스킬 5종 + hook 이 한 번에 설치된다(아래 "새 머신 설정" 참고). 심링크 방식도 여전히 동작한다.
-
-스킬:
-
-- `brain-add` — 소스를 가져와 `raw/` 로 저장한 뒤 `wiki/` 로 컴파일
-- `brain-search` — INDEX → wiki → raw 순으로 답변, 결과는 wiki 로 환원
-- `brain-curate` — Claude Code·Codex 세션 기록을 증분 분석해 durable 지식 후보를 추출, 승인분만 brain-add 로 통합
-- `brain-lint` — 무결성 점검(백링크·고아·중복·Sources·frontmatter·INDEX 동기화·모순·교차 참조·공개/비공개 누출)
-- `brain-delete` — wiki 페이지를 안전하게 제거(백링크·INDEX·log 정리 동반, 완전 삭제/archive 선택). raw 원본은 기본 보존
-
-모든 skill 은 `wiki/log.md` 에 append-only 로 활동 기록을 남긴다. 모든 skill 의 대상 디렉터리는 이 저장소(`~/personal/fos-brain`)다.
-
-`fos-brain` 플러그인의 hook(`.agents/plugin/fos-brain/hooks/hooks.json`, Claude Code·Codex 공용):
-
-- `SessionStart` → `scripts/setup-check.cjs` — qmd 설치 여부 확인(없으면 bun/npm 으로 best-effort 설치), `brain-wiki`/`brain-raw`/`brain-private` 컬렉션이 미등록이면 존재하는 디렉터리만 자동 등록. 새 머신에서 수동 설정 없이 동작하게 하는 자가 점검.
-- `UserPromptSubmit` → `scripts/recall.cjs` — 매 prompt 마다 qmd 로 brain(wiki/private) 을 검색해 관련 기억을 컨텍스트로 자동 주입. 등록된 컬렉션이 실제 존재하는 것만 걸러 쿼리한다(부분 클론 환경에서도 에러 없이 동작).
-- `Stop` → `scripts/track-session.cjs` — 세션 종료 시 `staging/pending-sessions.jsonl` 에 세션 포인터(도구·session_id·transcript 경로)만 append. **wiki 에 직접 쓰지 않는다** — "승인 없이 자동 쓰기 금지" 규칙 유지. 실제 지식 추출·등록은 여전히 `brain-curate` 의 미리보기·승인 절차를 거친다.
-
 ### 새 머신 설정
 
 **권장 — 플러그인으로 설치** (스킬 + hook 동시 적용):
@@ -183,7 +145,7 @@ codex plugin add fos-brain@fos-brain
 
 두 도구 모두 로컬 마켓플레이스도 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code 는 `claude plugin update fos-brain` 도 가능).
 
-**`.claude-plugin/plugin.json` 에 `hooks`/`skills` 필드를 넣지 않는다** — Claude Code 는 플러그인 루트의 `hooks/hooks.json` 과 `skills/` 를 관례로 자동 로드한다. manifest 에 `"hooks": "./hooks/hooks.json"` 처럼 명시하면 "Duplicate hooks file detected" 로 설치가 실패한다. Codex 쪽 루트 `plugin.json` 은 반대로 이 필드가 필수다(oh-my-codex 관례) — 두 매니페스트가 다르게 생긴 이유.
+`**.claude-plugin/plugin.json` 에 `hooks`/`skills` 필드를 넣지 않는다** — Claude Code 는 플러그인 루트의 `hooks/hooks.json` 과 `skills/` 를 관례로 자동 로드한다. manifest 에 `"hooks": "./hooks/hooks.json"` 처럼 명시하면 "Duplicate hooks file detected" 로 설치가 실패한다. Codex 쪽 루트 `plugin.json` 은 반대로 이 필드가 필수다(oh-my-codex 관례) — 두 매니페스트가 다르게 생긴 이유.
 
 **대안 — 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
 
@@ -198,14 +160,16 @@ done
 
 brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
 
-| 소스 | 처리 방식 |
-| --- | --- |
-| 웹 기사·페이지 | WebFetch → markdown 본문 |
-| 유튜브 링크 | `yt-dlp` 로 자막(자동·수동) + 메타 추출 → 텍스트 |
-| PDF 논문 | Read 로 직접 파싱 |
-| GitHub repo | clone / `gh` 로 README·코드 |
-| 이미지 | Read 로 시각 분석 |
-| 붙여넣은 텍스트·로컬 파일 | 그대로 |
+
+| 소스             | 처리 방식                              |
+| -------------- | ---------------------------------- |
+| 웹 기사·페이지       | WebFetch → markdown 본문             |
+| 유튜브 링크         | `yt-dlp` 로 자막(자동·수동) + 메타 추출 → 텍스트 |
+| PDF 논문         | Read 로 직접 파싱                       |
+| GitHub repo    | clone / `gh` 로 README·코드           |
+| 이미지            | Read 로 시각 분석                       |
+| 붙여넣은 텍스트·로컬 파일 | 그대로                                |
+
 
 유튜브는 영상·음성을 직접 듣지 못하므로 자막을 경유한다.
 현재는 **자막 있는 영상만 우선 지원**한다.
@@ -260,15 +224,3 @@ qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **
 - **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
 - 서빙: `./quartz-local/serve.sh` (포트 8081)
 
-## Obsidian 호환
-
-이 저장소는 순수 markdown + `[[wikilink]]` 라 Obsidian vault 로도 열 수 있다.
-하지만 주 뷰어는 Quartz 웹 UI 다.
-메모 작성은 별도 vault(`~/personal/obsidian`)에서 한다.
-
-## 금지 사항
-
-- `raw/` 파일 자동 수정·삭제
-- wiki 페이지 일괄 재작성(사용자 요청 시 외)
-- 출처 없는 주장 작성
-- 한 번의 brain-add 에서 raw 전체를 훑기
