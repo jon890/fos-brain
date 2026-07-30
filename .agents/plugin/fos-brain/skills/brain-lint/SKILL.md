@@ -55,7 +55,7 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
    - 나머지는 자동 수정 OK
 3. **수정 적용** — 승인된 항목만 편집.
 4. **INDEX 메타 갱신** — "마지막 brain-lint" 에 오늘 날짜.
-5. **log append (필수)** — `<ns>/wiki/log.md` 에:
+5. **log append (필수)** — `<ns>/wiki/log.md` **파일 맨 끝**에 추가한다 (시간순 오름차순 — 맨 위나 중간에 끼워 넣지 않는다):
    ```
    ## [YYYY-MM-DD] lint | <한 줄 요약>
    - 검사: 10개 항목 / 발견: N건 / 수정: M건

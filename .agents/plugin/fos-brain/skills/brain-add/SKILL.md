@@ -232,7 +232,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 ## 10단계 — log append (필수)
 
-`<ns>/wiki/log.md` 하단에:
+`<ns>/wiki/log.md` **파일 맨 끝**에 추가한다 (시간순 오름차순 — 맨 위나 중간에 끼워 넣지 않는다):
 
 ```
 ## [YYYY-MM-DD] add | <한 줄 설명>

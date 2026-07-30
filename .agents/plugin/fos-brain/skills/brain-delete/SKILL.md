@@ -82,7 +82,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 - **INDEX 갱신**: `<ns>/wiki/INDEX.md` 에서 대상 항목 제거.
 
 ### 5. log append (필수)
-`<ns>/wiki/log.md` 에:
+`<ns>/wiki/log.md` **파일 맨 끝**에 추가한다 (시간순 오름차순 — 맨 위나 중간에 끼워 넣지 않는다):
 ```
 ## [YYYY-MM-DD] delete | <한 줄 요약>
 - 대상: <페이지 경로> (방식: 완전 삭제 | archive)
