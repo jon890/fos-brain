@@ -34,7 +34,7 @@ AI 에이전트가 grep 해 능동 참조할 가치가 있으려면 문서의 �
 - 일반 프로그래밍 원칙 (상식)
 - 환경 설정 (설정 파일로 자명)
 
-유지 기준은 [[planning-eight-step-design]] 의 ADR 자명성 게이트와 같다 — 라이브러리 함정·실험 결과·대안 기각·정책·트레이드오프 중 하나에 해당해야 한다.
+유지 기준은 [[planning-eight-step-design]] 의 ADR 자명성 통과 조건과 같다 — 라이브러리 함정·실험 결과·대안 기각·정책·트레이드오프 중 하나에 해당해야 한다.
 
 ## 스킬 SKILL.md 의 6축 변형
 
@@ -57,7 +57,7 @@ ADR 과 다른 자명성 기준을 적용한다.
 | 도구 | 범위 | 시점 | 축 |
 |---|---|---|---|
 | docs-verifier (build-with-teams 내부) | 현재 task 변경 코드 ↔ docs | task 실행 직후 | A 부패 중심 |
-| docs-check (이 워크플로) | 전체 docs ↔ 전체 코드 + 품질 | 주기적·수동 | A~F 전체 |
+| docs-check (이 워크플로) | 전체 docs ↔ 전체 코드, 품질 | 주기적·수동 | A~F 전체 |
 
 build-with-teams 대규모 작업 완료 후, 외부 PR 머지 후, 분기별 정기로 실행하길 권장한다.
 
@@ -69,10 +69,9 @@ ADR 을 폐기하면 그 번호는 결번으로 영구 보존하고 새 ADR 에 
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 점검이 속한 전주기 하네스의 문서 검증 단계
-- [[planning-eight-step-design]] — 점검 대상 docs 를 산출하는 설계 단계 (ADR 게이트 공유)
+- [[planning-eight-step-design]] — 점검 대상 docs 를 산출하는 설계 단계 (ADR 통과 조건 공유)
 - [[docs-first-adr]] — docs 를 코드보다 먼저 남기는 규율
 - [[self-improving-harness]] — docs 품질 분류·흡수가 누적되는 루프
-- [[korean-readability-policy]] — F 가독성 축의 문체 단일 소스
 
 ## Sources
 

@@ -2,16 +2,16 @@
 """
 brain_score.py — fos-brain 무결성 점수 측정기
 
-brain-lint 11개 항목 중 *객관적으로 채점 가능한* 구조 항목만 점수로 환산한다.
-중복·모순·교차참조 제안·품질축(3·8·9·11) 은 주관 판단이라 점수에서 제외한다.
+brain-lint 10개 항목 중 *객관적으로 채점 가능한* 구조 항목만 점수로 환산한다.
+중복·모순·교차참조 제안·품질축(3·7·8·9) 은 주관 판단이라 점수에서 제외한다.
 
 reward = -(가중 위반 합).  위반 0이면 score 0(만점).
-docs-audit 의 docs_score.py 와 같은 SkillOpt validation gate 패턴.
+docs-audit 의 docs_score.py 와 같은 SkillOpt 검증 점검 패턴.
 공개/비공개 누출(visibility_leak)은 보안 위험이라 가중치 최고.
 
 사용:
   python3 brain_score.py                 # 측정 + 직전 대비 delta
-  python3 brain_score.py --save          # 게이트 통과 시 history 기록
+  python3 brain_score.py --save          # 점검 통과 시 history 기록
   python3 brain_score.py --json          # 기계 판독용
 """
 import argparse
@@ -29,7 +29,6 @@ WEIGHTS = {
     "frontmatter": 3,         # type/created/updated 누락
     "index_desync": 2,        # 페이지가 자기 ns INDEX 에 없음
     "orphan_note": 2,         # 어디서도 참조 안 됨
-    "style_tilde": 2,         # ~ 취소선 함정
 }
 
 ENTRYPOINTS = {"INDEX.md", "log.md", "CLAUDE.md", "README.md"}
@@ -147,14 +146,6 @@ def measure(root):
                 if p.stem not in index_text.get(nsname, ""):
                     axes["index_desync"].append({"file": rel})
 
-            # tilde
-            for para in re.split(r"\n\s*\n", masked):
-                tmp = para.replace("\\~", "")
-                tmp = re.sub(r"~/[\w./-]+", "", tmp)
-                if tmp.count("~") >= 2:
-                    axes["style_tilde"].append({"file": rel})
-                    break
-
     # orphan: content 페이지가 참조도 안 되고 자기 INDEX 에도 없음
     for nsname, plist in pages.items():
         for p in plist:
@@ -198,7 +189,7 @@ def print_report(result, last):
         arrow = "▲ 개선" if delta > 0 else ("▼ 악화" if delta < 0 else "= 동일")
         print(f"\n직전: {last['score']}  →  현재: {result['score']}  (Δ {delta:+d}  {arrow})")
     else:
-        print("\n(직전 기록 없음 — 이번이 baseline)")
+        print("\n(직전 기록 없음 — 이번이 기준값)")
 
 
 def main():

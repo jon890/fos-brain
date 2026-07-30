@@ -29,7 +29,7 @@ updated: 2026-06-16
 | team | 팀원 스폰·메시지 작성 시 | build-with-teams |
 | code-review | 코드 작성·리뷰 시 (diff 대상) | build-with-teams, review-fix |
 
-## 축적 게이트 (무분별한 성장 방지)
+## 축적 점검 (무분별한 성장 방지)
 
 새 패턴은 4조건을 모두 통과할 때만 파일로 추가한다. 1회성 지적은 PR reply 로 끝낸다.
 
@@ -63,11 +63,10 @@ frontmatter(id·category·triggers·tool_catchable·source·related) 와 본문(
 ## 관련 개념
 
 - [[self-improving-harness]] — 이 wiki 에 패턴을 누적하는 메타 루프
-- [[merge-conflict-free-append]] — 파일 per 항목 + INDEX 의 충돌 제거 구조 (이 패턴의 일반형)
+- [[merge-conflict-free-append]] — 파일 per 항목, INDEX 의 충돌 제거 구조 (이 패턴의 일반형)
 - [[custom-domain-agent]] — Self_Check 에서 이 wiki 를 단일 소스로 참조하는 전용 agent
-- [[korean-readability-policy]] — 패턴 파일 본문도 따르는 문체 규칙
 
 ## Sources
 
-- [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 섹션 1 pitfalls 파일-per-패턴 + INDEX 라우터 구조
+- [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 섹션 1 pitfalls 파일-per-패턴, INDEX 라우터 구조
 - `.claude/skills/_shared/pitfalls/INDEX.md` (docu-parser 실측 — code-review/plan/team 3카테고리)

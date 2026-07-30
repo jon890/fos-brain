@@ -2,6 +2,13 @@
 
 Append-only 연대기. ingest·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다. `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
+## [2026-07-30] maintain | 마크다운 가독성 관련 내용 제거 (hooks 로 이관)
+
+- 마크다운 가독성·한국어 표기 검증이 hooks 로 자동화되어, 프로젝트 내 중복 문서·검사 단계를 제거.
+- 삭제: `wiki/concepts/korean-readability-policy.md` (백링크 12건 정리), `scripts/brain-readability.py`
+- 수정: `CLAUDE.md` "가독성 표준" 섹션 제거, `brain-lint`/`brain-add`/`brain-curate` SKILL.md 의 관련 검사 항목·단계 제거 및 재번호, `brain_score.py` 의 `style_tilde` 채점 축 제거
+- 부수 발견: hook 이 편집한 파일 전체를 재점검해 기존 `+` 인라인 연결·금지어 위반 다수를 실시간으로 잡아 수정
+
 ## [2026-07-16] add | 자기주도 학습
 
 - Source: [[../raw/videos/2026-07-16-learning-as-self-directed-inquiry.md]] / https://www.youtube.com/watch?v=IXlRV2e2M2w

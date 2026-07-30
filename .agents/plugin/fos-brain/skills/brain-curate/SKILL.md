@@ -146,17 +146,6 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 폰트는 Google Fonts CDN — 오프라인이면 시스템 폰트로 대체된다.
 - 본문에 `</script>` 가 있으면 생성기가 거부한다.
 
-### 등록 전 가독성 검증 (필수)
-
-미리보기에 넣을 wiki 페이지 본문(`pages[].markdown`)은 등록 전에 fos-brain 가독성 표준을 통과해야 한다. brain-add 가 8단계에서 처리하지만, 미리보기 단계에서 먼저 검증하면 사용자가 깨끗한 본문을 본다.
-
-```bash
-python3 ~/personal/fos-brain/scripts/brain-readability.py <페이지파일...>
-```
-
-- 스크립트가 잡는 것: 인라인 연결(` + `/` · `/` & `), 콤마 5+ 나열, `~` 취소선 함정, `§` 기호.
-- 스크립트가 **못 잡아 수동 점검할 것**: `·` 3항목 나열, paragraph 평문·정의 문장의 명사형 종결("...방법.", "...설계." → "...이다."), 한 bullet 에 정보 3개 이상 압축.
-
 ## 7단계 — 선택 (AskUserQuestion)
 
 등록할 후보를 `AskUserQuestion`(multiSelect)으로 받는다. 후보가 많으면 묶음으로 나눠 묻거나 번호로 받는다.
@@ -167,7 +156,7 @@ python3 ~/personal/fos-brain/scripts/brain-readability.py <페이지파일...>
 선택된 후보만 `brain-add` 로 넘긴다. 후보의 정보(제목·요약·핵심·네임스페이스·근거 세션)를 brain-add 의 입력으로 정리해 호출한다.
 
 - 근거 세션 경로를 Sources 로 남기되, raw 출처가 세션 기록이므로 핵심 요약을 `<ns>/raw/notes/` 에 대화 요약으로 저장한 뒤 컴파일한다(원문 jsonl 전체가 아니라 재사용 가치 있는 핵심만).
-- brain-add 가 백링크·INDEX·log·가독성 검증·재색인(qmd update/embed)·검색 검증(query test)을 처리한다 — 중복 구현하지 않는다. brain-add 를 호출하면 9·10단계까지 끝까지 돌려 재색인·검색 검증이 누락되지 않게 한다.
+- brain-add 가 백링크·INDEX·log·재색인(qmd update/embed)·검색 검증(query test)을 처리한다 — 중복 구현하지 않는다. brain-add 를 호출하면 8·9단계까지 끝까지 돌려 재색인·검색 검증이 누락되지 않게 한다.
 
 ## 9단계 — 마무리
 

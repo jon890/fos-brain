@@ -61,8 +61,7 @@
 ### 개인 코딩 규율·취향
 
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
-- [[commit-convention-style]] — Conventional Commits(영문 type/scope + 한국어 본문), atomic
-- [[korean-readability-policy]] — 외래어 금지·마크다운 가독성 6패턴을 리뷰 점검으로 강제
+- [[commit-convention-style]] — Conventional Commits(영문 type/scope, 한국어 본문), atomic
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 

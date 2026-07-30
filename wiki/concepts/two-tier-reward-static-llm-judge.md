@@ -25,7 +25,6 @@ updated: 2026-06-12
 ## 관련 개념
 
 - [[reward-detector-false-positive]] — 1계층 정적 검출의 오탐 관리
-- [[korean-readability-policy]] — 직역어·가독성 위반이 실제 1·2계층 검출 대상
 - [[skill-auto-optimization-prerequisites]] — B 계층 스킬에서 규칙과 judge 를 함께 쓰는 근거
 
 ## Sources

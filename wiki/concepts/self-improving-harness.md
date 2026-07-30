@@ -81,11 +81,10 @@ GNOSIS 발표는 성장형 에이전트가 스킬을 무제한 누적하면 안 
 - [[build-with-teams-rules]] — 회고 학습이 누적되는 build-with-teams 규칙 모음
 - [[pr-review-fix-workflow]] — 리뷰 학습 누적을 수행하는 사후 단계 (이 루프의 입력원)
 - [[docs-six-axis-audit]] — docs 품질 분류·흡수가 누적되는 점검 단계
-- [[korean-readability-policy]] — 문체 위반도 누적 점검 대상
 - [[skillopt-trainable-skill-document]] — 이 수동 루프를 자동화·형식화한 외부 방법론(SkillOpt)
 - [[merge-conflict-free-append]] — 회피 패턴 wiki 의 파일 per 패턴과 INDEX 구조 (이 루프가 운영 규율을 더한다)
 - [[gnosis-agent-autonomous-growth]] — 외부 레이어 갱신으로 성장하는 에이전트 프레임워크
-- [[constitutional-growth-gate]] — 자기개선이 넘어서는 안 되는 invariant를 검사하는 hard gate
+- [[constitutional-growth-gate]] — 자기개선이 넘어서는 안 되는 invariant를 검사하는 강제 점검 장치
 
 ## Sources
 

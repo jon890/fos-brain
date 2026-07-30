@@ -13,7 +13,7 @@ Claude Code 가 세션 간 지식을 전달하는 두 축은 **CLAUDE.md**(사�
 
 | 위치 | 로드 시점 |
 | --- | --- |
-| `CLAUDE.md` (프로젝트 루트 + 상위 디렉터리 + `~/.claude/CLAUDE.md`) | 모든 세션 시작 시 항상 |
+| `CLAUDE.md` (프로젝트 루트, 상위 디렉터리, `~/.claude/CLAUDE.md`) | 모든 세션 시작 시 항상 |
 | CLAUDE.md 안 `@경로` import | CLAUDE.md 로드 시 그 파일도 펼쳐서 함께 (최대 4홉) |
 | `.claude/rules/*.md` — frontmatter 없음 | 모든 세션 시작 시 자동 (`.claude/CLAUDE.md` 와 동일 우선순위) |
 | `.claude/rules/*.md` — `paths:` frontmatter 있음 | 그 glob 에 맞는 파일을 읽을 때만 조건부 |
@@ -59,9 +59,8 @@ CLAUDE.md·rules 는 **시스템 프롬프트가 아니라 컨텍스트**다 —
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 스킬·규칙으로 작업 전 주기를 자동화하는 재사용 하네스
-- [[korean-readability-policy]] — 개인 글로벌 rules 로 관리하는 글쓰기 취향의 실제 사례
 - [[commit-convention-style]] — 레포 rules 로 둘 수 있는 팀 공유 규칙의 예
 
 ## Sources
 
-- [[../../raw/notes/2026-06-02-claude-rules-and-conventions.md]] — 세션 실측 + Claude Code 공식 문서(code.claude.com/docs/ko/memory) 확인
+- [[../../raw/notes/2026-06-02-claude-rules-and-conventions.md]] — 세션 실측, Claude Code 공식 문서(code.claude.com/docs/ko/memory) 확인
