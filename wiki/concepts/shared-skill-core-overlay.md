@@ -1,6 +1,7 @@
 ---
 type: concept
 created: 2026-07-14
+updated: 2026-07-14
 ---
 
 # 공용 스킬 코어와 레포 오버레이
