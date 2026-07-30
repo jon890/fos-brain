@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-06-12
+updated: 2026-07-30
 ---
 
 # build-with-teams 하네스 일반 규칙
@@ -61,12 +61,25 @@ repo 무관한 운영 규칙과 자주 실패하는 패턴.
 - 중(phase 2~3): critic 만 opus.
 - 대(phase 4+): team-lead·critic·docs-verifier 는 opus, executor·code-reviewer 는 sonnet 고정.
 
+## 추가 (2026-07-30): fos-skills 발전분
+
+공용 스킬 코어 저장소([[shared-skill-core-overlay]])에서 이 파이프라인에 반영된 결정들이다.
+
+- **모델 등급 상속 함정** — 팀원 스폰 시 모델 인자를 생략하면 "적절히 맞춰진다"가 아니라 parent 등급을 그대로 물려받는다. 표에 standard 라 적힌 executor 가 parent(deep) 등급으로 뜬 사고가 있었다. 스폰 전에 팀원 등급을 먼저 정하고, parent 등급과 다르면 명시 지정한다. 사용자가 특정 모델을 요청하면 그 override 가 등급 표보다 우선한다.
+- **스폰 폴백의 단계적 하강** — 이름 없는 subagent 로 곧장 내려가면 양방향 SendMessage 가 끊겨 REVISE·FIX_NEEDED 재투입 사이클이 깨진다. 1순위 team_name+name 동시 지정, 2순위 name 만(라우팅 유지), 3순위 이름 없는 subagent(1·2 가 환경 제약으로 실패할 때만)로 한 단계씩만 내려가고, 폴백 사유를 실행 보고에 남긴다.
+- **planning→build 단일 브랜치·단일 PR 전환** — planning 이 별도 기획 PR 을 만들면 "plan 1개 = PR 1개" 원칙과 충돌한다(plan 당 PR 2개가 됨). planning 은 PR 을 만들지 않고 plan 브랜치에 push 까지만 하고, build 는 그 plan 브랜치를 base 로 이어 붙여 기획 커밋과 구현 커밋이 한 PR 에 담기게 한다. 재실행 방지 신호도 "브랜치 존재"에서 "그 브랜치에 phase 구현 커밋이 쌓였는가"로 바꿔야 한다 — plan 브랜치가 항상 원격에 있으므로 브랜치 존재만으론 더는 "이미 작업 중"을 뜻하지 않는다.
+- **phase 단위 executor teardown 강제** — 4 phase 이상에서 phase 마다 새 이름의 executor 를 스폰하며 이전 executor 를 종료하지 않으면 팀원이 계속 누적된다. 다음 phase 스폰 직전 이전 executor 종료를 강제하고, 종료 시점에 잔존 팀원 전원의 종료 여부를 확인한다.
+- **위임 시 전부 보고** — [[subagent-delegation-report-everything]] 참조. docs-verifier 는 phase 마다가 아니라 전체 phase 누적 diff 기준 1회로 통일하고, code-reviewer 는 결함을 전부 올리고 team-lead 가 필터링한다.
+- **회고·실행 기록 계약** — [[execution-log-vs-retrospective]] 참조. 회고는 파일 하나 = 사건 하나로, phase 종료·FIX_NEEDED·검증 정체 직후 즉시 남긴다(종료 시점까지 미루지 않는다).
+
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 파이프라인이 속한 베이스 하네스
 - [[planning-eight-step-design]] — 이 파이프라인이 실행하는 task 를 산출하는 설계 단계
 - [[pr-review-fix-workflow]] — PR 생성 후 외부 리뷰를 반영하는 짝 단계 (사전/사후 분리)
 - [[self-improving-harness]] — 회고 학습이 이 규칙을 누적하는 루프
+- [[execution-log-vs-retrospective]] — 회고·실행 기록의 역할 분리
+- [[subagent-delegation-report-everything]] — 위임 시 필터링을 위임받은 쪽에 맡기지 않는 원칙
 - [[dooray-cli]] — 이 하네스의 원형
 - [[nhncloud-cli]] — 이 하네스를 포팅한 프로젝트
 
@@ -74,3 +87,4 @@ repo 무관한 운영 규칙과 자주 실패하는 패턴.
 
 - [[../../raw/notes/2026-05-28-build-with-teams-harness-rules.md]]
 - [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 스폰 안전 규칙·재시도 한도·spawn-shutdown·특이사항 4종 보강
+- [[../../raw/notes/2026-07-30-fos-skills-harness-evolution.md]] — 모델 등급 상속·스폰 폴백·단일 브랜치 전환·teardown 강제 보강

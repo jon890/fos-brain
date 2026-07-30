@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-06-01
-updated: 2026-06-01
+updated: 2026-07-30
 ---
 
 # docs-check — docs 6축 점검
@@ -66,13 +66,23 @@ build-with-teams 대규모 작업 완료 후, 외부 PR 머지 후, 분기별 �
 ADR 을 폐기하면 그 번호는 결번으로 영구 보존하고 새 ADR 에 재할당하지 않는다.
 외부 참조 (이슈·커밋·에이전트 메모리) 가 과거 번호를 가리킬 때 다른 결정으로 오인되는 것을 막는다.
 
+## 추가 (2026-07-30): fos-skills 발전분
+
+- **inline 검사 레시피를 scripts/ 로 분리**: SKILL.md 본문에 25줄짜리 셸 레시피가 여러 개 있으면 실행마다 모델이 코드를 옮겨 적어 escape 실수가 낀다. `scripts/static-check.sh` 로 분리하면서 실측 결함도 함께 잡혔다 — 코드 스팬 안 `~/path` 를 취소선 함정으로 오탐하던 문제, GNU 전용 `grep -nP` 가 BSD grep 에 없어 공용 코어에 부적합했던 문제.
+- **마크다운 문법 오류 4종 자동 검출 추가**: 코드 펜스 홀수(블록 안 닫힘), 표 열 수와 헤더 불일치, 헤딩 레벨 건너뜀(h2→h4), 실재하지 않는 파일을 가리키는 상대 링크 — 렌더가 실제로 어긋나는 결정적 오류만 검출한다.
+- **한국어 표기 검사를 공용 검사기에 위임**: 금지어 목록을 스크립트에 하드코딩하면 규칙 문서와 갈라진다. `~/.claude/scripts/korean-style-check.sh` 를 호출하도록 바꿔 편집 직후 hook 과 주기 감사가 같은 검사기·같은 목록을 쓰게 한다. 검사기나 규칙 파일이 없는 환경에서는 그 항목만 건너뛰고 나머지는 계속한다.
+- 이 실측은 [[skill-self-scoring-two-axis]] 의 기계축(score.sh)에도 그대로 적용되는 사례다.
+
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 점검이 속한 전주기 하네스의 문서 검증 단계
 - [[planning-eight-step-design]] — 점검 대상 docs 를 산출하는 설계 단계 (ADR 통과 조건 공유)
 - [[docs-first-adr]] — docs 를 코드보다 먼저 남기는 규율
 - [[self-improving-harness]] — docs 품질 분류·흡수가 누적되는 루프
+- [[skill-self-scoring-two-axis]] — 스킬 자체를 채점하는 기계축·판단축 이원화
+- [[skill-section-single-ownership]] — 같은 저장소에서 병행 적용된 스킬 슬림화 원칙
 
 ## Sources
 
 - [[../../raw/notes/2026-06-01-docu-parser-workflow-skills.md]]
+- [[../../raw/notes/2026-07-30-fos-skills-harness-evolution.md]] — 검사 스크립트 분리·마크다운 문법 자동검출·한국어 검사 위임 보강

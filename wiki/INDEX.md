@@ -24,7 +24,11 @@
 - [[harness-bootstrap-checklist]] — 새 레포에 하네스를 까는 조립 순서 체크리스트 (메모리→스킬→전용 agent→pitfalls→docs→CI→자기개선)
 - [[planning-eight-step-design]] — planning 의 구현 전 8단계 설계 방법론, ADR 자명성 점검 (새 하네스 seed)
 - [[shared-skill-core-overlay]] — 복제 스킬을 단일 코어와 레포 오버레이로 나눠 개선을 한 곳에서만 반영 (전역 override 함정 포함)
+- [[skill-section-single-ownership]] — 스킬 문서 안 같은 지시가 여러 섹션에 중복되면 한 섹션만 소유자로 남기는 원칙
+- [[skill-versioning-changelog]] — 심링크로 배포되는 공용 스킬의 버전+CHANGELOG 체계 (버전은 배포 핀이 아님)
 - [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙·실패 패턴 (새 하네스 seed)
+- [[execution-log-vs-retrospective]] — 실행 기록(매번 얕게)과 회고(사건마다 깊게)의 역할 분리
+- [[subagent-delegation-report-everything]] — subagent 에게 "걸러서 보고하라" 지시하지 않고 위임한 쪽이 필터링하는 원칙
 - [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor·docs-verifier, self-check grep 내장)
 - [[pr-review-fix-workflow]] — review-fix 의 PR 리뷰 사후 반영 방법론 (우선순위·범위 분류·봇 루프 방지·학습 누적, seed)
 - [[docs-six-axis-audit]] — docs-check 의 6축 점검 방법론 (부패·과대화·추론성·중복·자명성·가독성, seed)
@@ -44,6 +48,7 @@
 
 - [[skillopt-trainable-skill-document]] — 스킬 문서를 신경망 가중치처럼 학습(Microsoft SkillOpt), Sleep 야간 정리
 - [[skill-auto-optimization-prerequisites]] — reward·held-out 선행 조건, A/B/C 채점 계층
+- [[skill-self-scoring-two-axis]] — 스킬 자체 품질을 기계축(score.sh)과 판단축(rubric.md, 자기채점 금지)으로 나눠 채점
 - [[reward-detector-false-positive]] — reward detector 오탐을 먼저 잡기(잘못된 그래디언트 방어)
 - [[two-tier-reward-static-llm-judge]] — 정적 정규식 바닥, LLM judge 천장 2계층 reward
 
@@ -172,6 +177,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-16 (서울대 박주용 교수의 자기주도 학습 영상 — 신규 1)
+- 마지막 brain-add: 2026-07-30 (fos-skills 하네스 진화 — 신규 5, 보강 4)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

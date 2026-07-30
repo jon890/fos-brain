@@ -2,6 +2,13 @@
 
 Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다. `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
+## [2026-07-30] add | fos-skills 공용 스킬 코어 진화 (brain 목적 4축 재정의 계기)
+
+- Source: [[../raw/notes/2026-07-30-fos-skills-harness-evolution.md]] (fos-skills 저장소 git log 80개 커밋 직접 분석, 세션 정제 불필요)
+- 신규 5 페이지: skill-section-single-ownership, skill-versioning-changelog, skill-self-scoring-two-axis, execution-log-vs-retrospective, subagent-delegation-report-everything
+- 보강 4 페이지: claude-code-memory-rules, build-with-teams-rules, planning-eight-step-design, docs-six-axis-audit
+- 계기: brain-curate 로 세션 큐레이션을 시도하다, "함정류는 brain에 안 맞는다"는 사용자 판단으로 CLAUDE.md의 durable 기준을 4축(업무 스타일·취향·기술 의사결정·AI 에이전트 스킬 구조)으로 재정의. 그 기준으로 fos-skills git 로그를 다시 보니 세션보다 신호 밀도가 높아 이 경로로 전환
+
 ## [2026-07-30] maintain | 마크다운 가독성 관련 내용 제거 (hooks 로 이관)
 
 - 마크다운 가독성·한국어 표기 검증이 hooks 로 자동화되어, 프로젝트 내 중복 문서·검사 단계를 제거.
