@@ -151,6 +151,9 @@ codex plugin add fos-brain@fos-brain
 
 두 도구 모두 로컬 마켓플레이스도 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code 는 `claude plugin update fos-brain` 도 가능).
 
+사용자 프롬프트마다 지식을 자동 주입하지 않는다.
+필요한 지식은 사용자가 요청하거나 현재 작업에 실질적으로 필요할 때 `brain-search`를 명시적으로 호출해 검색한다.
+
 `**.claude-plugin/plugin.json` 에 `hooks`/`skills` 필드를 넣지 않는다** — Claude Code 는 플러그인 루트의 `hooks/hooks.json` 과 `skills/` 를 관례로 자동 로드한다. manifest 에 `"hooks": "./hooks/hooks.json"` 처럼 명시하면 "Duplicate hooks file detected" 로 설치가 실패한다. Codex 쪽 루트 `plugin.json` 은 반대로 이 필드가 필수다(oh-my-codex 관례) — 두 매니페스트가 다르게 생긴 이유.
 
 **대안 — 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
@@ -229,4 +232,3 @@ qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **
 - 병합 content 는 repo 밖 temp 에 생성(repo 안이면 `.gitignore` 때문에 입력이 걸러짐).
 - **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
 - 서빙: `./quartz-local/serve.sh` (포트 8081)
-

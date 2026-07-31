@@ -1,5 +1,5 @@
 {
-  "description": "brain: fos-brain 자동 회상 + 세션 포인터 기록 + 자가 점검",
+  "description": "brain: fos-brain 세션 포인터 기록 + 자가 점검",
   "hooks": {
     "SessionStart": [
       {
@@ -8,17 +8,6 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT}}/scripts/setup-check.cjs\" 2>/dev/null || true",
             "timeout": 45
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT}}/scripts/recall.cjs\" 2>/dev/null || true",
-            "timeout": 10
           }
         ]
       }
