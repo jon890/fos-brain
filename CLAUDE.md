@@ -7,7 +7,7 @@
 
 ## 네임스페이스 (공개·비공개 분리)
 
-brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립된 mini-brain(자체 `raw/` + `wiki/` + INDEX + log)이다.
+brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 `raw/`, `wiki/`, INDEX, log 를 갖는 독립된 mini-brain 이다.
 
 
 | 네임스페이스  | 경로                  | git           | Quartz 공개 | 용도           |
@@ -50,7 +50,7 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 독립�
 ## 디렉터리 역할
 
 - `raw/` — **원본**. LLM 은 읽기 전용으로 취급한다. 수정·삭제 금지(사용자 명시 지시 예외).
-- `wiki/INDEX.md` — 전체 목차 + 한 줄 요약. 모든 brain-add / brain-lint 후 최신 상태로 유지.
+- `wiki/INDEX.md` — 전체 목차와 한 줄 요약. 모든 brain-add / brain-lint 후 최신 상태로 유지.
 - `wiki/concepts/` — 개념 단위 페이지. 백링크 의무.
 - `wiki/topics/` — 여러 개념을 묶는 상위 narrative 페이지.
 - `wiki/entities/` — 사람·프로젝트·목표 같은 개체 페이지(개인 brain 용).
@@ -129,7 +129,7 @@ updated: YYYY-MM-DD
 
 ### `wiki/topics/<주제명>.md`
 
-여러 concept 을 묶는 narrative. 같은 frontmatter + "Concepts" 섹션에 `[[concept]]` 나열.
+여러 concept 을 묶는 narrative. concept 과 같은 frontmatter 를 쓰고 "Concepts" 섹션에 `[[concept]]` 를 나열한다.
 
 ### `wiki/entities/<개체명>.md`
 
@@ -137,7 +137,7 @@ updated: YYYY-MM-DD
 
 ### 새 머신 설정
 
-**권장 — 플러그인으로 설치** (스킬 + hook 동시 적용):
+**권장 — 플러그인으로 설치** (스킬과 hook 을 함께 적용):
 
 ```bash
 # Claude Code — settings.json 을 직접 편집하는 것만으로는 반영되지 않는다. CLI 로 등록·설치까지 실행한다.
@@ -173,7 +173,7 @@ brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
 | 소스             | 처리 방식                              |
 | -------------- | ---------------------------------- |
 | 웹 기사·페이지       | WebFetch → markdown 본문             |
-| 유튜브 링크         | `yt-dlp` 로 자막(자동·수동) + 메타 추출 → 텍스트 |
+| 유튜브 링크         | `yt-dlp` 로 자막(자동·수동)과 메타 추출 → 텍스트 |
 | PDF 논문         | Read 로 직접 파싱                       |
 | GitHub repo    | clone / `gh` 로 README·코드           |
 | 이미지            | Read 로 시각 분석                       |
@@ -187,12 +187,12 @@ brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
 ## 검색 도구: qmd
 
 규모가 커지면 `grep` 으로는 한계가 있다.
-Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
+Karpathy 가 권장한 qmd(BM25, 벡터, LLM rerank)를 사용한다.
 
 - 등록 컬렉션: `brain-wiki`(fos-brain/wiki), `brain-raw`(fos-brain/raw), `brain-private`(private/wiki, 로컬 전용)
 - 1차 검색(BM25): `qmd search "<keyword>" -c brain-wiki`
 - 의미 검색(벡터): `qmd vsearch "<text>" -c brain-wiki`
-- 하이브리드 + rerank(권장): `qmd query "<question>"`
+- 하이브리드 검색과 rerank(권장): `qmd query "<question>"`
 - 인덱스 갱신: `qmd update`(파일 변경 후), `qmd embed`(임베딩 재생성)
 - 상태 점검: `qmd status`
 
@@ -228,13 +228,13 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
 ### 공개 빌드 (`quartz/`)
 
 - content: `quartz/content` → 루트 `wiki/` 심볼릭 링크(public 만). private 는 config `ignorePatterns` 로 제외.
-- 기능: 그래프 뷰 + 전문 검색 + 백링크 패널
+- 기능: 그래프 뷰, 전문 검색, 백링크 패널
 - 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
 - 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
 
 ### 로컬 전체 빌드 (`quartz-local/`)
 
-- content: public + private 전체 그래프. 비공개 폴더는 `_private` 로 병합(공개 config 의 ignore 회피).
+- content: public 과 private 을 합친 전체 그래프. 비공개 폴더는 `_private` 로 병합(공개 config 의 ignore 회피).
 - 병합 content 는 repo 밖 temp 에 생성(repo 안이면 `.gitignore` 때문에 입력이 걸러짐).
 - **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
 - 서빙: `./quartz-local/serve.sh` (포트 8081)
