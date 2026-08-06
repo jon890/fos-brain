@@ -198,14 +198,20 @@ Karpathy 가 권장한 qmd(BM25 + 벡터 + LLM rerank)를 사용한다.
 
 `brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
-### 런타임 함정 — bun 으로 고정 (node ABI 불일치 방지)
+### 런타임 함정 — wrapper 로 node 버전 고정 (ABI 불일치 방지)
 
 qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **실행 런타임에 종속**된다.
+mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대로 타면 실행 자체가 깨진다.
 
-- qmd 의 `bin/qmd` 는 패키지 디렉터리의 lockfile 로 런타임을 고른다: `bun.lock` 이면 bun, `package-lock.json` 이면 node, 둘 다 없으면 node.
-- mise 가 세션·디렉터리마다 node 버전(22/24 등)을 바꾸므로, **node 로 실행하면** better-sqlite3 ABI(예: node24=137 vs node22=127)가 어긋나 `"better-sqlite3 재컴파일 필요"` 로 깨진다.
-- **회피 — bun 고정**: qmd 패키지(`~/.bun/install/global/node_modules/@tobilu/qmd/`)에 `bun.lock` 을 두면 항상 bun 으로 실행된다. bun 은 단일 런타임이라 mise node 버전과 무관하게 안정적이다.
-- 깨졌을 때 복구: `touch ~/.bun/install/global/node_modules/@tobilu/qmd/bun.lock`. (qmd 재설치·업데이트 시 lockfile 이 사라지면 재발하므로 다시 touch.)
+- 증상: `ERR_DLOPEN_FAILED` 와 `"better-sqlite3 재컴파일 필요"`. ABI 번호는 node24=137, node22=127 이다.
+- 원인이 두 겹이다.
+    - `bin/qmd` 의 shebang 이 `#!/usr/bin/env node` 라 런처 자신이 PATH 의 node 로 뜬다.
+    - 런처가 내부에서 `spawn("node", [dist/cli/qmd.js])` 로 node 를 **한 번 더** PATH 에서 찾는다.
+- **해결 — wrapper 로 고정**: `~/.local/bin-pinned/qmd` 가 node 24.15.0 을 절대 경로로 못박고, 런처를 건너뛰어 `dist/cli/qmd.js` 를 직접 실행한다. PATH 는 `~/.zshenv.d/10-pinned-bin.sh` 가 mise shim 보다 앞에 둔다.
+    - 런처가 세팅하던 환경 변수(`GGML_METAL_NO_RESIDENCY`, MCP 모드의 로그 억제)는 wrapper 안에서 같은 규칙으로 재현한다.
+    - qmd 를 재설치하거나 node 를 올리면 wrapper 의 고정 버전을 함께 갱신한다.
+- **`bun.lock` touch 는 쓰지 않는다 (실측)**: 런처는 lockfile 로 런타임을 고르는데(`bun.lock`→bun, `package-lock.json`→node), bun 이 PATH 에 없으면 `qmd: failed to launch bun: spawn bun ENOENT` 로 죽는다. fos-brain 플러그인의 `setup-check.cjs` 가 매 세션 이 파일을 touch 하므로, 런처를 우회하는 wrapper 가 필요한 이유이기도 하다.
+- 진단 순서: `which qmd` 로 wrapper 가 잡히는지 → `qmd collection list` 로 DB 접근이 되는지 → 고정한 node 버전이 아직 설치돼 있는지.
 - qmd 가 끝내 안 되면 `brain-search` 는 grep 으로 폴백한다(품질은 떨어지지만 동작).
 
 ## 웹 UI: Quartz
