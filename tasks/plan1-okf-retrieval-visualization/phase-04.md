@@ -31,6 +31,7 @@ OKF 공식 명세와 저장소의 `quartz/docs/`를 우선 근거로 대조한�
 skill 검사, Node 단위 검사, 검색 벤치마크, Quartz 검사와 공개 빌드를 실행한다.
 OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 포함하는지 확인한다.
 실제 내보내기를 막는 `wiki/concepts/pitfalls-file-per-pattern.md`의 placeholder `[[slug]]`는 의미 링크가 아닌 리터럴 예시로 고친다.
+내보내기는 inline code와 fenced code 안의 wikilink 예시를 변환하지 않으며, 일반 본문의 wikilink와 unresolved 오류 계약은 유지한다.
 
 ### 4. task 완료 상태 기록
 
@@ -45,6 +46,8 @@ OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 �
 | `wiki/topics/rag-system-architecture-strategies.md` | 수정 |
 | `wiki/concepts/pitfalls-file-per-pattern.md` | placeholder 링크 수정 |
 | `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json` | 대표 질문 교체 |
+| `.agents/plugin/fos-brain/scripts/okf-export.cjs` | Markdown 코드 구간 보존 수정 |
+| `.agents/plugin/fos-brain/tests/okf-export.test.cjs` | 코드 구간 회귀 검사 추가 |
 | `docs/` 관리 문서 | 구현 불일치가 있을 때만 수정 |
 | `tasks/plan1-okf-retrieval-visualization/index.json` | 완료 상태 수정 |
 
