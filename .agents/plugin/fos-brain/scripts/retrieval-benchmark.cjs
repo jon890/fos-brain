@@ -15,7 +15,7 @@ function selectQmd() {
     fs.accessSync(PINNED_QMD, fs.constants.X_OK);
     return PINNED_QMD;
   } catch {
-    return "qmd";
+    throw new Error(`pinned qmd executable not found: ${PINNED_QMD}`);
   }
 }
 

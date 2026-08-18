@@ -16,58 +16,13 @@ const EXPECTED_COLLECTIONS = [
   { name: "brain-private", relPath: "private/wiki" },
 ];
 
-function hasCommand(cmd) {
-  try {
-    execFileSync("which", [cmd], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function selectQmd() {
   try {
     fs.accessSync(PINNED_QMD, fs.constants.X_OK);
     return PINNED_QMD;
   } catch {
-    return hasCommand("qmd") ? "qmd" : null;
+    return null;
   }
-}
-
-function ensureQmdInstalled(notes) {
-  const installedQmd = selectQmd();
-  if (installedQmd) {
-    if (installedQmd !== PINNED_QMD) {
-      notes.push("고정 qmd 실행 파일을 찾지 못해 PATH의 qmd로 축소 동작한다.");
-    }
-    return installedQmd;
-  }
-  if (hasCommand("bun")) {
-    try {
-      execFileSync("bun", ["install", "-g", "@tobilu/qmd"], {
-        stdio: "ignore",
-        timeout: 60000,
-      });
-      notes.push("qmd 가 없어 bun 으로 설치했다.");
-      return selectQmd();
-    } catch {
-      // fall through to npm attempt
-    }
-  }
-  if (hasCommand("npm")) {
-    try {
-      execFileSync("npm", ["install", "-g", "@tobilu/qmd"], {
-        stdio: "ignore",
-        timeout: 60000,
-      });
-      notes.push("qmd 가 없어 npm 으로 설치했다.");
-      return selectQmd();
-    } catch {
-      // give up silently, report below
-    }
-  }
-  notes.push("qmd 를 찾지 못했고 자동 설치도 실패했다. `bun install -g @tobilu/qmd` 를 수동 실행해야 recall 기능이 동작한다.");
-  return null;
 }
 
 function existingCollectionNames(qmd) {
@@ -102,9 +57,11 @@ function ensureCollectionsRegistered(qmd, notes) {
 
 function main() {
   const notes = [];
-  const qmd = ensureQmdInstalled(notes);
+  const qmd = selectQmd();
   if (qmd) {
     ensureCollectionsRegistered(qmd, notes);
+  } else {
+    notes.push(`고정 qmd 실행 파일을 찾지 못해 컬렉션 점검을 건너뛴다 (${PINNED_QMD}).`);
   }
   if (notes.length > 0) {
     process.stdout.write(JSON.stringify({ systemMessage: `[brain-sync] ${notes.join(" ")}` }));
