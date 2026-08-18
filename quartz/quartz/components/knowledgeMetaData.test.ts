@@ -11,7 +11,8 @@ describe("knowledge metadata normalization", () => {
         status: "STABLE",
         stale_after: "2026-08-17",
         sources: [
-          { id: "raw-note", resource: "raw/notes/source.md", title: "원본 메모" },
+          { resource: "raw/notes/source.md", title: "원본 메모" },
+          { id: "raw-note", resource: "raw/notes/identified-source.md" },
           { id: "missing-resource" },
         ],
         generated: { by: "brain-add", at: "2026-08-01T03:00:00.000Z" },
@@ -28,10 +29,21 @@ describe("knowledge metadata normalization", () => {
       type: "topic",
       status: "stable",
       staleAfter: { date: "2026-08-17", state: "stale" },
-      sources: [{ id: "raw-note", resource: "raw/notes/source.md", title: "원본 메모" }],
+      sources: [
+        { resource: "raw/notes/source.md", title: "원본 메모" },
+        { id: "raw-note", resource: "raw/notes/identified-source.md" },
+      ],
       generated: { by: "brain-add", at: "2026-08-01T03:00:00.000Z" },
       verified: [{ by: "human", at: "2026-08-15" }],
     })
+  })
+
+  test("normalizes bare verified mapping as a single attribution", () => {
+    const normalized = normalizeKnowledgeMetaData({
+      verified: { by: "reviewer", at: "2026-08-18" },
+    })
+
+    assert.deepStrictEqual(normalized.verified, [{ by: "reviewer", at: "2026-08-18" }])
   })
 
   test("keeps sparse and malformed metadata renderable", () => {
@@ -60,12 +72,20 @@ describe("knowledge metadata normalization", () => {
     assert.deepStrictEqual(normalized.staleAfter, { state: "invalid" })
   })
 
-  test("treats today and future review dates as current", () => {
+  test("treats today and past review dates as stale", () => {
     const today = new Date("2026-08-18T12:00:00")
     assert.deepStrictEqual(
-      normalizeKnowledgeMetaData({ stale_after: "2026-08-18" }, today).staleAfter,
-      { date: "2026-08-18", state: "current" },
+      normalizeKnowledgeMetaData({ stale_after: "2026-08-17" }, today).staleAfter,
+      { date: "2026-08-17", state: "stale" },
     )
+    assert.deepStrictEqual(
+      normalizeKnowledgeMetaData({ stale_after: "2026-08-18" }, today).staleAfter,
+      { date: "2026-08-18", state: "stale" },
+    )
+  })
+
+  test("treats future review dates as current", () => {
+    const today = new Date("2026-08-18T12:00:00")
     assert.deepStrictEqual(
       normalizeKnowledgeMetaData({ stale_after: "2026-08-19" }, today).staleAfter,
       { date: "2026-08-19", state: "current" },

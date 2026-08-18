@@ -2,7 +2,7 @@ export type KnowledgeType = "concept" | "topic" | "entity"
 export type KnowledgeStatus = "draft" | "stable" | "deprecated"
 
 export type KnowledgeSource = {
-  id: string
+  id?: string
   resource: string
   title?: string
 }
@@ -90,16 +90,20 @@ function normalizeFreshness(value: unknown, today: Date): KnowledgeFreshness | u
   if (value === undefined || value === null) return undefined
   const date = normalizeDateOnly(value)
   if (!date) return { state: "invalid" }
-  return { date, state: date < localDateKey(today) ? "stale" : "current" }
+  return { date, state: date <= localDateKey(today) ? "stale" : "current" }
 }
 
 function normalizeSource(value: unknown): KnowledgeSource | undefined {
   if (!isRecord(value)) return undefined
   const id = normalizeText(value.id)
   const resource = normalizeText(value.resource)
-  if (!id || !resource) return undefined
+  if (!resource) return undefined
   const title = normalizeText(value.title)
-  return title ? { id, resource, title } : { id, resource }
+  return {
+    ...(id ? { id } : {}),
+    resource,
+    ...(title ? { title } : {}),
+  }
 }
 
 function normalizeAttribution(value: unknown): KnowledgeAttribution | undefined {
@@ -125,7 +129,12 @@ export function normalizeKnowledgeMetaData(
         const normalized = normalizeAttribution(entry)
         return normalized ? [normalized] : []
       })
-    : []
+    : data.verified === undefined || data.verified === null
+      ? []
+      : (() => {
+          const normalized = normalizeAttribution(data.verified)
+          return normalized ? [normalized] : []
+        })()
 
   return {
     description: normalizeText(data.description),
