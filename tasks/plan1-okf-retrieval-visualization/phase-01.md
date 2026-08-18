@@ -34,12 +34,14 @@ wiki 문서의 bare-slug와 raw wikilink를 묶음 내부 상대 Markdown 링크
 `concepts/`, `topics/`, `entities/` 문서에만 누락된 type, title, description, generated를 JSON 호환 YAML 값으로 삽입하며 기존 중첩 배열·객체는 재직렬화하지 않는다.
 묶음 루트 `index.md`의 frontmatter에는 `okf_version`만 기록한다.
 내부 `wiki/INDEX.md`는 예약 이름인 `wiki/index.md`로 내보내고, `wiki/log.md`와 함께 일반 지식 문서 메타데이터를 주입하지 않는다.
+raw Markdown은 원본을 바꾸지 않고 내보내기 사본에만 누락된 `type: Reference`를 삽입한다.
+raw 본문의 wikilink와 Markdown 이외 파일은 원본성을 위해 그대로 보존한다.
 출력 경로가 존재하거나 링크 대상을 해석하지 못하면 비파괴적으로 실패한다.
 
 ### 4. 내보내기 계약 검사 추가
 
 `.agents/plugin/fos-brain/tests/okf-export.test.cjs`에 임시 public·private fixture를 만든다.
-필수 메타데이터 보완, 예약 index와 log 보존, 링크 변환, private 제외, 기존 출력 보호를 검사한다.
+필수 메타데이터 보완, raw Reference 변환, 예약 index와 log 보존, 링크 변환, private 제외, 기존 출력 보호를 검사한다.
 
 ## Critical Files
 

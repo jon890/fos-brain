@@ -33,6 +33,7 @@ skill 검사, Node 단위 검사, 검색 벤치마크, Quartz 검사와 공개 �
 OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 포함하는지 확인한다.
 루트 `index.md`는 `okf_version`만 가지며, `wiki/index.md`와 `wiki/log.md`에는 일반 지식 문서 메타데이터가 주입되지 않아야 한다.
 concept, topic, entity 문서에는 필요한 메타데이터 보완과 링크 변환이 적용되어야 한다.
+raw Markdown 사본에는 `type: Reference`가 있고 내부 raw 원본은 바뀌지 않아야 한다.
 실제 내보내기를 막는 `wiki/concepts/pitfalls-file-per-pattern.md`의 placeholder `[[slug]]`는 의미 링크가 아닌 리터럴 예시로 고친다.
 내보내기는 inline code와 fenced code 안의 wikilink 예시를 변환하지 않으며, 일반 본문의 wikilink와 unresolved 오류 계약은 유지한다.
 
@@ -52,6 +53,7 @@ concept, topic, entity 문서에는 필요한 메타데이터 보완과 링크 �
 | `.agents/plugin/fos-brain/scripts/okf-export.cjs` | Markdown 코드 구간 보존과 OKF 예약 문서 처리 수정 |
 | `.agents/plugin/fos-brain/tests/okf-export.test.cjs` | 코드 구간과 OKF 예약 문서 회귀 검사 추가 |
 | `quartz/.prettierignore` | 기존 lockfile 형식 불일치를 통합 형식 검사에서 제외 |
+| `.gitignore` | Quartz 검사 산출물 제외 경로 보강 |
 | `docs/` 관리 문서 | 구현 불일치가 있을 때만 수정 |
 | `docs/retrospectives/0002-preexisting-lockfile-format.md` | 통합 검사 대응과 실행 계약 위반 기록 |
 | `tasks/plan1-okf-retrieval-visualization/index.json` | 완료 상태 수정 |
