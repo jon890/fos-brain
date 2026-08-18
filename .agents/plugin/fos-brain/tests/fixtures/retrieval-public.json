@@ -1,0 +1,35 @@
+{
+  "pass_threshold": 0.8,
+  "fixtures": [
+    {
+      "query": "AI 에이전트 개발 하네스는 어떻게 설계해야 하나요?",
+      "collection": "brain-wiki",
+      "expected_slugs": ["ai-harness-pattern"],
+      "top_k": 3
+    },
+    {
+      "query": "Prometheus histogram과 summary는 언제 각각 사용하나요?",
+      "collection": "brain-wiki",
+      "expected_slugs": ["prometheus-histogram-vs-summary"],
+      "top_k": 3
+    },
+    {
+      "query": "OpenClaw 설정 파일과 비밀 값은 어떻게 관리하나요?",
+      "collection": "brain-wiki",
+      "expected_slugs": ["openclaw-config"],
+      "top_k": 3
+    },
+    {
+      "query": "RAG에서 질문 유형에 따라 체인을 나누는 설계는 무엇인가요?",
+      "collection": "brain-wiki",
+      "expected_slugs": ["multi-chain-rag-architecture"],
+      "top_k": 3
+    },
+    {
+      "query": "Docker Compose에서 마운트한 설정 변경을 컨테이너에 반영하려면 어떻게 하나요?",
+      "collection": "brain-wiki",
+      "expected_slugs": ["docker-compose-config-reload"],
+      "top_k": 3
+    }
+  ]
+}
