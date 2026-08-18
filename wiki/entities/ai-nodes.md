@@ -1,7 +1,7 @@
 ---
 type: entity
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-08-18
 ---
 
 # ai-nodes (fos-claw)
@@ -18,7 +18,6 @@ GitHub: `jon890/fos-claw` (public).
   - stock-investment — 일일 주식·암호화폐 모닝 브리핑
   - travel — 여행별 일정·결정 로그
   - health-care — 재활 daily 체크인(cron)
-- 오케스트레이션 — 영속 워크플로 로직은 `~/ai-nodes`, `~/.openclaw` 는 thin glue 로 유지한다([[openclaw]]).
 
 ## 핵심 패턴
 

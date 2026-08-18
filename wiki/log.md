@@ -6,7 +6,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 
 `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
-## [2026-05-19] ingest | RAG 시스템 사례 비교 (Toss, 우아한형제들, Sionic AI)
+## [2026-05-19] 적재 | RAG 시스템 사례 비교 (Toss, 우아한형제들, Sionic AI)
 - Sources: `raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf` (15p), `raw/notes/다른 기업의 RAG 시스템 발표자료.md`
 - 신규 5 concept, 1 topic. INDEX 신규 등록.
 
@@ -20,7 +20,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 ## [2026-05-19] system | Karpathy gist 보강 — 우선순위 1–3 (높음) 적용
 - `wiki/log.md` 신설 (append-only 연대기).
 - lint 검사 항목 #8 모순 감지, #9 누락 교차 참조 추가 (총 9개).
-- ingest skill cross-reference 적극성 강화, 3개 skill 모두 log.md append 의무화.
+- 적재 skill cross-reference 적극성 강화, 3개 skill 모두 log.md append 의무화.
 
 ## [2026-05-19] lint | 9개 항목 재검사 (신규 #8, #9 검증)
 - 발견 0건, 수정 0건. 신규 항목 정상 동작 확인.
@@ -29,7 +29,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - vault CLAUDE.md 에 "검색 도구: qmd", "Obsidian 운영 가이드", "Future Work" 섹션 추가.
 - qmd 2.1.0 설치 (bun install -g @tobilu/qmd). 컬렉션 `obsidian-wiki`, `obsidian-raw` 등록, 임베딩 9 chunks 생성.
 - query skill 의 1차 검색을 `qmd query` 로 전환 (페이지 > 20 또는 의미적 질문).
-- ingest skill 에 `qmd update && qmd embed` 인덱스 갱신 단계 추가.
+- 적재 skill 에 `qmd update && qmd embed` 인덱스 갱신 단계 추가.
 - lint skill 에 `qmd status` 사전 점검 단계 추가.
 - 합성 데이터·파인튜닝·자체 UI·Marp 자동화는 Future Work 로 명시.
 
@@ -63,13 +63,13 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 1 페이지: concept(dollar-hegemony-us-china). 거시·지정학 그룹 신설.
 - 자동자막 기반(오인식 가능)·단일 채널 관점 표기. public 객관 요약.
 
-## [2026-05-29] ingest | claude code review self-hosted CLI 방식 + 신규 구축 레시피
+## [2026-05-29] 적재 | claude code review self-hosted CLI 방식 + 신규 구축 레시피
 - Source: raw/notes/2026-05-29-claude-code-review-cli-recipe.md
 - 보강 1 페이지: ai-code-review-github-actions (marketplace action 중심 → CLI 방식·신규 레시피·프롬프트 설계·함정 추가)
 - 맥락: docu-parser claude-review.yml 정비 — 개방형 프레이밍(앵커링 방지), 프롬프트 .txt 분리(markdown linter glob 손상), opus 별칭(버전 추종), 조용한 실패 가시화, Checks API GitHub App 전용
 - GHE 특화 delta 는 work/nhn(ghe-claude-review-ops)로 분리
 
-## [2026-05-29] ingest | docker compose 마운트 config reload 함정 (force-recreate)
+## [2026-05-29] 적재 | docker compose 마운트 config reload 함정 (force-recreate)
 - Source: docu-parser Vector 사이드카 로그 유실 디버깅 세션 (work/nhn 사례에서 범용 부분 추출)
 - 신규 1 concept: docker-compose-config-reload. 마운트된 config 파일 내용 변경은 up -d 의 recreate 트리거가 아니라 옛 컨테이너가 유지된다 → --force-recreate 필요. k8s 는 rollout restart 로 유사 패턴(참고).
 - work→public link: work/nhn entities/ai-playground-docu-parser, concepts/nhn-log-and-crash 에서 이 페이지로 연결.
@@ -125,7 +125,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 ## [2026-06-02] add | OpenClaw topic 신설 — 게이트웨이 운영·설정 지식
 - Source: raw/notes/2026-06-02-openclaw-knowledge-session.md (공식 docs, GitHub 소스, doctor/CLI 실측)
 - 신규 10 페이지: topic openclaw, concept 9개(overview, architecture, sessions, channels-routing, tool-policy, config, gateway-ops, cli-reference, message-tool)
-- 보강 1 페이지: ai-nodes entity 에 [[openclaw]] 교차링크
+- 보강 1 페이지: ai-nodes entity 에 openclaw 교차링크
 - 계기: "작업 요청 → 관련 지식 탐색" 플로우용 일반 지식 누적(함정만 X). tool-policy allow 교집합 함정·웹UI↔Discord 미러링 한계 포함
 
 ## [2026-06-02] add | orphan transcript mining — openclaw-web-search 신규
@@ -148,7 +148,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: raw/notes/ingress-controller-internal-external-split.md
 - 신규 1 페이지(ingress-controller-internal-external-split), 보강 0
 
-## [2026-06-12] ingest | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
+## [2026-06-12] 적재 | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
 - Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (한 프로젝트 하네스가 plan 43개 진행하며 발전한 분석 중 기존 concept 보강분, repo 무관 일반화)
 - 보강 5 concept: build-with-teams-rules(스폰 안전·재시도 한도·spawn-shutdown·특이사항 4종·마킹 사고 역검증), self-improving-harness(역할별 회고 거울 구조·회피 패턴 wiki 운영 규율), ai-harness-pattern(커스텀 도메인 에이전트=단일 소스), planning-eight-step-design(번호 충돌 방지·docs↔코드 식별자 정합), merge-conflict-free-append(축적 점검·prune 운영 규율 한 줄 연결)
 - 운영 개념(격리 검증·인스턴스 순차 배포 검증 rolling·에러 분류)은 사용자 결정으로 brain 신설 보류 — 보강분만 반영
@@ -160,7 +160,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - stale: 하네스 concept 다 최근·역할 분명 → prune 불필요. openclaw 는 이미 topics/openclaw, INDEX 카테고리로 분리 완료(비대 오판)
 - 미수정(면제): docker-compose-config-reload Sources(실측 함정 ADR류), frontmatter 1(미미), style_tilde 1(범위표기·홈경로 오탐)
 
-## [2026-06-12] ingest | 누적 파일 머지 충돌 구조 제거 패턴 신규 + planning phase/docs 함정 보강
+## [2026-06-12] 적재 | 누적 파일 머지 충돌 구조 제거 패턴 신규 + planning phase/docs 함정 보강
 - Source: raw/notes/2026-06-12-adr-directory-split.md
 - 신규 1 페이지: concept(merge-conflict-free-append) — append 파일 충돌을 파일 per 항목, INDEX 라우터로 제거, 번호 glob 으로 발견성 보존
 - 보강 2 페이지: planning-eight-step-design (phase = 코드 작업 only 섹션에 "결정 docs 는 planning 책임, phase 아님" 함정), ai-harness-pattern (백링크)
@@ -171,7 +171,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 4 페이지, 보강 1 페이지(self-improving-harness)
 - brain-curate 스킬로 public 27세션 분석 → 81후보 → 병합 28 → SkillOpt 군 등록
 
-## [2026-06-16] ingest | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
+## [2026-06-16] 적재 | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
 - Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업, 독립 평가에서 도출한 일반화 학습
 - 신규 1 섹션: "인라인 라인 계산 — read-only 리뷰봇의 함정" (hunk 헤더 누적 계산법·422 는 entry 만 빼고 재시도·실패해도 요약 게시)
 - 함정 3 bullet: 큰 diff false negative(규모 판단 후 전수 못 하면 명시), 구체 체크리스트의 오탐 역효과(read-only↔구체성 trade-off), 빈 배열 API 차단 > 자연어 sanity
@@ -230,7 +230,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: raw/notes/2026-07-14-shared-skill-core-overlay-session.md
 - 신규 1 페이지: shared-skill-core-overlay
 - 보강 1 페이지: planning-eight-step-design (배포 진화형 링크)
-- 함께 정리: planning 원칙에서 "빠른 MVP 트레이드오프" 제거, 복잡도 검증 균형화, 규모별 skip 표 제거, ADR "게이트"→"점검"
+- 함께 정리: planning 원칙에서 "빠른 MVP 트레이드오프" 제거, 복잡도 검증 균형화, 규모별 skip 표 제거, ADR 용어를 "점검"으로 변경
 - 평가: 스킬 배포·유지보수 일반 기법이라 public. 함정 2개(전역 override·이관 결합점)는 별도 페이지 없이 코어 페이지에 인라인(사용자 요청).
 
 ## [2026-07-16] add | 자기주도 학습
@@ -252,3 +252,9 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 수정: `CLAUDE.md` "가독성 표준" 섹션 제거, `brain-lint`/`brain-add`/`brain-curate` SKILL.md 의 관련 검사 항목·단계 제거 및 재번호, `brain_score.py` 의 `style_tilde` 채점 축 제거
 - 부수 발견: hook 이 편집한 파일 전체를 재점검해 기존 `+` 인라인 연결·금지어 위반 다수를 실시간으로 잡아 수정
 
+## [2026-08-18] delete | OpenClaw wiki 제거
+
+- 대상: `wiki/topics/openclaw.md`, `wiki/concepts/openclaw-*.md` 10개 (방식: 완전 삭제)
+- 정리: 백링크 2건 처리(활성 문장 제거 1 / 역사 링크 일반 텍스트 전환 1), INDEX 항목 11개 제거
+- 사유: OpenClaw를 더 이상 사용하지 않아 관련 지식을 검색·탐색 대상에서 제거
+- raw: 보존(1개)
