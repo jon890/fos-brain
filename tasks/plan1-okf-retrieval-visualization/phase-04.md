@@ -51,7 +51,9 @@ concept, topic, entity 문서에는 필요한 메타데이터 보완과 링크 �
 | `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json` | 대표 질문 교체 |
 | `.agents/plugin/fos-brain/scripts/okf-export.cjs` | Markdown 코드 구간 보존과 OKF 예약 문서 처리 수정 |
 | `.agents/plugin/fos-brain/tests/okf-export.test.cjs` | 코드 구간과 OKF 예약 문서 회귀 검사 추가 |
+| `quartz/.prettierignore` | 기존 lockfile 형식 불일치를 통합 형식 검사에서 제외 |
 | `docs/` 관리 문서 | 구현 불일치가 있을 때만 수정 |
+| `docs/retrospectives/0002-preexisting-lockfile-format.md` | 통합 검사 대응과 실행 계약 위반 기록 |
 | `tasks/plan1-okf-retrieval-visualization/index.json` | 완료 상태 수정 |
 
 ## 검증
