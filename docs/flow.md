@@ -53,13 +53,15 @@ qmd가 없거나 실패하면 INDEX로 후보를 좁힌 뒤 `rg`로 본문을 �
 1. hosting.kr의 A·TXT 레코드와 DNSSEC 상태를 내보내 전환 전 스냅샷으로 보관한다.
 2. Cloudflare에 `fosworld.co.kr` 영역을 추가하고 자동 가져온 레코드를 스냅샷과 대조하되 네임서버는 유지한다.
 3. 홈서버에서 public wiki만 Quartz로 빌드하고 정적 웹 컨테이너를 `public-net`에 연결한다.
-4. Nginx Proxy Manager에 `brain.fosworld.co.kr` 프록시를 추가하고, Cloudflare Tunnel 컨테이너가 NPM의 443 포트로 연결되는지 내부에서 확인한다.
+4. Nginx Proxy Manager에 `brain.fosworld.co.kr` 프록시를 추가하고, Cloudflare Tunnel 컨테이너가 `http://fos-npm:80`으로 연결되는지 내부에서 확인한다.
 5. Tunnel에 apex와 각 하위 도메인의 공개 호스트 이름을 등록한다.
-6. `brain`, `grafana`, `jenkins`, `npm`에는 이메일 일회용 PIN 기반 Access 애플리케이션을 적용한다.
-7. `jenkins.fosworld.co.kr/generic-webhook-trigger/*`에는 더 구체적인 Bypass 애플리케이션을 적용하고 Jenkins에서 GitHub HMAC-SHA256을 검증한다.
-8. 기존 hosting.kr DNS 상태에서 Tunnel 원본, Access 객체, Jenkins HMAC를 사전 검증한 뒤 hosting.kr의 권한 네임서버를 Cloudflare 값으로 교체한다.
-9. Cloudflare 영역이 Active가 되고 네 권한 서버의 응답이 일치하면 공개 서비스, 실제 Access 로그인, Cloudflare 경유 웹훅을 검사한다.
-10. 모든 검사가 통과한 뒤 NPM의 호스트 80·443 바인딩을 loopback으로 제한하고 원본 차단을 다시 확인한다.
+6. 이메일 일회용 PIN과 허용 계정 정책을 준비하고 Jenkins에서 GitHub HMAC-SHA256을 검증한다.
+7. `brain`, `grafana`, `jenkins`, `npm`의 Tunnel 원본을 `http_status:503`으로 바꾸고 공개 호스트 네 개는 NPM 원본을 유지한다.
+8. 보호 호스트의 격리를 확인한 뒤 hosting.kr의 권한 네임서버를 Cloudflare 값으로 교체한다.
+9. Cloudflare 영역이 Active가 되면 보호 호스트 네 개의 Access 애플리케이션과 Jenkins 웹훅의 더 구체적인 Bypass 애플리케이션을 만든다.
+10. Access 대상과 정책 우선순위를 확인한 뒤 보호 호스트의 Tunnel 원본을 `http://fos-npm:80`으로 복구한다.
+11. 공개 서비스, 실제 Access 로그인, Cloudflare 경유 웹훅을 검사한다.
+12. 모든 검사가 통과한 뒤 NPM의 호스트 80·443 바인딩을 loopback으로 제한하고 원본 차단을 다시 확인한다.
 
 DNSSEC DS가 있으면 네임서버 변경 전에 제거하고 Cloudflare가 Active가 된 뒤 새 DS를 등록한다.
 현재 DS가 없더라도 전환 직전 다시 확인한다.
@@ -72,7 +74,8 @@ DNSSEC DS가 있으면 네임서버 변경 전에 제거하고 Cloudflare가 Act
 - `brain` 요청은 NPM에서 public Quartz 정적 컨테이너로 전달한다.
 - Hermes와 9119 요청은 Tunnel에 등록하지 않고 기존 SSH 포워딩만 사용한다.
 
-Tunnel이 준비되지 않았거나 보호 호스트 검증이 실패하면 네임서버를 바꾸지 않는다.
+Tunnel이 준비되지 않았거나 Jenkins HMAC 검증이 실패하면 네임서버를 바꾸지 않는다.
+Active 전환 뒤 Access 생성이 실패하면 보호 호스트를 503으로 유지하고 원본 포트를 닫지 않는다.
 네임서버 전환 뒤 장애가 나면 먼저 NPM의 80·443 공인 바인딩을 복구하고 Cloudflare DNS를 이전 A 레코드로 되돌린다.
 Cloudflare 자체 장애가 길어지면 hosting.kr 권한 네임서버 복귀를 마지막 수단으로 사용한다.
 동시에 두 전환 작업을 실행하지 않도록 DNS 스냅샷과 전환 기록을 단일 작업 디렉터리에서 관리한다.
