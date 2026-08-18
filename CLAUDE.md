@@ -107,6 +107,9 @@ brain 은 compounding 자산이다. 미래의 나(또는 나를 돕는 에이전
 type: concept
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+title: "<개념명>"
+description: "문서의 범위와 핵심을 설명하는 한 문장"
+tags: ["주제"]
 ---
 
 # <개념명>
@@ -126,6 +129,21 @@ updated: YYYY-MM-DD
 - [[../../raw/papers/원본파일.md]]
 - [[../../raw/web/기사.md]]
 ```
+
+`type`, `created`, `updated`와 본문의 `## Sources`는 기존 필수 계약으로 계속 유지한다.
+새 문서와 의미를 실질적으로 보강한 문서에는 `title`, `description`, `tags`를 함께 기록한다.
+기존 문서는 이 필드가 없다는 이유만으로 일괄 변경하지 않는다.
+
+문서 성격에 따라 아래 필드를 점진적으로 추가한다.
+
+- `status` — 지식 수명 상태가 필요할 때 `draft`, `stable`, `deprecated` 중 하나를 기록한다.
+- `stale_after` — 시간이 지나면 재검토해야 하는 사실에 `YYYY-MM-DD` 날짜를 기록한다.
+- `sources` — 검색과 교환에 필요한 출처를 `id`, `resource`, 선택적 `title`을 가진 객체 배열로 기록한다.
+- `generated` — 에이전트가 만든 문서에 생성 주체 `by`와 생성 시각 `at`을 기록한다.
+- `verified` — 실제 검증 이력이 있을 때 검증 주체 `by`와 검증 시각 `at`을 가진 객체 배열로 기록한다.
+
+`sources`는 본문의 `## Sources`를 대체하지 않는다.
+`generated`와 `verified`는 확인되지 않은 주체나 시각을 추정해서 채우지 않는다.
 
 ### `wiki/topics/<주제명>.md`
 
