@@ -21,6 +21,8 @@ async function fixture(t) {
   await write(repository, "raw/notes/source one.md", "public source\n")
   await write(repository, "private/raw/notes/secret.md", "PRIVATE-SENTINEL\n")
   await write(repository, "private/wiki/concepts/secret.md", "# Private sentinel\n\nPRIVATE-SENTINEL\n")
+  await write(repository, "wiki/INDEX.md", "# Wiki index\n\nStart with [[alpha]].\n")
+  await write(repository, "wiki/log.md", "# Log\n\n- Linked [[alpha]] without knowledge metadata.\n")
   await write(
     repository,
     "wiki/concepts/alpha.md",
@@ -61,6 +63,8 @@ test("exports public wiki and raw with required metadata and Markdown links", as
   const alpha = await fs.readFile(path.join(output, "wiki/concepts/alpha.md"), "utf8")
   const beta = await fs.readFile(path.join(output, "wiki/topics/beta.md"), "utf8")
   const index = await fs.readFile(path.join(output, "index.md"), "utf8")
+  const wikiIndex = await fs.readFile(path.join(output, "wiki/index.md"), "utf8")
+  const log = await fs.readFile(path.join(output, "wiki/log.md"), "utf8")
 
   assert.match(alpha, /^type: "concept"$/m)
   assert.match(alpha, /^title: "Alpha title"$/m)
@@ -75,6 +79,19 @@ test("exports public wiki and raw with required metadata and Markdown links", as
   assert.match(beta, /\[alpha\]\(\.\.\/concepts\/alpha\.md#details\)/)
   assert.match(beta, /^generated:\n  by: existing-tool\n  at: 2026-08-01$/m)
   assert.match(index, /^okf_version: "0\.2"$/m)
+  assert.doesNotMatch(index, /^type:/m)
+  assert.doesNotMatch(index, /^title:/m)
+  assert.doesNotMatch(index, /^description:/m)
+  assert.doesNotMatch(index, /^generated:/m)
+  assert.match(index, /\[Wiki index\]\(\.\/wiki\/index\.md\)/)
+  assert.match(wikiIndex, /^# Wiki index$/m)
+  assert.match(wikiIndex, /\[alpha\]\(\.\/concepts\/alpha\.md\)/)
+  assert.doesNotMatch(wikiIndex, /^type:/m)
+  assert.doesNotMatch(wikiIndex, /^generated:/m)
+  assert.match(log, /^# Log$/m)
+  assert.match(log, /\[alpha\]\(\.\/concepts\/alpha\.md\)/)
+  assert.doesNotMatch(log, /^type:/m)
+  assert.doesNotMatch(log, /^generated:/m)
 
   assert.equal(await fs.readFile(path.join(output, "raw/notes/source one.md"), "utf8"), "public source\n")
   const exportedFiles = await fs.readdir(output, { recursive: true })
@@ -104,4 +121,42 @@ test("removes temporary output when a link cannot be resolved", async (t) => {
   await assert.rejects(fs.access(output), { code: "ENOENT" })
   const parentEntries = await fs.readdir(path.dirname(output))
   assert.equal(parentEntries.some((entry) => entry.startsWith(".export.tmp-")), false)
+})
+
+test("preserves wikilink examples in Markdown code while converting prose links", async (t) => {
+  const { repository, output } = await fixture(t)
+  await write(
+    repository,
+    "wiki/concepts/code-examples.md",
+    [
+      "# Code examples",
+      "",
+      "Prose [[alpha]] should convert.",
+      "",
+      "Inline `[[alpha]]` and ``[[beta|literal beta]]`` stay literal.",
+      "",
+      "Escaped \\` marker leaves [[beta]] in prose.",
+      "",
+      "```markdown",
+      "[[alpha]]",
+      "```",
+      "",
+      "~~~markdown",
+      "[[beta|literal beta]]",
+      "~~~",
+      "",
+      "Trailing prose [[beta]].",
+      "",
+    ].join("\n"),
+  )
+
+  await exportOkf(repository, output)
+
+  const exported = await fs.readFile(path.join(output, "wiki/concepts/code-examples.md"), "utf8")
+  assert.match(exported, /Prose \[alpha\]\(\.\/alpha\.md\) should convert\./)
+  assert.match(exported, /Escaped \\` marker leaves \[beta\]\(\.\.\/topics\/beta\.md\) in prose\./)
+  assert.match(exported, /Trailing prose \[beta\]\(\.\.\/topics\/beta\.md\)\./)
+  assert.ok(exported.includes("Inline `[[alpha]]` and ``[[beta|literal beta]]`` stay literal."))
+  assert.ok(exported.includes("```markdown\n[[alpha]]\n```"))
+  assert.ok(exported.includes("~~~markdown\n[[beta|literal beta]]\n~~~"))
 })

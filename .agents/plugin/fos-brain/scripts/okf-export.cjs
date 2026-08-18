@@ -122,8 +122,12 @@ function documentDescription(body, title) {
 function inferredType(relativePath) {
   const [directory] = normalizePath(relativePath).split("/")
   if (WIKI_TYPES.has(directory)) return WIKI_TYPES.get(directory)
-  if (path.basename(relativePath).toLowerCase() === "index.md") return "index"
   return "document"
+}
+
+function isKnowledgePage(relativePath) {
+  const [directory] = normalizePath(relativePath).split("/")
+  return WIKI_TYPES.has(directory) && path.extname(relativePath).toLowerCase() === ".md"
 }
 
 function withRequiredMetadata(content, relativePath, generatedAt) {
@@ -176,8 +180,97 @@ function buildSlugIndex(wikiFiles, wikiRoot) {
   return slugs
 }
 
+function isEscaped(content, index) {
+  let slashCount = 0
+  for (let cursor = index - 1; cursor >= 0 && content[cursor] === "\\"; cursor -= 1) {
+    slashCount += 1
+  }
+  return slashCount % 2 === 1
+}
+
+function lineIndent(content, index) {
+  const lineStart = content.lastIndexOf("\n", index - 1) + 1
+  const indent = content.slice(lineStart, index)
+  return /^[ ]{0,3}$/.test(indent)
+}
+
+function backtickRunLength(content, index) {
+  let end = index
+  while (content[end] === "`") end += 1
+  return end - index
+}
+
+function fenceAt(content, index) {
+  const marker = content[index]
+  if ((marker !== "`" && marker !== "~") || !lineIndent(content, index)) return null
+
+  let end = index
+  while (content[end] === marker) end += 1
+  return end - index >= 3 ? { marker, length: end - index } : null
+}
+
+function closingFenceAt(content, index, fence) {
+  if (content[index] !== fence.marker || !lineIndent(content, index)) return false
+
+  let end = index
+  while (content[end] === fence.marker) end += 1
+  if (end - index < fence.length) return false
+
+  const lineEnd = content.indexOf("\n", end)
+  return /^[ \t\r]*$/.test(content.slice(end, lineEnd === -1 ? content.length : lineEnd))
+}
+
+function markdownCodeRanges(content) {
+  const ranges = []
+  let inlineStart = null
+  let inlineLength = 0
+  let fence = null
+
+  for (let index = 0; index < content.length; index += 1) {
+    if (fence) {
+      if (closingFenceAt(content, index, fence)) {
+        const lineEnd = content.indexOf("\n", index)
+        ranges.push([fence.start, lineEnd === -1 ? content.length : lineEnd + 1])
+        while (content[index + 1] === fence.marker) index += 1
+        fence = null
+      }
+      continue
+    }
+
+    if (inlineStart !== null) {
+      if (content[index] === "`" && backtickRunLength(content, index) === inlineLength) {
+        ranges.push([inlineStart, index + inlineLength])
+        inlineStart = null
+        index += inlineLength - 1
+        inlineLength = 0
+      }
+      continue
+    }
+
+    const openingFence = fenceAt(content, index)
+    if (openingFence) {
+      fence = { ...openingFence, start: index }
+      continue
+    }
+
+    if (content[index] === "`" && !isEscaped(content, index)) {
+      inlineStart = index
+      inlineLength = backtickRunLength(content, index)
+      index += inlineLength - 1
+    }
+  }
+
+  if (fence) ranges.push([fence.start, content.length])
+  return ranges
+}
+
+function isInRanges(index, ranges) {
+  return ranges.some(([start, end]) => index >= start && index < end)
+}
+
 async function convertWikilinks(content, sourceFile, wikiRoot, rawRoot, slugIndex) {
-  const matches = [...content.matchAll(/\[\[([^\]\n]+)\]\]/g)]
+  const codeRanges = markdownCodeRanges(content)
+  const matches = [...content.matchAll(/\[\[([^\]\n]+)\]\]/g)].filter((match) => !isInRanges(match.index, codeRanges))
   if (matches.length === 0) return content
 
   let converted = ""
@@ -219,10 +312,10 @@ async function convertWikilinks(content, sourceFile, wikiRoot, rawRoot, slugInde
       defaultLabel = parsed.target
     }
 
-    const outputSource = path.join("wiki", path.relative(wikiRoot, sourceFile))
+    const outputSource = path.join("wiki", outputRelativePath(path.relative(wikiRoot, sourceFile)))
     const outputTarget = targetFile.startsWith(rawRoot + path.sep)
       ? path.join("raw", path.relative(rawRoot, targetFile))
-      : path.join("wiki", path.relative(wikiRoot, targetFile))
+      : path.join("wiki", outputRelativePath(path.relative(wikiRoot, targetFile)))
     const relativeTarget = path.relative(path.dirname(outputSource), outputTarget)
     const markdown = `[${escapeLabel(parsed.label ?? defaultLabel)}](${markdownTarget(relativeTarget, parsed.fragment)})`
 
@@ -233,6 +326,10 @@ async function convertWikilinks(content, sourceFile, wikiRoot, rawRoot, slugInde
   return converted + content.slice(cursor)
 }
 
+function outputRelativePath(relativePath) {
+  return normalizePath(relativePath) === "INDEX.md" ? "index.md" : relativePath
+}
+
 async function copyRawFiles(rawFiles, rawRoot, outputRoot) {
   for (const source of rawFiles) {
     const destination = path.join(outputRoot, "raw", path.relative(rawRoot, source))
@@ -241,17 +338,18 @@ async function copyRawFiles(rawFiles, rawRoot, outputRoot) {
   }
 }
 
-function rootIndex(generatedAt) {
-  const metadata = [
+function rootIndex() {
+  return [
     "---",
-    'type: "index"',
     'okf_version: "0.2"',
-    'title: "fos-brain public knowledge"',
-    'description: "Public knowledge exported from fos-brain in OKF-compatible Markdown."',
-    `generated: ${JSON.stringify({ by: TOOL_NAME, at: generatedAt })}`,
     "---",
-  ]
-  return `${metadata.join("\n")}\n\n# fos-brain public knowledge\n\n- [Wiki index](./wiki/INDEX.md)\n- [Raw sources](./raw/)\n`
+    "",
+    "# fos-brain public knowledge",
+    "",
+    "- [Wiki index](./wiki/index.md)",
+    "- [Raw sources](./raw/)",
+    "",
+  ].join("\n")
 }
 
 async function exportOkf(repositoryRoot, outputPath) {
@@ -285,7 +383,7 @@ async function exportOkf(repositoryRoot, outputPath) {
     await copyRawFiles(rawFiles, rawRoot, temporary)
     for (const source of wikiFiles) {
       const relative = path.relative(wikiRoot, source)
-      const destination = path.join(temporary, "wiki", relative)
+      const destination = path.join(temporary, "wiki", outputRelativePath(relative))
       await fs.mkdir(path.dirname(destination), { recursive: true })
 
       if (path.extname(source).toLowerCase() !== ".md") {
@@ -299,11 +397,11 @@ async function exportOkf(repositoryRoot, outputPath) {
       const linked = parsed.hasFrontmatter
         ? `${parsed.opening}${parsed.frontmatter}${parsed.closing}${linkedBody}`
         : linkedBody
-      const enriched = withRequiredMetadata(linked, relative, generatedAt)
+      const enriched = isKnowledgePage(relative) ? withRequiredMetadata(linked, relative, generatedAt) : linked
       await fs.writeFile(destination, enriched, { encoding: "utf8", flag: "wx" })
     }
 
-    await fs.writeFile(path.join(temporary, "index.md"), rootIndex(generatedAt), { encoding: "utf8", flag: "wx" })
+    await fs.writeFile(path.join(temporary, "index.md"), rootIndex(), { encoding: "utf8", flag: "wx" })
     await fs.rename(temporary, output)
   } catch (error) {
     await fs.rm(temporary, { recursive: true, force: true })
