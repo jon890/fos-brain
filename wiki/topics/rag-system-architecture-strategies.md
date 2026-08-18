@@ -1,7 +1,19 @@
 ---
 type: topic
 created: 2026-05-19
-updated: 2026-05-19
+updated: 2026-08-18
+title: "RAG 시스템 아키텍처 전략 비교"
+description: "토스, 우아한형제들, Sionic AI 사례로 RAG의 작업 흐름, 추론, 데이터 품질 전략을 비교한다."
+tags: [rag, architecture, retrieval, data-quality]
+status: stable
+stale_after: 2027-08-18
+sources:
+  - id: rag-architecture-analysis
+    resource: ../../raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf
+    title: RAG 아키텍처 분석 자료
+  - id: rag-system-presentation
+    resource: ../../raw/notes/다른 기업의 RAG 시스템 발표자료.md
+    title: 다른 기업의 RAG 시스템 발표자료
 ---
 
 # RAG 시스템 아키텍처 전략 비교

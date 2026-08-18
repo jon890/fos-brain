@@ -1,7 +1,22 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-07-30
+updated: 2026-08-18
+title: "build-with-teams 하네스 일반 규칙"
+description: "Claude Agent Teams로 task phase를 안전하게 실행하고 검증하는 공통 운영 규칙이다."
+tags: [ai-harness, agent-teams, orchestration]
+status: stable
+stale_after: 2027-08-18
+sources:
+  - id: build-with-teams-harness-rules
+    resource: ../../raw/notes/2026-05-28-build-with-teams-harness-rules.md
+    title: build-with-teams 하네스 규칙
+  - id: docu-parser-harness-evolution
+    resource: ../../raw/notes/2026-06-12-docu-parser-harness-evolution.md
+    title: docu-parser 하네스 발전 기록
+  - id: fos-skills-harness-evolution
+    resource: ../../raw/notes/2026-07-30-fos-skills-harness-evolution.md
+    title: fos-skills 하네스 발전 기록
 ---
 
 # build-with-teams 하네스 일반 규칙

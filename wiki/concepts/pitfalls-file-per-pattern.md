@@ -56,7 +56,7 @@ frontmatter(id·category·triggers·tool_catchable·source·related) 와 본문(
 
 ## 링크 규칙 (선택적 로드 보존)
 
-- 패턴 간 cross-ref 는 본문 끝 `관련: [[slug]]` 로 적는다 — 자동 로드 안 하는 grep 토큰이다.
+- 패턴 간 cross-ref 는 본문 끝 `관련: [[slug]]` 형식으로 적는다 — 자동 로드 안 하는 grep 토큰이다.
 - `@경로` import 는 쓰지 않는다 — 내용을 통째로 자동 포함시켜 선택적 로드를 깨뜨린다.
 - INDEX 의 카테고리 목록만 마크다운 링크로 둬 클릭 네비게이션 허브로 쓴다.
 

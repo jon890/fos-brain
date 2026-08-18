@@ -14,9 +14,9 @@
       "top_k": 3
     },
     {
-      "query": "OpenClaw 설정 파일과 비밀 값은 어떻게 관리하나요?",
+      "query": "반복해서 쓰는 기술 스택과 개발 도구 선호는 무엇인가요?",
       "collection": "brain-wiki",
-      "expected_slugs": ["openclaw-config"],
+      "expected_slugs": ["tech-stack-preferences"],
       "top_k": 3
     },
     {
