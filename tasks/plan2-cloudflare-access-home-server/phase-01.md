@@ -45,6 +45,7 @@ Compose 해석, shell 구문, private 경로 미참조, public Quartz 빌드를 
 | `deploy/home-server/nginx.conf` | 신규 |
 | `deploy/home-server/compose.yaml` | 신규 |
 | `deploy/home-server/.env.example` | 신규 |
+| `deploy/home-server/.gitignore` | 신규 |
 | `deploy/home-server/tests/verify-public-deploy.sh` | 신규 |
 
 ## 검증
