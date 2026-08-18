@@ -11,7 +11,6 @@
 - [[observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
 - [[operations-troubleshooting]] — 운영 중 실제로 터진 인프라·컨테이너 장애와 해결 사례
 - [[rag-system-architecture-strategies]] — Workflow / Logic / Data Quality 3대 축으로 본 기업별 RAG 구축 전략 비교
-- [[openclaw]] — 자가호스팅 게이트웨이로 채팅 채널을 AI 에이전트에 연결하는 시스템의 운영·설정 지식
 - [[ai-era-professionalism]] — AI 시대 전문성이 생산 숙련에서 검증·판단·운영 책임으로 이동하는 변화
 
 ## Concepts
@@ -116,21 +115,6 @@
 - [[multi-chain-rag-architecture]] — Router Supervisor, 의도별 특화 체인 라우팅 패턴
 - [[sionic-vlm-document-parsing]] — VLM 2-Stage 파싱, 자연어 직렬화, 파서 교체만으로 정확도 20%+ 향상
 
-### OpenClaw (게이트웨이 운영)
-
-상위 주제: [[openclaw]]
-
-- [[openclaw-overview]] — 정체성, 멘탈 모델, local-first
-- [[openclaw-architecture]] — Gateway / Agent / Channel / Session / Control UI / Plugin 관계
-- [[openclaw-sessions]] — 세션 키 패턴, dmScope, deterministic routing
-- [[openclaw-channels-routing]] — 채널 격리 원칙, 웹 UI ↔ Discord 미러링의 한계
-- [[openclaw-tool-policy]] — profile / allow / deny, allow 교집합 함정
-- [[openclaw-config]] — openclaw.json, config CLI, secret redaction
-- [[openclaw-gateway-ops]] — 서비스, 포트, 대시보드 토큰 인증, doctor
-- [[openclaw-cli-reference]] — 주요 명령 요약
-- [[openclaw-message-tool]] — 채널 송출, CLI vs 에이전트 도구 호출
-- [[openclaw-web-search]] — web_search provider, autodetect 우선순위, key-free 옵션
-
 ### 거시·지정학
 
 - [[dollar-hegemony-us-china]] — 달러 패권(브레튼우즈→페트로달러→AI)과 미중 패권전쟁 프레임 (유튜브 출처)
@@ -171,7 +155,7 @@
 - `raw/web/` — Web Clipper 로 수집한 웹 기사 (2개: 문서 파싱 품질 평가, AI 생성 코드 채택 기준)
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (2개: RAG 아키텍처 분석, AI 시대 전문성)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
-- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, OpenClaw 세션, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
+- `raw/notes/` — 사용자 메모·업무 기록 중 raw 로 승격된 노트 (주요: RAG 발표자료, 레포 업무 스타일 분석, build-with-teams 규칙, docu-parser 워크플로 스킬, ADR 디렉터리 분해, SkillOpt 세션, 2026-06-12 docu-parser 하네스 발전분)
 - `raw/videos/` — 유튜브 자막 정리본 (5개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰)
 
 ## 메타
