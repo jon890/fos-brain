@@ -42,9 +42,33 @@ qmd 명령은 고정 wrapper만 실행하며, wrapper가 없으면 PATH의 실�
 묶음의 `index.md`와 `log.md`는 예약 문서로 별도 처리한다.
 raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 원본 본문을 유지한다.
 
+## 홈서버 배포 경계
+
+- `deploy/home-server/compose.yaml` — public Quartz 정적 서버와 Cloudflare Tunnel 컨테이너를 정의한다.
+- `deploy/home-server/build-public.sh` — private 경로를 마운트하지 않고 고정 Node 컨테이너에서 공개 Quartz를 빌드한다.
+- `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
+- `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
+- Cloudflare dashboard — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책을 소유한다.
+- Nginx Proxy Manager — 호스트 기반 내부 라우팅과 `brain` 정적 서버 프록시를 소유한다.
+- Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증과 작업 token 선택을 소유한다.
+
+Tunnel은 기존 `public-net`에만 참여하고 NPM의 HTTPS 포트로 연결한다.
+호스트별 `httpHostHeader`를 원래 도메인으로 유지해 NPM의 기존 가상 호스트를 재사용한다.
+NPM의 여러 인증서를 Docker 이름으로 검증할 수 없으므로 Tunnel과 NPM 사이에만 `noTLSVerify`를 허용한다.
+이 예외는 같은 호스트의 Docker 네트워크 안으로 한정하며 인터넷 구간의 TLS와 Access 검증에는 영향을 주지 않는다.
+
+정적 서버는 `quartz/public`만 읽기 전용으로 마운트한다.
+빌더는 `quartz/`와 public `wiki/`만 마운트하며 `private/`와 `quartz-local/`을 보거나 복사하지 않는다.
+Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
+
+NPM의 공인 80·443 포트는 전환 검증 전까지 유지한다.
+전환 뒤에는 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
+
 ## 검증 경계
 
 - 검색 벤치마크 — 대표 질문마다 기대 slug의 상위 순위를 검사한다.
 - OKF 내보내기 — 임시 fixture를 내보내고 메타데이터, raw Reference, 예약 문서, 링크, private 제외를 검사한다.
 - Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
+- 배포 — Compose 구문, private 마운트 부재, Quartz 공개 빌드, 컨테이너 상태와 NPM 내부 연결을 검사한다.
+- 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·443 차단과 SSH 10022 유지를 확인한다.
