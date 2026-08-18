@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+normalize_public_index() {
+  local public_dir="$1"
+
+  if [[ ! -e "$public_dir/index.html" && -s "$public_dir/INDEX.html" ]]; then
+    cp "$public_dir/INDEX.html" "$public_dir/index.html"
+  fi
+
+  if [[ ! -s "$public_dir/index.html" ]]; then
+    echo "Quartz did not emit a deployable lowercase index.html." >&2
+    return 1
+  fi
+}
+
+if [[ "${BUILD_PUBLIC_NORMALIZE_ONLY:-}" == "1" ]]; then
+  normalize_public_index "${1:?Pass the public output directory.}"
+  exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 QUARTZ_DIR="$REPO_ROOT/quartz"
@@ -34,3 +52,5 @@ docker run --rm \
     corepack pnpm@10.33.0 install --frozen-lockfile --store-dir /tmp/pnpm-store
     corepack pnpm@10.33.0 quartz build --directory /workspace/wiki --output /workspace/quartz/public
   '
+
+normalize_public_index "$QUARTZ_DIR/public"

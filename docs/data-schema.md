@@ -94,12 +94,11 @@ worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하
 | `jenkins.fosworld.co.kr/*` | 허용 계정 | 이메일 일회용 PIN | NPM 443 |
 | `jenkins.fosworld.co.kr/generic-webhook-trigger/*` | GitHub webhook | Bypass + HMAC-SHA256 | NPM 443 |
 | `npm.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | NPM 443 |
-| `nreview.fosworld.co.kr` | 기존 404 보존 | 없음 | NPM 443 |
 
 Tunnel의 각 호스트 항목은 원래 호스트 이름을 `httpHostHeader`로 전달한다.
 등록되지 않은 호스트는 404로 끝난다.
 기존 apex·하위 도메인의 A 레코드는 Tunnel CNAME으로 교체하고 TXT 두 개는 값과 TTL을 그대로 유지한다.
-폐기한 `career` 레코드는 다시 만들지 않는다.
+폐기한 `career`와 `nreview` 레코드는 다시 만들지 않는다.
 
 배포 중 생성하는 DNS 스냅샷, Tunnel token, Access 계정, HMAC secret은 git 추적 대상이 아니다.
 정적 산출물 `quartz/public`도 기존대로 gitignore 상태를 유지한다.

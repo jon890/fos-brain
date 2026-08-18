@@ -28,7 +28,7 @@ Cloudflare Zero Trust에서 이메일 일회용 PIN 로그인을 활성화한다
 
 apex, blog, accountbook, accountbook-api에는 Access 애플리케이션을 만들지 않는다.
 계정 전체의 Access 보호 강제가 켜져 있으면 이 공개 호스트를 명시적으로 제외한다.
-`nreview`는 Access 없이 기존 404가 유지되게 하고 `career`는 만들지 않는다.
+`career`와 `nreview`는 Access 애플리케이션과 공개 호스트 이름을 만들지 않는다.
 
 ### 3. GitHub 웹훅 secret을 먼저 배치
 

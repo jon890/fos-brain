@@ -19,8 +19,13 @@
 SSH `bifos@61.80.30.85:10022`에서 실행 중인 컨테이너, NPM 프록시 호스트, 포트 바인딩, DNS 레코드를 다시 조회한다.
 NPM 설정과 배포 전 Compose 파일을 날짜가 붙은 `/home/bifos/apps/backups/` 하위 디렉터리에 복사한다.
 Cloudflare에 `fosworld.co.kr` 영역을 추가하고 자동 가져온 레코드를 hosting.kr 스냅샷과 대조하되 권한 네임서버는 유지한다.
-폐기된 `career` 레코드·프록시·컨테이너·예약 실행이 남아 있으면 백업 뒤 제거하며 DB·소스·사용자 데이터는 보존한다.
-`career`를 다시 만들지 않는다.
+9개 레코드 대조가 끝나면 Cloudflare의 Pending 영역에서만 기존 A 레코드 7개를 대응 Tunnel CNAME으로 한 건씩 교체한다.
+각 A 레코드를 제거한 직후 같은 이름의 게시된 애플리케이션 경로를 만들어 중간 차이를 최소화한다.
+두 TXT 레코드는 유지하며 hosting.kr의 권한 네임서버와 레코드는 변경하지 않는다.
+폐기된 `career`와 `nreview`의 레코드·프록시·컨테이너·예약 실행이 남아 있으면 백업 뒤 제거한다.
+Career DB·소스·사용자 데이터는 보존한다.
+`/home/bifos/apps/navermap-review` 소스는 상태를 기록한 뒤 `/home/bifos/apps/backups/decommission-nreview-20260818/navermap-review`로 이동해 활성 경로에서 제거하고 복구 가능하게 보존한다.
+`career`와 `nreview`를 다시 만들지 않는다.
 
 ### 2. 저장소와 public Quartz 배치
 
@@ -36,9 +41,10 @@ token을 명령 출력, 셸 기록, git diff에 노출하지 않는다.
 
 ### 4. 내부 원본 경로 검증
 
-Tunnel의 각 공개 호스트 이름이 `https://fos-npm:443`으로 향하고 원래 도메인을 `httpHostHeader`로 전달하는지 확인한다.
-같은 Docker 네트워크의 NPM 연결에만 `noTLSVerify`를 적용한다.
-apex, blog, accountbook, accountbook-api, brain, Grafana, Jenkins, NPM, nreview의 내부 응답을 전환 전 기준과 비교한다.
+Tunnel의 각 공개 호스트 이름이 `http://fos-npm:80`으로 향하고 원래 도메인을 `httpHostHeader`로 전달하는지 확인한다.
+Cloudflare 영역은 아직 Pending이므로 이 교체가 현재 공개 DNS 응답을 바꾸지 않는지 확인한다.
+apex, blog, accountbook, accountbook-api, brain, Grafana, Jenkins, NPM의 내부 응답을 전환 전 기준과 비교한다.
+Cloudflare, hosting.kr, NPM, Tunnel 공개 대상에 `career`와 `nreview`가 없는지 확인한다.
 Cloudflare dashboard나 API에서 Tunnel connector가 정상 상태인지 확인한다.
 
 ## Critical Files
@@ -47,7 +53,9 @@ Cloudflare dashboard나 API에서 Tunnel connector가 정상 상태인지 확인
 | --- | --- |
 | `/home/bifos/personal/fos-brain` | 계획 브랜치 배치 |
 | `/home/bifos/personal/fos-brain/deploy/home-server/.env` | 신규, untracked, 권한 600 |
+| `/home/bifos/apps/navermap-review` | 백업 경로로 이동 |
 | NPM proxy host | `brain.fosworld.co.kr` 추가 |
+| Cloudflare Pending 영역 | A 레코드 7개를 Tunnel CNAME으로 교체, TXT 2개 유지 |
 | Cloudflare Tunnel | 공개 호스트 이름과 원본 규칙 추가 |
 
 ## 검증
@@ -61,6 +69,16 @@ docker inspect brain-web cloudflared
 
 `brain-web`과 `cloudflared`가 정상 상태이고 NPM 내부 요청과 Tunnel connector 상태가 기대값을 내야 한다.
 기존 DNS 응답과 공인 80·443 바인딩은 이 phase에서 바뀌면 안 된다.
+
+## 실행 결과 (2026-08-18)
+
+- Cloudflare 영역은 `Pending`을 유지했고 권한 네임서버는 hosting.kr의 4개 서버 구성을 그대로 유지했다.
+- Pending 영역은 A 레코드 7개를 대응 Tunnel CNAME으로 교체해 CNAME 8개와 TXT 2개가 남았다.
+- Tunnel은 공개 호스트 8개를 `http://fos-npm:80`으로 연결하고 각 원래 호스트 이름을 전달한다.
+- Connector는 healthy 상태에서 연결 4개를 유지했고, 홈서버의 `brain-web`과 `cloudflared`는 `public-net`에서 실행 중이다.
+- NPM 내부 스모크 검사에서 8개 호스트가 모두 5xx 없이 기존 기준 응답을 냈다.
+- hosting.kr의 실제 DNS에는 기존 A 7개와 TXT 2개가 그대로 남아 있고 `brain`, `career`, `nreview` A 레코드는 없다.
+- 배포 전 Cloudflare·NPM·Compose 상태와 폐기 대상은 날짜가 붙은 백업 경로에 보존했다.
 
 ## 중단 조건과 되돌리기
 

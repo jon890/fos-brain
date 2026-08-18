@@ -40,7 +40,7 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - `fosworld.co.kr`, `blog`, `accountbook`, `accountbook-api`는 로그인 없이 계속 공개한다.
 - Jenkins 웹훅 경로만 Access 인증에서 제외하고 Generic Webhook Trigger의 HMAC-SHA256 검증을 필수로 한다.
 - hosting.kr은 등록기관으로 유지하고 권한 DNS만 Cloudflare full setup으로 전환한다.
-- 폐기된 `career`는 DNS, 프록시, 컨테이너, 예약 작업에서 제외한다.
+- 폐기된 `career`와 `nreview`는 DNS, 프록시, Tunnel, 컨테이너, 예약 작업에서 제외한다.
 
 ## 성공 기준
 
@@ -63,5 +63,4 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - private 저장소를 공개 산출물에 포함하지 않는다.
 - 검색 결과를 사용자 승인 없이 wiki에 자동 환원하지 않는다.
 - Cloudflare를 도메인 등록기관으로 이전하지 않는다.
-- `nreview`의 기능을 복구하거나 폐기하지 않고 현재 404 동작만 보존한다.
 - Hermes와 9119 포트를 Cloudflare Tunnel에 연결하지 않는다.

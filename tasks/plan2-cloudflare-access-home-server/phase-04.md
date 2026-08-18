@@ -17,7 +17,7 @@
 ### 1. DNS와 DNSSEC 전환 전 점검
 
 hosting.kr의 현재 A·TXT 레코드와 TTL을 새 스냅샷으로 저장하고 Cloudflare 가져오기 결과와 대조한다.
-폐기된 `career`는 없어야 하며 `brain`만 새로 추가한다.
+폐기된 `career`와 `nreview`는 없어야 하며 `brain`만 새로 추가한다.
 DS·DNSKEY가 없는지 다시 확인한다.
 DS가 있으면 먼저 제거되고 전파가 확인될 때까지 네임서버를 바꾸지 않는다.
 

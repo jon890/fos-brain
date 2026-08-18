@@ -8,6 +8,7 @@ PUBLIC_DIR="$REPO_ROOT/quartz/public"
 COMPOSE_CONFIG="$(mktemp)"
 PRIVATE_SENTINEL="FOS_BRAIN_PRIVATE_SENTINEL_DO_NOT_PUBLISH"
 NGINX_IMAGE="$(sed -n 's/^NGINX_IMAGE=//p' "$DEPLOY_DIR/.env.example")"
+NODE_IMAGE="$(sed -n 's/^NODE_IMAGE="\([^"]*\)"/\1/p' "$DEPLOY_DIR/build-public.sh")"
 
 cleanup() {
   rm -f "$COMPOSE_CONFIG"
@@ -51,6 +52,16 @@ docker run --rm \
   --mount "type=bind,src=$DEPLOY_DIR/nginx.conf,dst=/etc/nginx/conf.d/default.conf,readonly" \
   "$NGINX_IMAGE" \
   nginx -t
+
+docker run --rm \
+  --mount "type=bind,src=$DEPLOY_DIR/build-public.sh,dst=/tmp/build-public.sh,readonly" \
+  "$NODE_IMAGE" \
+  sh -euc '
+    mkdir -p /tmp/public
+    printf "%s\n" "synthetic home" > /tmp/public/INDEX.html
+    BUILD_PUBLIC_NORMALIZE_ONLY=1 /bin/bash /tmp/build-public.sh /tmp/public
+    test -s /tmp/public/index.html
+  '
 
 "$DEPLOY_DIR/build-public.sh"
 
