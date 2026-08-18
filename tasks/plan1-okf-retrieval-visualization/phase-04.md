@@ -18,16 +18,19 @@
 
 `wiki/concepts/build-with-teams-rules.md`와 `wiki/topics/rag-system-architecture-strategies.md`에 title, description, tags, status, stale_after, sources를 추가한다.
 본문의 H1, bare-slug 링크, Sources 섹션은 유지한다.
+OpenClaw wiki 제거와 독립적으로 검색 회귀를 측정하도록 `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json`의 OpenClaw 질문을 `tech-stack-preferences` 대표 질문으로 교체한다.
 
 ### 2. 문서 계약 최종 대조
 
 `docs/prd.md`, `docs/flow.md`, `docs/code-architecture.md`, `docs/data-schema.md`, `docs/adr/001-okf-compatibility-boundary.md`를 실제 구현과 대조한다.
 구현과 다른 문장만 수정하고 중복 설명을 늘리지 않는다.
+OKF 공식 명세와 저장소의 `quartz/docs/`를 우선 근거로 대조한다.
 
 ### 3. 통합 검증 실행
 
 skill 검사, Node 단위 검사, 검색 벤치마크, Quartz 검사와 공개 빌드를 실행한다.
 OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 포함하는지 확인한다.
+실제 내보내기를 막는 `wiki/concepts/pitfalls-file-per-pattern.md`의 placeholder `[[slug]]`는 의미 링크가 아닌 리터럴 예시로 고친다.
 
 ### 4. task 완료 상태 기록
 
@@ -40,6 +43,8 @@ OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 �
 | --- | --- |
 | `wiki/concepts/build-with-teams-rules.md` | 수정 |
 | `wiki/topics/rag-system-architecture-strategies.md` | 수정 |
+| `wiki/concepts/pitfalls-file-per-pattern.md` | placeholder 링크 수정 |
+| `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json` | 대표 질문 교체 |
 | `docs/` 관리 문서 | 구현 불일치가 있을 때만 수정 |
 | `tasks/plan1-okf-retrieval-visualization/index.json` | 완료 상태 수정 |
 
