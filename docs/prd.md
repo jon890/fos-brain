@@ -36,7 +36,8 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 
 - 공개 대표 질문의 80% 이상에서 기대 문서가 상위 3개 안에 나온다.
 - 검색 절차가 공개·비공개 결과를 섞지 않고, 답변 근거에 네임스페이스를 표시한다.
-- OKF 내보내기 결과의 모든 문서에 `type`, `title`, `description`이 있고 내부 링크가 표준 Markdown 링크다.
+- OKF 내보내기 결과의 concept, topic, entity 문서에 `type`, `title`, `description`이 있고 내부 링크가 표준 Markdown 링크다.
+- 묶음의 `index.md`와 `log.md`는 OKF v0.2의 예약 문서 계약을 따른다.
 - Quartz 형 검사와 공개 빌드가 통과한다.
 - 메타데이터가 적은 기존 페이지와 새 메타데이터 페이지가 모두 렌더된다.
 

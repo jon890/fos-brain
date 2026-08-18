@@ -18,6 +18,8 @@
 
 `quartz/quartz/components/KnowledgeMeta.tsx`와 전용 SCSS를 추가한다.
 설명, type, status, stale_after, generated, verified, sources를 안전하게 정규화해 표시한다.
+`sources.resource`는 필수, `sources.id`는 선택으로 해석한다.
+`verified`는 배열과 단일 mapping을 모두 받으며 `stale_after`는 해당 날짜부터 오래된 상태로 판정한다.
 누락 필드는 숨기고 잘못된 선택 필드 때문에 페이지 렌더를 중단하지 않는다.
 SCSS를 불러오지 않는 `quartz/quartz/components/knowledgeMetaData.ts`에 정규화 함수를 두고 해당 helper만 단위 검사한다.
 
@@ -63,7 +65,8 @@ pnpm check
 pnpm quartz build
 ```
 
-메타데이터 단위 검사, 형 검사, 공개 정적 빌드가 성공해야 한다.
+메타데이터 단위 검사는 선택 source id, 단일 verified mapping, stale 기준일을 포함해야 한다.
+형 검사와 공개 정적 빌드도 성공해야 한다.
 
 ## 의도 메모 (왜)
 

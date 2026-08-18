@@ -25,11 +25,14 @@ OpenClaw wiki 제거와 독립적으로 검색 회귀를 측정하도록 `.agent
 `docs/prd.md`, `docs/flow.md`, `docs/code-architecture.md`, `docs/data-schema.md`, `docs/adr/001-okf-compatibility-boundary.md`를 실제 구현과 대조한다.
 구현과 다른 문장만 수정하고 중복 설명을 늘리지 않는다.
 OKF 공식 명세와 저장소의 `quartz/docs/`를 우선 근거로 대조한다.
+특히 source id의 선택성, verified 단일 mapping, stale 기준일, 예약 index와 log 계약을 명시한다.
 
 ### 3. 통합 검증 실행
 
 skill 검사, Node 단위 검사, 검색 벤치마크, Quartz 검사와 공개 빌드를 실행한다.
 OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 포함하는지 확인한다.
+루트 `index.md`는 `okf_version`만 가지며, `wiki/index.md`와 `wiki/log.md`에는 일반 지식 문서 메타데이터가 주입되지 않아야 한다.
+concept, topic, entity 문서에는 필요한 메타데이터 보완과 링크 변환이 적용되어야 한다.
 실제 내보내기를 막는 `wiki/concepts/pitfalls-file-per-pattern.md`의 placeholder `[[slug]]`는 의미 링크가 아닌 리터럴 예시로 고친다.
 내보내기는 inline code와 fenced code 안의 wikilink 예시를 변환하지 않으며, 일반 본문의 wikilink와 unresolved 오류 계약은 유지한다.
 
@@ -46,8 +49,8 @@ OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 �
 | `wiki/topics/rag-system-architecture-strategies.md` | 수정 |
 | `wiki/concepts/pitfalls-file-per-pattern.md` | placeholder 링크 수정 |
 | `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json` | 대표 질문 교체 |
-| `.agents/plugin/fos-brain/scripts/okf-export.cjs` | Markdown 코드 구간 보존 수정 |
-| `.agents/plugin/fos-brain/tests/okf-export.test.cjs` | 코드 구간 회귀 검사 추가 |
+| `.agents/plugin/fos-brain/scripts/okf-export.cjs` | Markdown 코드 구간 보존과 OKF 예약 문서 처리 수정 |
+| `.agents/plugin/fos-brain/tests/okf-export.test.cjs` | 코드 구간과 OKF 예약 문서 회귀 검사 추가 |
 | `docs/` 관리 문서 | 구현 불일치가 있을 때만 수정 |
 | `tasks/plan1-okf-retrieval-visualization/index.json` | 완료 상태 수정 |
 

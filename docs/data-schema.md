@@ -14,10 +14,10 @@
 | `description` | 문자열 | 권장하며 질문 없이도 문서 경계를 이해할 수 있는 한 문장이다. |
 | `tags` | 문자열 배열 | 권장하며 동의어보다 안정된 주제 분류를 담는다. |
 | `status` | `draft`, `stable`, `deprecated` | 선택이며 지식의 수명 상태를 나타낸다. |
-| `stale_after` | `YYYY-MM-DD` | 선택이며 사실 갱신이 필요한 시점을 나타낸다. |
-| `sources` | 객체 배열 | 선택이며 `id`, `resource`, 선택 `title`을 가진다. |
+| `stale_after` | `YYYY-MM-DD` | 선택이며 이 날짜부터 사실 갱신이 필요한 상태가 된다. |
+| `sources` | 객체 배열 | 선택이며 필수 `resource`, 선택 `id`, 선택 `title`을 가진다. |
 | `generated` | 객체 | 선택이며 `by`, `at`을 가진다. |
-| `verified` | 객체 배열 | 선택이며 각 항목이 `by`, `at`을 가진다. |
+| `verified` | 객체 또는 객체 배열 | 선택이며 각 항목이 `by`, `at`을 가진다. |
 
 `sources` frontmatter는 검색·교환용 구조 신호다.
 사람이 원문으로 이동할 수 있도록 본문의 `## Sources`도 유지한다.
@@ -32,9 +32,10 @@
 ## OKF 내보내기 묶음
 
 내보내기 루트에는 `index.md`, `wiki/`, `raw/`가 있다.
-`index.md`는 `type: index`, `okf_version: "0.2"`, `title`, `description`을 가진다.
-각 wiki 문서는 최소 `type`, `title`, `description`을 가진다.
-내보내기 시점과 도구는 `generated.by`, `generated.at`으로 기록한다.
+루트 `index.md`의 frontmatter에는 `okf_version: "0.2"`만 기록한다.
+내부 `wiki/INDEX.md`는 `wiki/index.md`로 내보내고 `wiki/log.md`와 함께 일반 지식 문서 메타데이터를 주입하지 않는다.
+concept, topic, entity 문서는 필수 `type`을 가지며 검색과 표시를 위해 `title`, `description`도 보완한다.
+이 문서들의 내보내기 시점과 도구는 `generated.by`, `generated.at`으로 기록한다.
 내보내기는 기존 frontmatter 원문을 유지하고 최상위 키 존재 여부만 읽는다.
 누락 필드는 JSON 문자열로 인용한 YAML scalar 또는 명시적인 YAML block으로 추가한다.
 기존 중첩 객체와 배열을 해석하거나 다시 직렬화하지 않는다.
