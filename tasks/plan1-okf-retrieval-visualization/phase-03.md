@@ -19,6 +19,7 @@
 `quartz/quartz/components/KnowledgeMeta.tsx`와 전용 SCSS를 추가한다.
 설명, type, status, stale_after, generated, verified, sources를 안전하게 정규화해 표시한다.
 누락 필드는 숨기고 잘못된 선택 필드 때문에 페이지 렌더를 중단하지 않는다.
+SCSS를 불러오지 않는 `quartz/quartz/components/knowledgeMetaData.ts`에 정규화 함수를 두고 해당 helper만 단위 검사한다.
 
 ### 2. 페이지 레이아웃 연결
 
@@ -43,7 +44,8 @@ frontmatter type을 정규화해 그래프 데이터에 포함한다.
 | --- | --- |
 | `quartz/quartz/components/KnowledgeMeta.tsx` | 신규 |
 | `quartz/quartz/components/styles/knowledgeMeta.scss` | 신규 |
-| `quartz/quartz/components/KnowledgeMeta.test.tsx` | 신규 |
+| `quartz/quartz/components/knowledgeMetaData.ts` | 신규 |
+| `quartz/quartz/components/knowledgeMetaData.test.ts` | 신규 |
 | `quartz/quartz/components/index.ts` | 수정 |
 | `quartz/quartz.layout.ts` | 수정 |
 | `quartz/quartz/plugins/emitters/contentIndex.tsx` | 수정 |
@@ -55,6 +57,7 @@ frontmatter type을 정규화해 그래프 데이터에 포함한다.
 
 ```bash
 # cwd: <worktree>/quartz
+pnpm install --frozen-lockfile
 pnpm test
 pnpm check
 pnpm quartz build

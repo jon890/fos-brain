@@ -55,6 +55,7 @@ for file in docs/prd.md docs/flow.md docs/code-architecture.md docs/data-schema.
 
 ```bash
 # cwd: <worktree>/quartz
+pnpm install --frozen-lockfile
 pnpm test
 pnpm check
 pnpm quartz build

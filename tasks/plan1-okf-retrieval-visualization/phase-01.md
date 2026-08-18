@@ -30,6 +30,8 @@
 `.agents/plugin/fos-brain/scripts/okf-export.cjs`를 추가한다.
 입력은 저장소 루트와 출력 경로이며, public `wiki/`와 `raw/`만 복사한다.
 wiki 문서의 bare-slug와 raw wikilink를 묶음 내부 상대 Markdown 링크로 바꾸고 루트 `index.md`를 만든다.
+기존 frontmatter 원문을 보존하고 최상위 키의 존재만 정규식으로 감지한다.
+누락된 type, title, description, generated만 JSON 호환 YAML 값으로 삽입하며 기존 중첩 배열·객체는 재직렬화하지 않는다.
 출력 경로가 존재하거나 링크 대상을 해석하지 못하면 비파괴적으로 실패한다.
 
 ### 4. 내보내기 계약 검사 추가

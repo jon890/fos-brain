@@ -34,9 +34,13 @@ OKF 내보내기 로직을 Quartz에 넣지 않고 교환 경계를 별도 스�
 검색은 설치된 qmd를 사용하고, 내보내기 스크립트는 Node.js 표준 라이브러리만 사용한다.
 Quartz는 기존 Preact, TypeScript, SCSS, PixiJS를 재사용한다.
 
+내보내기 스크립트는 YAML 객체를 자체 파서로 재구성하지 않는다.
+기존 frontmatter 원문을 보존하고 최상위 키의 존재만 감지한 뒤, 누락된 교환 필드를 JSON 호환 YAML 값으로 삽입한다.
+기존 `sources`, `generated`, `verified` 구조는 내용 손실 없이 그대로 통과시킨다.
+
 ## 검증 경계
 
 - 검색 벤치마크 — 대표 질문마다 기대 slug의 상위 순위를 검사한다.
 - OKF 내보내기 — 임시 fixture를 내보내고 메타데이터, 링크, private 제외를 검사한다.
-- Quartz — 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
+- Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.

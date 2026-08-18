@@ -35,6 +35,9 @@
 `index.md`는 `type: index`, `okf_version: "0.2"`, `title`, `description`을 가진다.
 각 wiki 문서는 최소 `type`, `title`, `description`을 가진다.
 내보내기 시점과 도구는 `generated.by`, `generated.at`으로 기록한다.
+내보내기는 기존 frontmatter 원문을 유지하고 최상위 키 존재 여부만 읽는다.
+누락 필드는 JSON 문자열로 인용한 YAML scalar 또는 명시적인 YAML block으로 추가한다.
+기존 중첩 객체와 배열을 해석하거나 다시 직렬화하지 않는다.
 
 내부 스키마가 OKF의 모든 필드를 필수로 강제하지는 않는다.
 OKF 규격 변경은 내보내기 계층에서 흡수하고 내부 링크와 네임스페이스 계약은 유지한다.
@@ -52,3 +55,5 @@ OKF 규격 변경은 내보내기 계층에서 흡수하고 내부 링크와 네
 
 전체 성공률은 성공한 fixture 수를 전체 fixture 수로 나눈 값이다.
 기본 통과선은 0.8이다.
+fixture는 사용자의 qmd에 이미 등록된 `brain-wiki` 컬렉션을 대상으로 실행하는 검색 smoke다.
+worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하지 않는다.
