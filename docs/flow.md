@@ -51,15 +51,15 @@ qmd가 없거나 실패하면 INDEX로 후보를 좁힌 뒤 `rg`로 본문을 �
 ## 홈서버 게시와 DNS 전환 흐름
 
 1. hosting.kr의 A·TXT 레코드와 DNSSEC 상태를 내보내 전환 전 스냅샷으로 보관한다.
-2. Cloudflare에 `fosworld.co.kr` 영역을 추가하고 자동 가져온 레코드를 스냅샷과 대조한다.
+2. Cloudflare에 `fosworld.co.kr` 영역을 추가하고 자동 가져온 레코드를 스냅샷과 대조하되 네임서버는 유지한다.
 3. 홈서버에서 public wiki만 Quartz로 빌드하고 정적 웹 컨테이너를 `public-net`에 연결한다.
 4. Nginx Proxy Manager에 `brain.fosworld.co.kr` 프록시를 추가하고, Cloudflare Tunnel 컨테이너가 NPM의 443 포트로 연결되는지 내부에서 확인한다.
 5. Tunnel에 apex와 각 하위 도메인의 공개 호스트 이름을 등록한다.
 6. `brain`, `grafana`, `jenkins`, `npm`에는 이메일 일회용 PIN 기반 Access 애플리케이션을 적용한다.
 7. `jenkins.fosworld.co.kr/generic-webhook-trigger/*`에는 더 구체적인 Bypass 애플리케이션을 적용하고 Jenkins에서 GitHub HMAC-SHA256을 검증한다.
-8. 보호·공개·웹훅 검증을 기존 hosting.kr DNS 상태에서 마친 뒤 hosting.kr의 권한 네임서버를 Cloudflare 값으로 교체한다.
-9. Cloudflare 영역이 Active가 되고 네 권한 서버의 응답이 일치하면 NPM의 호스트 80·443 바인딩을 loopback으로 제한한다.
-10. 공개 서비스, Access 로그인, 웹훅, 원본 차단을 다시 확인한 뒤 전환을 완료한다.
+8. 기존 hosting.kr DNS 상태에서 Tunnel 원본, Access 객체, Jenkins HMAC를 사전 검증한 뒤 hosting.kr의 권한 네임서버를 Cloudflare 값으로 교체한다.
+9. Cloudflare 영역이 Active가 되고 네 권한 서버의 응답이 일치하면 공개 서비스, 실제 Access 로그인, Cloudflare 경유 웹훅을 검사한다.
+10. 모든 검사가 통과한 뒤 NPM의 호스트 80·443 바인딩을 loopback으로 제한하고 원본 차단을 다시 확인한다.
 
 DNSSEC DS가 있으면 네임서버 변경 전에 제거하고 Cloudflare가 Active가 된 뒤 새 DS를 등록한다.
 현재 DS가 없더라도 전환 직전 다시 확인한다.
