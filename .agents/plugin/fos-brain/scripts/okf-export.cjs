@@ -334,8 +334,28 @@ async function copyRawFiles(rawFiles, rawRoot, outputRoot) {
   for (const source of rawFiles) {
     const destination = path.join(outputRoot, "raw", path.relative(rawRoot, source))
     await fs.mkdir(path.dirname(destination), { recursive: true })
-    await fs.copyFile(source, destination, fs.constants.COPYFILE_EXCL)
+    if (path.extname(source).toLowerCase() !== ".md") {
+      await fs.copyFile(source, destination, fs.constants.COPYFILE_EXCL)
+      continue
+    }
+
+    const original = await fs.readFile(source, "utf8")
+    const enriched = withRawReferenceMetadata(original, path.relative(rawRoot, source))
+    await fs.writeFile(destination, enriched, { encoding: "utf8", flag: "wx" })
   }
+}
+
+function withRawReferenceMetadata(content, relativePath) {
+  const parsed = splitFrontmatter(content, relativePath)
+  if (hasTopLevelKey(parsed.frontmatter, "type")) return content
+
+  const addition = 'type: "Reference"'
+  if (!parsed.hasFrontmatter) {
+    return `---${parsed.newline}${addition}${parsed.newline}---${parsed.newline}${parsed.body}`
+  }
+
+  const separator = parsed.frontmatter.endsWith(parsed.newline) ? "" : parsed.newline
+  return `${parsed.opening}${parsed.frontmatter}${separator}${addition}${parsed.newline}${parsed.closing}${parsed.body}`
 }
 
 function rootIndex() {

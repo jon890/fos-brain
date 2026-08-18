@@ -12,13 +12,36 @@ async function write(root, relativePath, content) {
   await fs.writeFile(destination, content)
 }
 
+function frontmatter(content, relativePath) {
+  assert.match(content, /^---(?:\r?\n)/, `${relativePath} must start with frontmatter`)
+  const closing = content.slice(4).match(/^---[ \t]*(?:\r?\n|$)/m)
+  assert.ok(closing, `${relativePath} must have closed frontmatter`)
+  return content.slice(4, 4 + closing.index)
+}
+
+async function assertAllNonReservedMarkdownHasType(output) {
+  const reserved = new Set(["index.md", "wiki/index.md", "wiki/log.md"])
+  const exportedFiles = await fs.readdir(output, { recursive: true })
+  for (const entry of exportedFiles.filter((candidate) => path.extname(candidate) === ".md")) {
+    if (reserved.has(entry)) continue
+    const content = await fs.readFile(path.join(output, entry), "utf8")
+    assert.match(frontmatter(content, entry), /^type:[ \t]*\S/m, `${entry} must have a nonempty type`)
+  }
+}
+
 async function fixture(t) {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "fos-brain-okf-"))
   t.after(() => fs.rm(temporary, { recursive: true, force: true }))
   const repository = path.join(temporary, "repository")
   const output = path.join(temporary, "export")
 
-  await write(repository, "raw/notes/source one.md", "public source\n")
+  await write(repository, "raw/notes/source one.md", "public source with [[alpha]] literal\n")
+  await write(
+    repository,
+    "raw/notes/existing-reference.md",
+    "---\nstatus: draft\n---\n\nExisting reference body.\n",
+  )
+  await write(repository, "raw/assets/blob.bin", Buffer.from([0, 1, 2, 255]))
   await write(repository, "private/raw/notes/secret.md", "PRIVATE-SENTINEL\n")
   await write(repository, "private/wiki/concepts/secret.md", "# Private sentinel\n\nPRIVATE-SENTINEL\n")
   await write(repository, "wiki/INDEX.md", "# Wiki index\n\nStart with [[alpha]].\n")
@@ -93,7 +116,15 @@ test("exports public wiki and raw with required metadata and Markdown links", as
   assert.doesNotMatch(log, /^type:/m)
   assert.doesNotMatch(log, /^generated:/m)
 
-  assert.equal(await fs.readFile(path.join(output, "raw/notes/source one.md"), "utf8"), "public source\n")
+  const rawSource = await fs.readFile(path.join(output, "raw/notes/source one.md"), "utf8")
+  const rawExisting = await fs.readFile(path.join(output, "raw/notes/existing-reference.md"), "utf8")
+  const rawBlob = await fs.readFile(path.join(output, "raw/assets/blob.bin"))
+
+  assert.match(rawSource, /^---\ntype: "Reference"\n---\npublic source with \[\[alpha\]\] literal\n$/)
+  assert.match(rawExisting, /^---\nstatus: draft\ntype: "Reference"\n---\n\nExisting reference body\.\n$/)
+  assert.deepEqual(rawBlob, Buffer.from([0, 1, 2, 255]))
+  await assertAllNonReservedMarkdownHasType(output)
+
   const exportedFiles = await fs.readdir(output, { recursive: true })
   assert.equal(exportedFiles.some((entry) => entry.includes("private")), false)
   const exportedText = await Promise.all(
