@@ -18,6 +18,7 @@
 
 `CLAUDE.md`의 페이지 스키마에 `title`, `description`, `tags`, `status`, `stale_after`, `sources`, `generated`, `verified`의 점진적 적용 규칙을 추가한다.
 기존 `type`, `created`, `updated`와 본문 `## Sources`는 계속 유지한다.
+`.gitignore`에 `.claude/worktrees/`를 추가해 격리 실행 파일이 main 작업 트리에 노출되지 않게 한다.
 
 ### 2. brain-add와 brain-lint 스킬 보강
 
@@ -40,6 +41,7 @@ wiki 문서의 bare-slug와 raw wikilink를 묶음 내부 상대 Markdown 링크
 
 | 파일 | 변경 |
 | --- | --- |
+| `.gitignore` | 수정 |
 | `CLAUDE.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-add/SKILL.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-lint/SKILL.md` | 수정 |

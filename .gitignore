@@ -1,5 +1,6 @@
 # 비공개 네임스페이스 — 절대 commit 하지 않는다
 private/
+.claude/worktrees/
 work/
 
 # Quartz 빌드 산출물·의존성
