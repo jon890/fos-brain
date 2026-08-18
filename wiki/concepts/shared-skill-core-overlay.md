@@ -35,4 +35,4 @@ updated: 2026-07-14
 
 ## Sources
 
-- [[../raw/notes/2026-07-14-shared-skill-core-overlay-session.md]]
+- [[../../raw/notes/2026-07-14-shared-skill-core-overlay-session.md]]

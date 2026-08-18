@@ -1,11 +1,14 @@
 # 비공개 네임스페이스 — 절대 commit 하지 않는다
 private/
+.claude/worktrees/
 work/
 
 # Quartz 빌드 산출물·의존성
 quartz/node_modules/
 quartz/public/
 quartz/.quartz-cache/
+quartz/quartz/.quartz-cache/
+quartz/tsconfig.tsbuildinfo
 
 # 로컬 전체 빌드 — content(심볼릭 병합)·output 은 무시, serve.sh 스크립트는 추적
 quartz-local/content/
