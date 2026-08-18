@@ -36,6 +36,8 @@
 내부 `wiki/INDEX.md`는 `wiki/index.md`로 내보내고 `wiki/log.md`와 함께 일반 지식 문서 메타데이터를 주입하지 않는다.
 concept, topic, entity 문서는 필수 `type`을 가지며 검색과 표시를 위해 `title`, `description`도 보완한다.
 이 문서들의 내보내기 시점과 도구는 `generated.by`, `generated.at`으로 기록한다.
+raw Markdown은 원본을 바꾸지 않고 내보내기 사본에만 `type: Reference`를 보완한다.
+raw 본문의 wikilink와 Markdown 이외 파일은 원본 그대로 보존한다.
 내보내기는 기존 frontmatter 원문을 유지하고 최상위 키 존재 여부만 읽는다.
 누락 필드는 JSON 문자열로 인용한 YAML scalar 또는 명시적인 YAML block으로 추가한다.
 기존 중첩 객체와 배열을 해석하거나 다시 직렬화하지 않는다.
