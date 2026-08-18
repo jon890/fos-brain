@@ -1,4 +1,5 @@
 import type { ContentDetails } from "../../plugins/emitters/contentIndex"
+import type { KnowledgeType } from "../knowledgeMetaData"
 import {
   SimulationNodeDatum,
   SimulationLinkDatum,
@@ -31,6 +32,7 @@ type NodeData = {
   id: SimpleSlug
   text: string
   tags: string[]
+  type?: KnowledgeType
 } & SimulationNodeDatum
 
 type SimpleLinkData = {
@@ -149,6 +151,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       id: url,
       text,
       tags: data.get(url)?.tags ?? [],
+      type: data.get(url)?.type,
     }
   })
   const graphData: { nodes: NodeData[]; links: LinkData[] } = {
@@ -193,17 +196,12 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     {} as Record<(typeof cssVars)[number], string>,
   )
 
-  // calculate color
-  const color = (d: NodeData) => {
-    const isCurrent = d.id === slug
-    if (isCurrent) {
-      return computedStyleMap["--secondary"]
-    } else if (visited.has(d.id) || d.id.startsWith("tags/")) {
-      return computedStyleMap["--tertiary"]
-    } else {
-      return computedStyleMap["--gray"]
-    }
+  const typeColors: Record<KnowledgeType, string> = {
+    concept: computedStyleMap["--secondary"],
+    topic: computedStyleMap["--tertiary"],
+    entity: computedStyleMap["--darkgray"],
   }
+  const nodeColor = (d: NodeData) => (d.type ? typeColors[d.type] : computedStyleMap["--gray"])
 
   function nodeRadius(d: NodeData) {
     const numLinks = graphData.links.filter(
@@ -375,6 +373,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     const nodeId = n.id
 
     const isCurrentNode = nodeId === slug
+    const isVisitedNode = visited.has(nodeId)
     const label = new Text({
       interactive: false,
       eventMode: "none",
@@ -400,11 +399,15 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       cursor: "pointer",
     })
       .circle(0, 0, nodeRadius(n))
-      .fill({ color: isTagNode ? computedStyleMap["--light"] : color(n) })
+      .fill({ color: isTagNode ? computedStyleMap["--light"] : nodeColor(n) })
       .stroke({
-        width: isCurrentNode ? 3 : 1.15,
-        color: isCurrentNode ? computedStyleMap["--secondary"] : computedStyleMap["--light"],
-        alpha: isCurrentNode ? 0.95 : 0.8,
+        width: isCurrentNode ? 3 : isVisitedNode ? 2 : 1.15,
+        color: isCurrentNode
+          ? computedStyleMap["--secondary"]
+          : isVisitedNode
+            ? computedStyleMap["--tertiary"]
+            : computedStyleMap["--light"],
+        alpha: isCurrentNode || isVisitedNode ? 0.95 : 0.8,
       })
       .on("pointerover", (e) => {
         updateHoverInfo(e.target.label)
@@ -432,7 +435,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       simulationData: n,
       gfx,
       label,
-      color: color(n),
+      color: nodeColor(n),
       alpha: 1,
       active: false,
     }

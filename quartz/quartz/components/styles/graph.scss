@@ -10,10 +10,57 @@
     text-transform: uppercase;
   }
 
+  & > .graph-legend {
+    color: var(--darkgray);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.72rem;
+    gap: 0.3rem 0.85rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    & > li {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.32rem;
+      margin: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .graph-legend__swatch {
+    background: var(--gray);
+    border: 1px solid color-mix(in srgb, var(--light) 72%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dark) 10%, transparent);
+    height: 0.55rem;
+    width: 0.55rem;
+
+    &--concept {
+      background: var(--secondary);
+    }
+
+    &--topic {
+      background: var(--tertiary);
+    }
+
+    &--entity {
+      background: var(--darkgray);
+    }
+  }
+
   & > .graph-outer {
     background:
-      linear-gradient(color-mix(in srgb, var(--light) 92%, transparent), color-mix(in srgb, var(--highlight) 42%, transparent)),
-      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--secondary) 10%, transparent), transparent 64%);
+      linear-gradient(
+        color-mix(in srgb, var(--light) 92%, transparent),
+        color-mix(in srgb, var(--highlight) 42%, transparent)
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--secondary) 10%, transparent),
+        transparent 64%
+      );
     border-radius: 8px;
     border: 1px solid color-mix(in srgb, var(--lightgray) 82%, var(--secondary));
     box-sizing: border-box;
@@ -76,8 +123,15 @@
     & > .global-graph-container {
       border: 1px solid color-mix(in srgb, var(--lightgray) 76%, var(--secondary));
       background:
-        linear-gradient(color-mix(in srgb, var(--light) 94%, transparent), color-mix(in srgb, var(--highlight) 30%, transparent)),
-        radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--secondary) 8%, transparent), transparent 68%);
+        linear-gradient(
+          color-mix(in srgb, var(--light) 94%, transparent),
+          color-mix(in srgb, var(--highlight) 30%, transparent)
+        ),
+        radial-gradient(
+          circle at 50% 45%,
+          color-mix(in srgb, var(--secondary) 8%, transparent),
+          transparent 68%
+        );
       border-radius: 10px;
       box-sizing: border-box;
       box-shadow: 0 24px 80px color-mix(in srgb, var(--dark) 18%, transparent);
