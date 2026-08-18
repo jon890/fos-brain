@@ -204,8 +204,8 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 보강: 기존 페이지 하단 `## 추가 (YYYY-MM-DD)` 로 append, Sources 갱신
 - 새 문서와 의미를 실질적으로 보강한 문서에는 기존 `type`, `created`, `updated`와 함께 `title`, `description`, `tags`를 기록한다. 기존 문서는 권장 필드가 없다는 이유만으로 일괄 변경하지 않는다.
 - 지식의 수명 상태가 필요하면 `status`를 `draft`, `stable`, `deprecated` 중에서 기록하고, 재검토 날짜가 있으면 `stale_after`를 `YYYY-MM-DD`로 기록한다.
-- 검색과 교환에 구조화된 출처가 필요하면 `sources`에 `id`, `resource`, 선택적 `title`을 기록하되 본문의 `## Sources`도 유지한다.
-- 에이전트 생성 사실이 있으면 `generated.by`, `generated.at`을 기록하고, 실제 검증 이력이 있으면 `verified`에 검증 주체 `by`와 시각 `at`을 기록한다. 확인되지 않은 값은 추정하지 않는다.
+- 검색과 교환에 구조화된 출처가 필요하면 `sources`에 필수 `resource`, 선택적 `id`, 선택적 `title`을 기록하되 본문의 `## Sources`도 유지한다.
+- 에이전트 생성 사실이 있으면 `generated.by`, `generated.at`을 기록하고, 실제 검증 이력이 있으면 `verified`의 단일 객체나 객체 배열에 검증 주체 `by`와 시각 `at`을 기록한다. 확인되지 않은 값은 추정하지 않는다.
 - 모든 페이지에 양방향 백링크
 - **wikilink 는 bare-slug 로**: 다른 wiki 페이지는 경로 없이 파일명만 — `[[work-style]]` (O), `[[topics/work-style]]`·`[[../concepts/X]]` (X). 경로형은 로컬 전체 빌드에서 prefix 누락으로 404. 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 경로형 유지(빌드 대상 아님). (CLAUDE.md 작업 원칙 3 참조)
 - **링크 방향 규칙**: 공개(public) 페이지는 private 를 링크하지 않는다. 비공개 → 공개는 허용.

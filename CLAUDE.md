@@ -138,9 +138,9 @@ tags: ["주제"]
 
 - `status` — 지식 수명 상태가 필요할 때 `draft`, `stable`, `deprecated` 중 하나를 기록한다.
 - `stale_after` — 시간이 지나면 재검토해야 하는 사실에 `YYYY-MM-DD` 날짜를 기록한다.
-- `sources` — 검색과 교환에 필요한 출처를 `id`, `resource`, 선택적 `title`을 가진 객체 배열로 기록한다.
+- `sources` — 검색과 교환에 필요한 출처를 필수 `resource`, 선택적 `id`, 선택적 `title`을 가진 객체 배열로 기록한다.
 - `generated` — 에이전트가 만든 문서에 생성 주체 `by`와 생성 시각 `at`을 기록한다.
-- `verified` — 실제 검증 이력이 있을 때 검증 주체 `by`와 검증 시각 `at`을 가진 객체 배열로 기록한다.
+- `verified` — 실제 검증 이력이 있을 때 검증 주체 `by`와 검증 시각 `at`을 가진 단일 객체나 객체 배열로 기록한다.
 
 `sources`는 본문의 `## Sources`를 대체하지 않는다.
 `generated`와 `verified`는 확인되지 않은 주체나 시각을 추정해서 채우지 않는다.

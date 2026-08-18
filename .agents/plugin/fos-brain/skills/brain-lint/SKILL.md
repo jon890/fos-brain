@@ -41,7 +41,7 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
     - **미사용** — `scripts/brain-usage.py` 의 genuine 기준 미사용 페이지(데이터 충분할 때만 archive 후보로).
     - **카테고리 비대(topic 분리 후보)** — INDEX 한 카테고리에 concept 이 대략 7개를 넘거나 성격이 섞이면(예: 학습 개념, 실전 장애), `topics/` 로 묶을 후보로 제안. 자동 분리 금지 — 주제 경계·이름은 사용자 확인. (brain-add 9단계와 동일 기준)
     - **권장 메타데이터** — 새 문서나 실질 보강 문서에서 `title`, `description`, `tags`, `status`, `stale_after`, `sources`, `generated`, `verified` 누락을 품질 개선 후보로 보고한다. 기존 문서를 누락만으로 구조 실패 처리하거나 일괄 수정하지 않는다.
-    - **날짜·상태 유효성** — `created`, `updated`, `stale_after`는 `YYYY-MM-DD` 형식인지, `generated.at`과 `verified[].at`은 유효한 날짜 또는 날짜·시간인지 확인한다. `status`가 있으면 `draft`, `stable`, `deprecated` 중 하나인지 확인한다. 잘못된 값은 품질 발견 사항으로 보고하고 자동 추정해 고치지 않는다.
+    - **날짜·상태 유효성** — `created`, `updated`, `stale_after`는 `YYYY-MM-DD` 형식인지, `generated.at`과 단일 객체 또는 배열인 `verified`의 `at`은 유효한 날짜 또는 날짜·시간인지 확인한다. `status`가 있으면 `draft`, `stable`, `deprecated` 중 하나인지 확인한다. 잘못된 값은 품질 발견 사항으로 보고하고 자동 추정해 고치지 않는다.
     - 분류: `keep / refresh-needed / merge / archive / delete-candidate` 5단계.
     - 품질 축은 **기본 실행 아님** — 사용자가 "품질 점검", "quality loop" 등 명시 호출 시에만.
 
