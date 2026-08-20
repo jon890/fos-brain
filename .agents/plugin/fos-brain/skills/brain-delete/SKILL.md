@@ -13,13 +13,12 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 
 ## 대상 디렉터리
 
-`~/personal/fos-brain` — 네임스페이스별(public·private·work)로 동작한다.
+`~/personal/fos-brain` — 네임스페이스별(public·private)로 동작한다.
 
 | 네임스페이스 | 경로 |
 | --- | --- |
 | public | 루트(`wiki/`) |
 | private | `private/wiki/` |
-| work | `work/<회사>/wiki/` |
 
 대상 페이지가 어느 네임스페이스인지 먼저 확정한다. 모호하면 `AskUserQuestion` 으로 확인.
 
@@ -44,7 +43,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 ### 2. 영향 분석 (read-only)
 삭제 전, 파급을 먼저 수집해 보고한다.
 
-- **백링크** — 대상을 `[[...]]` 로 가리키는 다른 페이지 목록(같은 네임스페이스 + 비공개→공개 cross-link 포함).
+- **백링크** — 대상을 `[[...]]` 로 가리키는 다른 페이지 목록(같은 네임스페이스와 비공개→공개 cross-link 포함).
   ```bash
   # 대상 slug 를 가리키는 페이지 찾기 (네임스페이스 루트에서)
   grep -rln "\[\[.*<대상-slug>.*\]\]" <ns>/wiki/
@@ -93,7 +92,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 
 ### 6. public 이면 commit·push (별도 승인)
 - public 네임스페이스 변경은 commit·push 까지 **별도 승인 절차**를 따른다(다른 brain 스킬과 동일).
-- private 는 자체 repo commit, work 는 로컬 git commit(원격 push 금지).
+- private 는 자체 repo 에 commit 한다.
 - 커밋 메시지 예: `remove(<영역>): <대상> brain-delete + 백링크 정리`
 
 ## raw 원본 삭제 (예외 경로)

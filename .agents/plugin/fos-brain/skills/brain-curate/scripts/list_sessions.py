@@ -9,6 +9,8 @@ brain-curate 의 1단계(범위 선정)에서 쓴다. 증분(워터마크) 또�
 - --min-bytes N   : 이 크기 미만 세션 제외 (durable 지식 확률 낮은 자투리 제거)
 - --exclude-temp  : temp/skillopt/worktree 경로 제외 (기본 off — 노이즈 판단은 추출 단계에 위임)
 
+회사 업무 경로의 세션은 개인 brain 후보에 섞이지 않도록 항상 제외한다.
+
 출력(JSON, stdout): mtime 내림차순 목록. 각 항목:
     {path, folder, decoded(표시용), mtime, mtime_iso, size, namespace_guess}
 namespace_guess 는 폴더 경로 문자열 기반 거친 추정이며, 최종 확정은 사용자 확인을 거친다.
@@ -24,6 +26,7 @@ from pathlib import Path
 PROJECTS = Path.home() / ".claude" / "projects"
 CODEX_SESSIONS = Path.home() / ".codex" / "sessions"
 TEMP_RE = re.compile(r"(/T/|-T-|skillopt|worktree|/tmp|var-folders)", re.IGNORECASE)
+COMPANY_MARKERS = ("/projects/", "/work/", "nhnent", "/ai-playground")
 
 
 def decode_folder(folder: str) -> str:
@@ -37,12 +40,15 @@ def decode_folder(folder: str) -> str:
     return "/" + s.replace("-", "/")
 
 
+def is_company_path(decoded: str) -> bool:
+    """회사 업무 경로로 알려진 패턴인지 보수적으로 판정한다."""
+    low = decoded.lower()
+    return any(marker in low for marker in COMPANY_MARKERS)
+
+
 def guess_namespace(decoded: str) -> str:
     """경로 문자열로 네임스페이스를 거칠게 추정한다. 최종 확정은 사용자 확인."""
     low = decoded.lower()
-    # 회사 업무 레포로 보이는 경로 패턴 (사용자 환경에 맞게 조정 가능)
-    if any(k in low for k in ("/projects/", "/work/", "nhnent", "/ai-playground")):
-        return "work"
     if "/personal/" in low or "/obsidian" in low:
         return "public"
     return "unknown"
@@ -81,6 +87,8 @@ def list_claude_sessions(args, cutoff) -> list[dict]:
             if st.st_size < args.min_bytes:
                 continue
             decoded = decode_folder(fname)
+            if is_company_path(decoded):
+                continue
             rows.append({
                 "tool": "claude",
                 "path": str(jf),
@@ -109,6 +117,8 @@ def list_codex_sessions(args, cutoff) -> list[dict]:
         if st.st_size < args.min_bytes:
             continue
         cwd = codex_session_cwd(jf)
+        if is_company_path(cwd):
+            continue
         if args.project and not any(p in cwd for p in args.project):
             continue
         if args.exclude_temp and TEMP_RE.search(cwd):

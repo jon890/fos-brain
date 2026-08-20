@@ -11,7 +11,7 @@
     "namespace": "public",
     "stats": {"신규": {"n": 26, "kind": "new"}, "보강": {"n": 3, "kind": "augment"}, "드롭": {"n": 7, "kind": "drop"}},
     "candidates": [
-      {"n": 1, "title": "...", "type": "concept", "status": "신규", "ns": "public", "evidence": "fos-study 5건", "flag": "work 제안"}
+      {"n": 1, "title": "...", "type": "concept", "status": "신규", "ns": "public", "evidence": "fos-study 5건", "flag": "확인 필요"}
     ],
     "pages": [
       {"frontmatter": "type: concept · created: 2026-06-12", "markdown": "# 제목\n본문..."}
