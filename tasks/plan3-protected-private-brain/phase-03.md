@@ -38,6 +38,7 @@ Generic Webhook Trigger가 `repository.full_name`과 `ref`를 읽고 허용한 �
 
 Jenkins 설정, 작업 목록, build 번호를 시각이 포함된 mode 700 디렉터리에 먼저 백업한다.
 공식 Jenkins API로 작업을 생성하고 reload 뒤 설정을 다시 읽어 허용 저장소, branch, 실행 스크립트를 대조한다.
+홈서버 SSH forced-command에는 인자를 받지 않는 정확한 `sync-brain` 분기만 추가해 운영 경로의 검증본을 호출한다.
 누락·잘못된 HMAC 요청은 기존처럼 403이며 다른 Jenkins 작업 설정과 build 번호는 바뀌지 않아야 한다.
 
 ### 5. GitHub 웹훅 두 개 연결
@@ -54,6 +55,7 @@ public·private GitHub 저장소에 같은 Jenkins Generic Webhook Trigger URL�
 | `/home/bifos/apps/fos-brain-deploy` | 검증한 배포 도구 선설치 |
 | `/home/bifos/personal/fos-brain` | clean public `main` checkout으로 정리 |
 | `/home/bifos/personal/fos-brain/private` | fast-forward 가능한 private checkout으로 정리 |
+| `/home/bifos/bin/jenkins-deploy.sh` | exact `sync-brain` forced-command 분기 추가 |
 | Jenkins `sync-brain` | 신규 |
 | GitHub `jon890/fos-brain` push webhook | 신규 |
 | GitHub `jon890/fos-brain-private` push webhook | 신규 |
@@ -69,6 +71,7 @@ git diff --check
 운영 검증에서는 두 저장소의 hook이 active이고 secret이 설정됐으며, 올바른 서명은 `sync-brain`만 선택하고 누락·잘못된 서명은 403이어야 한다.
 두 checkout은 clean `main`이고 원격과 같은 commit이어야 한다.
 Jenkins 작업과 webhook을 활성화하기 전에 운영 경로의 스크립트 hash와 검증 결과가 저장소 검증본과 같아야 한다.
+forced-command는 원본 hash를 백업하고 `bash -n`, 기존 허용 command, `sync-brain` 허용, 빈 값·임의 값·인자 포함 값 거부를 검사해야 한다.
 
 ## 의도 메모 (왜)
 
