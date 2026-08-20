@@ -59,6 +59,7 @@ python3 scripts/list_sessions.py --since <last_curated> --min-bytes 51200
 `brain` 플러그인(`.agents/plugin/brain`)의 Stop hook 이 세션 종료마다 `staging/pending-sessions.jsonl` 에 포인터(도구·session_id·transcript 경로)를 남긴다. 이건 발굴 데이터 소스가 아니라 "세션이 끝났다"는 트리거 신호일 뿐이다 — 실제 대상 목록은 항상 `list_sessions.py` 의 디렉터리 스캔으로 만든다(더 정확하고 mtime 기준 정렬도 된다).
 
 대상 목록(개수·크기·네임스페이스 추정·경로)을 사용자에게 간단히 보고하고 진행한다.
+회사 업무 경로의 세션은 `list_sessions.py`가 항상 제외하며 개인 brain 후보로 보내지 않는다.
 
 ## 2단계 — 전처리 (정제)
 
@@ -73,7 +74,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 - 기본 `--max-result-chars 1500` (tool_result 절단 상한). 에러·실패 라인은 우선 보존된다.
 - 정제 후에도 큰 세션(수백 KB+)은 추출 agent 입력 한도를 넘을 수 있다 → 그 세션만 절반으로 나눠 두 agent 에 분배하거나 `--max-result-chars` 를 줄인다.
 
-## 3단계 — 병렬 추출 (fan-out)
+## 3단계 — 병렬 추출
 
 정제된 transcript 들을 sub-agent 에 분배해 durable 후보를 뽑는다.
 각 agent 는 `references/extraction-criteria.md` 의 기준과 출력 스키마를 따른다.
@@ -81,7 +82,7 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 **규모에 따라 방식을 고른다:**
 
 - 대상이 **8개 이하**: `Agent` 도구를 한 메시지에 여러 개 띄워 병렬 처리한다.
-- 대상이 많으면: `Workflow` 로 fan-out 한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
+- 대상이 많으면: `Workflow`로 병렬 처리한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
 
 각 추출 agent 프롬프트에 담을 것:
 
@@ -165,4 +166,3 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 일회성 작업 기록을 durable 지식으로 등록 (git 으로 자명한 것).
 - 공개 페이지에서 private 링크.
 - 한 번에 너무 많은 세션을 무차별 처리 (규모를 사용자에게 알리고 범위를 좁힌다).
-

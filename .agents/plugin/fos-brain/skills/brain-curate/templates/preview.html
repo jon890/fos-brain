@@ -21,7 +21,7 @@
     --new: #2f855a;
     --augment: #b7791f;
     --drop: #9b9b9b;
-    --work: #c05621;
+    --warning: #c05621;
   }
   * { box-sizing: border-box; }
   body {
@@ -42,7 +42,6 @@
   /* 네임스페이스·상태 뱃지 */
   .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 0.1rem 0.5rem; border-radius: 999px; font-family: "Schibsted Grotesk"; vertical-align: middle; }
   .b-public { background: rgba(47,133,90,0.12); color: var(--new); }
-  .b-work { background: rgba(192,86,33,0.12); color: var(--work); }
   .b-private { background: rgba(120,120,120,0.15); color: #555; }
   .b-new { background: rgba(47,133,90,0.12); color: var(--new); }
   .b-augment { background: rgba(183,121,31,0.14); color: var(--augment); }
@@ -74,7 +73,7 @@
   .page li { margin: 0.2rem 0; color: var(--darkgray); }
   .page p { color: var(--darkgray); }
   blockquote { border-left: 3px solid var(--gray); margin: 0.8rem 0; padding: 0.2rem 0 0.2rem 1rem; color: var(--darkgray); background: var(--highlight); }
-  .flag { color: var(--work); font-weight: 600; }
+  .flag { color: var(--warning); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -83,7 +82,7 @@
 const DATA = __DATA__;
 
 function nsBadge(ns) {
-  const map = { public: "b-public", work: "b-work", private: "b-private" };
+  const map = { public: "b-public", private: "b-private" };
   return `<span class="badge ${map[ns] || "b-private"}">${ns}</span>`;
 }
 function statusBadge(s) {
