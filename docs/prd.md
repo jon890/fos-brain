@@ -40,6 +40,8 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - `fosworld.co.kr`, `blog`, `accountbook`, `accountbook-api`는 로그인 없이 계속 공개한다.
 - Jenkins 웹훅 경로만 Access 인증에서 제외하고 Generic Webhook Trigger의 HMAC-SHA256 검증을 필수로 한다.
 - hosting.kr은 등록기관으로 유지하고 권한 DNS만 Cloudflare full setup으로 전환한다.
+- Tunnel의 공개 호스트 이름 8개는 Nginx Proxy Manager의 HTTPS 원본으로 연결하고 호스트별 인증서를 검증한다.
+- Cloudflare DNSSEC와 등록기관 DS를 연결해 재귀 확인자의 인증된 응답을 유지한다.
 - 폐기된 `career`와 `nreview`는 DNS, 프록시, Tunnel, 컨테이너, 예약 작업에서 제외한다.
 
 ## 성공 기준
@@ -53,8 +55,9 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 메타데이터가 적은 기존 페이지와 새 메타데이터 페이지가 모두 렌더된다.
 - 인증하지 않은 사용자는 보호 호스트에서 Cloudflare Access 로그인으로 이동하고, 허용 계정만 접근한다.
 - Jenkins 웹훅은 올바른 `X-Hub-Signature-256` 요청만 통과하며 일반 Jenkins 화면은 계속 Access로 보호된다.
-- Tunnel 전환 뒤 홈서버의 공인 80·443 포트는 닫히고 SSH 10022와 기존 SSH 터널 사용은 유지된다.
+- Tunnel 전환 뒤 홈서버의 공인 80·81·443 포트는 닫히고 SSH 10022와 기존 SSH 터널 사용은 유지된다.
 - 공개 호스트는 전환 전후의 대표 경로에서 기존 성공·리다이렉트·권한 응답을 유지한다.
+- DNSSEC 검증 응답에는 AD(Authenticated Data) 표시가 있고 Cloudflare 영역은 Active 상태를 유지한다.
 
 ## 범위 밖
 

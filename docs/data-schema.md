@@ -85,22 +85,27 @@ worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하
 
 | 호스트·경로 | 공개 범위 | Access | Tunnel 원본 |
 | --- | --- | --- | --- |
-| `fosworld.co.kr` | 누구나 | 없음 | `http://fos-npm:80` |
-| `blog.fosworld.co.kr` | 누구나 | 없음 | `http://fos-npm:80` |
-| `accountbook.fosworld.co.kr` | 누구나 | 없음 | `http://fos-npm:80` |
-| `accountbook-api.fosworld.co.kr` | 누구나 | 없음 | `http://fos-npm:80` |
-| `brain.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `http://fos-npm:80`, 전환 격리 `http_status:503` |
-| `grafana.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `http://fos-npm:80`, 전환 격리 `http_status:503` |
-| `jenkins.fosworld.co.kr/*` | 허용 계정 | 이메일 일회용 PIN | 평상시 `http://fos-npm:80`, 전환 격리 `http_status:503` |
-| `jenkins.fosworld.co.kr/generic-webhook-trigger/*` | GitHub webhook | Bypass와 HMAC-SHA256 | 평상시 `http://fos-npm:80`, 전환 격리 `http_status:503` |
-| `npm.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `http://fos-npm:80`, 전환 격리 `http_status:503` |
+| `fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
+| `blog.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
+| `accountbook.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
+| `accountbook-api.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
+| `brain.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
+| `brain.fosworld.co.kr/.well-known/acme-challenge/*` | 인증서 발급 기관 | Bypass | `https://fos-npm:443` |
+| `grafana.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
+| `jenkins.fosworld.co.kr/*` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
+| `jenkins.fosworld.co.kr/generic-webhook-trigger/*` | GitHub webhook | Bypass와 HMAC-SHA256 | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
+| `npm.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
 
-Tunnel의 각 호스트 항목은 원래 호스트 이름을 `httpHostHeader`로 전달한다.
+Tunnel의 각 호스트 항목은 원래 호스트 이름을 `originServerName`과 `httpHostHeader`로 전달한다.
+NPM은 각 이름과 일치하는 인증서를 제공하며 Tunnel은 인증서 검증을 끄지 않는다.
 등록되지 않은 호스트는 404로 끝난다.
 Pending 영역에서는 Access self-hosted 애플리케이션 생성이 오류 12130으로 거부될 수 있다.
 이때 보호 호스트를 503으로 격리한 뒤 영역이 Active가 되어 Access 애플리케이션과 Bypass 저장 상태를 확인할 때까지 NPM 원본을 복구하지 않는다.
 기존 apex·하위 도메인의 A 레코드는 Tunnel CNAME으로 교체하고 TXT 두 개는 값과 TTL을 그대로 유지한다.
 폐기한 `career`와 `nreview` 레코드는 다시 만들지 않는다.
+최종 권한 DNS는 Cloudflare의 CNAME 8개와 TXT 2개를 제공한다.
+Cloudflare DNSSEC 상태와 등록기관 DS를 함께 유지하며 재귀 확인 결과에는 인증된 데이터 표시가 있어야 한다.
+NPM 호스트 포트 80·81·443은 loopback에만 바인딩하고 Tunnel의 `public-net` 연결은 유지한다.
 
 배포 중 생성하는 DNS 스냅샷, Tunnel token, Access 계정, HMAC secret은 git 추적 대상이 아니다.
 정적 산출물 `quartz/public`도 기존대로 gitignore 상태를 유지한다.

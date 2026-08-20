@@ -48,21 +48,22 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/build-public.sh` — private 경로를 마운트하지 않고 고정 Node 컨테이너에서 공개 Quartz를 빌드한다.
 - `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
 - `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
-- Cloudflare dashboard — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책을 소유한다.
+- Cloudflare — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책, DNSSEC를 소유한다.
 - Nginx Proxy Manager — 호스트 기반 내부 라우팅과 `brain` 정적 서버 프록시를 소유한다.
 - Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증과 작업 token 선택을 소유한다.
 
-Tunnel은 기존 `public-net`에만 참여하고 NPM의 HTTPS 포트로 연결한다.
-호스트별 `httpHostHeader`를 원래 도메인으로 유지해 NPM의 기존 가상 호스트를 재사용한다.
-NPM의 여러 인증서를 Docker 이름으로 검증할 수 없으므로 Tunnel과 NPM 사이에만 `noTLSVerify`를 허용한다.
-이 예외는 같은 호스트의 Docker 네트워크 안으로 한정하며 인터넷 구간의 TLS와 Access 검증에는 영향을 주지 않는다.
+Tunnel은 기존 `public-net`에만 참여하고 공개 호스트 이름 8개를 NPM의 `https://fos-npm:443` 원본으로 연결한다.
+호스트별 `originServerName`과 `httpHostHeader`를 원래 도메인으로 유지해 NPM 인증서와 가상 호스트를 함께 검증한다.
+`brain`은 NPM에서 관리하는 호스트 이름 일치 인증서를 사용하며 인증서 검증을 끄지 않는다.
+이 경계는 Cloudflare 방문자 요청의 HTTPS 상태를 NPM까지 유지해 Force SSL 리다이렉트 반복을 막는다.
 
 정적 서버는 `quartz/public`만 읽기 전용으로 마운트한다.
 빌더는 `quartz/`와 public `wiki/`만 마운트하며 `private/`와 `quartz-local/`을 보거나 복사하지 않는다.
 Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
 
-NPM의 공인 80·443 포트는 전환 검증 전까지 유지한다.
-전환 뒤에는 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
+NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
+전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
+Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 만들 수 있는 하나의 검증 사슬로 관리한다.
 
 ## 검증 경계
 
@@ -71,4 +72,4 @@ NPM의 공인 80·443 포트는 전환 검증 전까지 유지한다.
 - Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
 - 배포 — Compose 구문, private 마운트 부재, Quartz 공개 빌드, 컨테이너 상태와 NPM 내부 연결을 검사한다.
-- 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·443 차단과 SSH 10022 유지를 확인한다.
+- 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·81·443 차단, SSH 10022 유지, DNSSEC 인증 응답을 확인한다.

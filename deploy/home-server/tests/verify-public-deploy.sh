@@ -6,14 +6,20 @@ DEPLOY_DIR="$(cd "$TEST_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$DEPLOY_DIR/../.." && pwd)"
 PUBLIC_DIR="$REPO_ROOT/quartz/public"
 COMPOSE_CONFIG="$(mktemp)"
+PRIVATE_URL_FIXTURE="$(mktemp)"
 PRIVATE_SENTINEL="FOS_BRAIN_PRIVATE_SENTINEL_DO_NOT_PUBLISH"
+PRIVATE_URL_PATTERN="(href|src)=[\"']([^\"']*/)?private/"
 NGINX_IMAGE="$(sed -n 's/^NGINX_IMAGE=//p' "$DEPLOY_DIR/.env.example")"
 NODE_IMAGE="$(sed -n 's/^NODE_IMAGE="\([^"]*\)"/\1/p' "$DEPLOY_DIR/build-public.sh")"
 
 cleanup() {
-  rm -f "$COMPOSE_CONFIG"
+  rm -f "$COMPOSE_CONFIG" "$PRIVATE_URL_FIXTURE"
 }
 trap cleanup EXIT
+
+contains_private_url() {
+  grep -R -I -n -E "$PRIVATE_URL_PATTERN" "$@"
+}
 
 bash -n "$DEPLOY_DIR/build-public.sh"
 
@@ -80,7 +86,15 @@ if grep -R -I -n -F "$PRIVATE_SENTINEL" "$PUBLIC_DIR"; then
   exit 1
 fi
 
-if grep -R -I -n -E "(href|src)=[\"'][^\"']*(^|/)private/" "$PUBLIC_DIR"; then
+for private_url in "/private/secret" "../private/secret" "private/secret"; do
+  printf '<a href="%s">fixture</a>\n' "$private_url" > "$PRIVATE_URL_FIXTURE"
+  if ! contains_private_url "$PRIVATE_URL_FIXTURE" >/dev/null; then
+    echo "The private URL guard missed a synthetic fixture." >&2
+    exit 1
+  fi
+done
+
+if contains_private_url "$PUBLIC_DIR"; then
   echo "A private path leaked into a generated URL." >&2
   exit 1
 fi

@@ -9,3 +9,5 @@
 | RETRO-0005 | 2026-08-18 | plan2-cloudflare-access-home-server | 컨테이너 패키지 캐시가 저장소에 남음 | 해결 | 배포 회귀 검사 |
 | RETRO-0006 | 2026-08-18 | plan2-cloudflare-access-home-server | Linux에서 public 홈 파일 대소문자가 달라짐 | 해결 | public 산출물 계약 |
 | RETRO-0007 | 2026-08-18 | plan2-cloudflare-access-home-server | Pending 영역에서 Access 애플리케이션 생성이 거부됨 | 해결 | DNS 전환 격리 절차 |
+| RETRO-0008 | 2026-08-20 | plan2-cloudflare-access-home-server | Tunnel HTTP 원본이 Force SSL 리다이렉트를 반복함 | 해결 | Tunnel HTTPS 원본 계약 |
+| RETRO-0009 | 2026-08-20 | plan2-cloudflare-access-home-server | 같은 디렉터리 상대 private URL을 누출 검사에서 놓침 | 해결 | public 배포 누출 검사 |
