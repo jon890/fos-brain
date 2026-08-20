@@ -51,6 +51,7 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/sync-protected.sh` — 두 저장소의 fast-forward 갱신, 중복 실행 잠금, 보호 빌드를 소유한다.
 - `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
 - `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
+- `/home/bifos/apps/fos-brain-deploy` — 검증한 배포 스크립트와 Jenkins 작업 정의를 webhook 활성화 전에 설치하는 운영 경로다.
 - Cloudflare — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책, DNSSEC를 소유한다.
 - Nginx Proxy Manager — 호스트 기반 내부 라우팅과 `brain` 정적 서버 프록시를 소유한다.
 - Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증, 허용 저장소와 `main` branch 선택, `sync-brain` 실행을 소유한다.
@@ -65,6 +66,7 @@ public 검증 빌드는 `quartz/public`에 남고 private 경로를 보거나 �
 정적 서버는 `quartz-protected/` 상위 디렉터리만 읽기 전용으로 마운트해 `current` 전환을 재시작 없이 읽는다.
 보호 Nginx는 HTML과 검색 색인에 private cache 정책과 검색 엔진 차단 헤더를 적용한다.
 Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
+Jenkins는 저장소 checkout 안의 실행 중 변경에 의존하지 않고 운영 경로에 설치한 검증본을 호출한다.
 
 NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
 전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.

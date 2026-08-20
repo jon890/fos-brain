@@ -26,8 +26,8 @@
 
 ### 3. 로컬 전체 Quartz를 두 네임스페이스로 제한
 
-`quartz-local/serve.sh`는 public wiki와 private wiki만 합친다.
-로컬 그래프에서도 raw와 work 디렉터리를 입력하지 않고 public 루트와 `/_private/` 경로를 유지한다.
+`quartz-local/serve.sh`는 public wiki와 private wiki를 합치고 Sources 확인을 위한 두 네임스페이스의 raw만 유지한다.
+work와 회사 경로는 입력하지 않고 public 루트와 `/_private/` 경로를 유지한다.
 
 ## Critical Files
 
@@ -55,9 +55,11 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/plugin/fos-brain/skills/brain-lint
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/plugin/fos-brain/skills/brain-search
 bash -n quartz-local/serve.sh
+! rg 'work/|private/work|company' quartz-local/serve.sh
 ```
 
 수정 파일에서 개인 brain의 제3 네임스페이스 선택지가 없어야 한다.
+로컬 Quartz는 public·private raw만 Sources 용도로 허용하고 work와 회사 경로를 입력하지 않아야 한다.
 
 ## 의도 메모 (왜)
 

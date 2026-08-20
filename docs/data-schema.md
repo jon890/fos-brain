@@ -75,6 +75,7 @@ worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하
 | `PRIVATE_BRAIN_REPO` | 절대 경로 | 독립 private 저장소이며 기본값은 `${BRAIN_REPO}/private`다. |
 | `PROTECTED_OUTPUT_ROOT` | 절대 경로 | 보호 산출물의 `releases/`와 `current`를 담으며 기본값은 `${BRAIN_REPO}/quartz-protected`다. |
 | `BRAIN_SYNC_LOCK` | 절대 경로 | public·private push의 중복 빌드를 직렬화하는 잠금 파일이다. |
+| `BRAIN_DEPLOY_ROOT` | 절대 경로 | 검증한 동기화·빌드 스크립트와 Jenkins 작업 정의를 설치하는 운영 경로다. |
 
 ### 비밀값
 
