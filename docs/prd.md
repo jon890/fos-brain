@@ -33,6 +33,17 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 내보내기는 public만 대상으로 하며 private 자료를 포함하지 않는다.
 - public raw Markdown은 원본을 바꾸지 않고 내보내기 사본에서 `Reference` 문서로 취급한다.
 
+### 홈서버 게시와 접근 제어
+
+- public wiki만 `brain.fosworld.co.kr`에 게시하고 private 네임스페이스는 빌드 입력과 컨테이너 마운트에서 제외한다.
+- Cloudflare Tunnel의 outbound 연결로 홈서버를 공개하며, `brain`, Grafana, Jenkins, Nginx Proxy Manager는 Cloudflare Access 인증 뒤에 둔다.
+- `fosworld.co.kr`, `blog`, `accountbook`, `accountbook-api`는 로그인 없이 계속 공개한다.
+- Jenkins 웹훅 경로만 Access 인증에서 제외하고 Generic Webhook Trigger의 HMAC-SHA256 검증을 필수로 한다.
+- hosting.kr은 등록기관으로 유지하고 권한 DNS만 Cloudflare full setup으로 전환한다.
+- Tunnel의 공개 호스트 이름 8개는 Nginx Proxy Manager의 HTTPS 원본으로 연결하고 호스트별 인증서를 검증한다.
+- Cloudflare DNSSEC와 등록기관 DS를 연결해 재귀 확인자의 인증된 응답을 유지한다.
+- 폐기된 `career`와 `nreview`는 DNS, 프록시, Tunnel, 컨테이너, 예약 작업에서 제외한다.
+
 ## 성공 기준
 
 - 공개 대표 질문의 80% 이상에서 기대 문서가 상위 3개 안에 나온다.
@@ -42,6 +53,11 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 예약 문서를 제외한 모든 Markdown은 비어 있지 않은 `type`을 가진다.
 - Quartz 형 검사와 공개 빌드가 통과한다.
 - 메타데이터가 적은 기존 페이지와 새 메타데이터 페이지가 모두 렌더된다.
+- 인증하지 않은 사용자는 보호 호스트에서 Cloudflare Access 로그인으로 이동하고, 허용 계정만 접근한다.
+- Jenkins 웹훅은 올바른 `X-Hub-Signature-256` 요청만 통과하며 일반 Jenkins 화면은 계속 Access로 보호된다.
+- Tunnel 전환 뒤 홈서버의 공인 80·81·443 포트는 닫히고 SSH 10022와 기존 SSH 터널 사용은 유지된다.
+- 공개 호스트는 전환 전후의 대표 경로에서 기존 성공·리다이렉트·권한 응답을 유지한다.
+- DNSSEC 검증 응답에는 AD(Authenticated Data) 표시가 있고 Cloudflare 영역은 Active 상태를 유지한다.
 
 ## 범위 밖
 
@@ -49,3 +65,5 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 100여 개 기존 페이지의 메타데이터를 한 번에 채우지 않는다.
 - private 저장소를 공개 산출물에 포함하지 않는다.
 - 검색 결과를 사용자 승인 없이 wiki에 자동 환원하지 않는다.
+- Cloudflare를 도메인 등록기관으로 이전하지 않는다.
+- Hermes와 9119 포트를 Cloudflare Tunnel에 연결하지 않는다.
