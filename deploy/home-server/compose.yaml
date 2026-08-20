@@ -4,11 +4,11 @@ services:
     restart: unless-stopped
     volumes:
       - type: bind
-        source: ${BRAIN_REPO:-/home/bifos/personal/fos-brain}/quartz/public
+        source: ${PROTECTED_OUTPUT_ROOT:?Set PROTECTED_OUTPUT_ROOT in deploy/home-server/.env}
         target: /usr/share/nginx/html
         read_only: true
       - type: bind
-        source: ${BRAIN_REPO:-/home/bifos/personal/fos-brain}/deploy/home-server/nginx.conf
+        source: ${BRAIN_DEPLOY_ROOT:?Set BRAIN_DEPLOY_ROOT in deploy/home-server/.env}/nginx.conf
         target: /etc/nginx/conf.d/default.conf
         read_only: true
     networks:
