@@ -31,6 +31,7 @@ public 기존 경로, private INDEX와 문서 수, 금지 경로, 소문자 `ind
 `deploy/home-server/sync-protected.sh`는 `flock`으로 실행을 직렬화한다.
 public과 private 저장소가 clean이고 각각 원격 `main`으로 fast-forward 가능한 경우에만 pull과 보호 빌드를 실행한다.
 허용하지 않은 branch, 분기, 누락 저장소에서는 현재 release를 바꾸지 않고 실패한다.
+스크립트는 checkout 밖의 `BRAIN_DEPLOY_ROOT`에 설치돼도 `BRAIN_REPO`와 `PRIVATE_BRAIN_REPO`만으로 동작해야 한다.
 
 ### 4. 정적 서버 mount와 보호 헤더 변경
 

@@ -86,14 +86,15 @@ Cloudflare 자체 장애가 길어지면 hosting.kr 권한 네임서버 복귀�
 
 ## 보호 brain 갱신 흐름
 
-1. public 또는 private 저장소의 `main` push가 GitHub HMAC 웹훅으로 Jenkins `sync-brain` 작업을 호출한다.
-2. 작업은 중복 실행 잠금을 잡고 두 저장소가 clean 상태인지 확인한 뒤 fast-forward만 허용해 갱신한다.
-3. private 저장소가 없거나 분기됐거나 필수 INDEX가 비어 있으면 현재 산출물을 바꾸지 않고 실패한다.
-4. 빌더는 public wiki를 기존 루트 경로에 두고 private wiki를 `/_private/` 아래에 둔 임시 Quartz 입력을 만든다.
-5. 고정 Node 컨테이너가 새 release를 만들며 private raw와 회사 자료는 입력으로 받지 않는다.
-6. 빌더는 public 기존 경로, private INDEX, private 문서 수, 금지 경로와 정적 파일을 검사한다.
-7. 모든 검사가 통과하면 `current` 링크를 새 release로 원자적으로 바꾸고 Nginx가 같은 상위 디렉터리에서 새 산출물을 읽는다.
-8. 실패하면 직전 `current`를 유지하며 운영자는 Jenkins에서 같은 작업을 수동으로 다시 실행할 수 있다.
+1. 검증한 동기화·빌드 스크립트를 checkout 밖의 운영 경로에 설치하고 두 저장소 checkout을 clean `main`으로 맞춘다.
+2. public 또는 private 저장소의 `main` push가 GitHub HMAC 웹훅으로 Jenkins `sync-brain` 작업을 호출한다.
+3. 작업은 중복 실행 잠금을 잡고 두 저장소가 clean 상태인지 확인한 뒤 fast-forward만 허용해 갱신한다.
+4. private 저장소가 없거나 분기됐거나 필수 INDEX가 비어 있으면 현재 산출물을 바꾸지 않고 실패한다.
+5. 빌더는 public wiki를 기존 루트 경로에 두고 private wiki를 `/_private/` 아래에 둔 임시 Quartz 입력을 만든다.
+6. 고정 Node 컨테이너가 새 release를 만들며 private raw와 회사 자료는 입력으로 받지 않는다.
+7. 빌더는 public 기존 경로, private INDEX, private 문서 수, 금지 경로와 정적 파일을 검사한다.
+8. 모든 검사가 통과하면 `current` 링크를 새 release로 원자적으로 바꾸고 Nginx가 같은 상위 디렉터리에서 새 산출물을 읽는다.
+9. 실패하면 직전 `current`를 유지하며 운영자는 Jenkins에서 같은 작업을 수동으로 다시 실행할 수 있다.
 
 두 저장소 push가 겹치면 뒤 작업이 잠금을 기다린다.
 잠금을 얻은 작업은 두 저장소의 최신 `main`을 다시 읽으므로 중간 push를 하나의 최종 산출물로 합칠 수 있다.

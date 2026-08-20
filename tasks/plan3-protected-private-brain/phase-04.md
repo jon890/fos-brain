@@ -21,7 +21,7 @@ Cloudflare Access·Tunnel, NPM brain proxy, Compose, 실행 컨테이너, 기존
 
 ### 2. 첫 보호 release 생성
 
-두 checkout이 clean이고 원격 `main`과 같은 commit인지 확인한 뒤 `sync-protected.sh`를 실행한다.
+두 checkout이 clean이고 원격 `main`과 같은 commit인지 확인한 뒤 운영 경로의 `sync-protected.sh`를 실행한다.
 새 release에 public 기존 문서와 private 문서가 있고 raw·work·회사 경로가 없음을 확인한다.
 
 ### 3. brain-web 전환
@@ -46,6 +46,7 @@ Cloudflare Access·Tunnel, NPM brain proxy, Compose, 실행 컨테이너, 기존
 | 파일 또는 객체 | 변경 |
 | --- | --- |
 | `/home/bifos/personal/fos-brain` | 최신 public checkout과 보호 release 배치 |
+| `/home/bifos/apps/fos-brain-deploy` | 검증한 운영 배포 설정 사용 |
 | `/home/bifos/personal/fos-brain/quartz-protected/current` | 검증된 release로 원자적 전환 |
 | `home-server-brain-web-1` | 보호 산출물 mount로 재생성 |
 | `tasks/plan3-protected-private-brain/index.json` | 완료 상태 수정 |
