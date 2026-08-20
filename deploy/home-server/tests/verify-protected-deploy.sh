@@ -14,7 +14,7 @@ NGINX_IMAGE="$(sed -n 's/^NGINX_IMAGE=//p' "$DEPLOY_DIR/.env.example")"
 cleanup() {
   rm -rf -- "$TEST_ROOT"
 }
-trap cleanup EXIT
+trap 'status=$?; cleanup || status=1; exit "$status"' EXIT
 
 mkdir -p \
   "$PUBLIC_REPO/quartz" \
@@ -143,6 +143,7 @@ FAKE_GIT
 chmod +x "$TEST_ROOT/bin/git"
 
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
   --mount "type=bind,src=$TEST_ROOT,dst=/test" \
   --mount "type=bind,src=$DEPLOY_DIR,dst=/deploy,readonly" \
   "$NODE_IMAGE" \
