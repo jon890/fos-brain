@@ -19,12 +19,28 @@ export const defaultContentPageLayout: PageLayout = {
   beforeBody: [
     Component.ConditionalRender({
       component: Component.Breadcrumbs(),
-      condition: (page) => page.fileData.slug !== "index",
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
-    Component.ArticleTitle(),
-    Component.KnowledgeMeta(),
-    Component.ContentMeta(),
-    Component.TagList(),
+    Component.ConditionalRender({
+      component: Component.MemoryAtlas(),
+      condition: (page) => page.fileData.slug?.toLowerCase() === "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.ArticleTitle(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.KnowledgeMeta(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.ContentMeta(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.TagList(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
   ],
   left: [
     Component.PageTitle(),
