@@ -11,8 +11,28 @@ const LAYOUT_OPTIONS = ["constellation", "cluster", "orbit"] as const
 const COLOR_OPTIONS = ["type", "freshness", "namespace"] as const
 const SPACING_OPTIONS = ["compact", "normal", "wide"] as const
 
+const OPTION_LABELS: Record<string, string> = {
+  concept: "개념",
+  topic: "주제",
+  entity: "개체",
+  current: "현재",
+  stale: "재검토",
+  invalid: "확인 필요",
+  public: "공개",
+  private: "비공개",
+  constellation: "별자리",
+  cluster: "묶음",
+  orbit: "궤도",
+  type: "유형",
+  freshness: "최신성",
+  namespace: "공개 범위",
+  compact: "좁게",
+  normal: "보통",
+  wide: "넓게",
+}
+
 function label(value: string): string {
-  return value.replace(/^\w/, (char) => char.toUpperCase())
+  return OPTION_LABELS[value] ?? value
 }
 
 function availableNamespaces(files: QuartzComponentProps["allFiles"]) {
@@ -40,7 +60,20 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
       data-available-namespaces={namespaces.join(",")}
       aria-label="기억의 항해도"
     >
-      <aside class="memory-atlas__rail" data-testid="memory-atlas-filters" aria-label="탐색 필터">
+      <button
+        type="button"
+        class="memory-atlas__backdrop"
+        data-testid="memory-atlas-backdrop"
+        aria-label="필터 닫기"
+        hidden
+      />
+
+      <aside
+        id="memory-atlas-filters"
+        class="memory-atlas__rail"
+        data-testid="memory-atlas-filters"
+        aria-label="탐색 필터"
+      >
         <div class="memory-atlas__brand">
           <p>FOS / MEMORY</p>
           <h1>기억의 항해도</h1>
@@ -68,7 +101,7 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           {TYPE_OPTIONS.map((type) => (
             <label>
               <input type="checkbox" name="memory-atlas-type" value={type} checked />
-              <span>{type}</span>
+              <span>{label(type)}</span>
             </label>
           ))}
         </fieldset>
@@ -78,7 +111,7 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           {FRESHNESS_OPTIONS.map((freshness) => (
             <label>
               <input type="checkbox" name="memory-atlas-freshness" value={freshness} checked />
-              <span>{freshness}</span>
+              <span>{label(freshness)}</span>
             </label>
           ))}
         </fieldset>
@@ -88,7 +121,7 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           {namespaces.map((namespace) => (
             <label>
               <input type="checkbox" name="memory-atlas-namespace" value={namespace} checked />
-              <span>{namespace}</span>
+              <span>{label(namespace)}</span>
             </label>
           ))}
         </fieldset>
@@ -142,6 +175,8 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
             class="memory-atlas__mobile-toggle"
             data-testid="memory-atlas-filter-toggle"
             aria-expanded="false"
+            aria-controls="memory-atlas-filters"
+            aria-label="탐색 필터 열기"
           >
             필터
           </button>
@@ -194,7 +229,12 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
         </section>
       </div>
 
-      <aside class="memory-atlas__detail" data-testid="memory-atlas-detail" aria-live="polite">
+      <aside
+        class="memory-atlas__detail"
+        data-testid="memory-atlas-detail"
+        aria-label="선택 상세"
+        aria-live="polite"
+      >
         <button type="button" data-testid="memory-atlas-detail-close" aria-label="상세 닫기">
           ×
         </button>

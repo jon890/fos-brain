@@ -27,6 +27,7 @@ type RuntimeHandle = ReturnType<RuntimeModule["mountMemoryAtlas"]>
 const memoryAtlasState = {
   cleanup: undefined as (() => void) | undefined,
 }
+const BODY_CLASS = "memory-atlas-page"
 
 const TYPE_OPTIONS = ["concept", "topic", "entity"] as const
 const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
@@ -69,6 +70,15 @@ function selectedOptions(select: HTMLSelectElement | null): string[] {
 
 function setHidden(element: HTMLElement | null, hidden: boolean) {
   if (element) element.hidden = hidden
+}
+
+function setFiltersOpen(root: HTMLElement, open: boolean) {
+  root.classList.toggle("memory-atlas--filters-open", open)
+  const button = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-filter-toggle"]')
+  const backdrop = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-backdrop"]')
+  button?.setAttribute("aria-expanded", String(open))
+  button?.setAttribute("aria-label", open ? "탐색 필터 닫기" : "탐색 필터 열기")
+  setHidden(backdrop, !open)
 }
 
 function setRuntimeState(root: HTMLElement, state: "loading" | "ready" | "error") {
@@ -285,6 +295,7 @@ async function initMemoryAtlas() {
   const root = document.querySelector<HTMLElement>('[data-testid="memory-atlas"]')
   if (!root) return
 
+  document.body.classList.add(BODY_CLASS)
   const canvas = root.querySelector<HTMLElement>('[data-testid="memory-atlas-canvas"]')
   const status = root.querySelector<HTMLElement>('[data-testid="memory-atlas-status"]')
   const runtimeSrc = root.dataset.runtimeSrc
@@ -311,7 +322,9 @@ async function initMemoryAtlas() {
       memoryAtlasState.cleanup = undefined
     }
     setRuntimeState(root, "loading")
-    root.classList.remove("memory-atlas--filters-open", "memory-atlas--detail-open")
+    root.classList.remove("memory-atlas--detail-open")
+    setFiltersOpen(root, false)
+    document.body.classList.remove(BODY_CLASS)
     renderHandle?.destroy()
     renderHandle = undefined
     for (const fn of cleanups.splice(0)) fn()
@@ -409,12 +422,14 @@ async function initMemoryAtlas() {
   )
   bind(root.querySelector('[data-testid="memory-atlas-filter-toggle"]'), "click", (event) => {
     const button = event.currentTarget as HTMLButtonElement
-    const open = root.classList.toggle("memory-atlas--filters-open")
-    button.setAttribute("aria-expanded", String(open))
+    setFiltersOpen(root, button.getAttribute("aria-expanded") !== "true")
   })
+  bind(root.querySelector('[data-testid="memory-atlas-backdrop"]'), "click", () =>
+    setFiltersOpen(root, false),
+  )
   bind(document as unknown as EventTarget, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return
-    root.classList.remove("memory-atlas--filters-open")
+    setFiltersOpen(root, false)
     selectNode(undefined)
   })
 }

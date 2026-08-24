@@ -41,6 +41,7 @@ type GraphInstance = {
   width(value: number): GraphInstance
   height(value: number): GraphInstance
   onNodeClick(fn: (node: GraphNode) => void): GraphInstance
+  onEngineStop(fn: () => void): GraphInstance
   cameraPosition(
     position: { x: number; y: number; z: number },
     lookAt?: GraphNode,
@@ -52,6 +53,7 @@ type GraphInstance = {
 }
 
 type DisposableObject = {
+  userData?: Record<string, unknown>
   traverse?: (visitor: (child: DisposableObject) => void) => void
   geometry?: { dispose?: () => void }
   material?:
@@ -93,6 +95,18 @@ function linkEndpointSlug(endpoint: GraphLink["source"]): FullSlug {
 function linkIsActive(link: GraphLink, selected?: FullSlug): boolean {
   if (!selected) return true
   return linkEndpointSlug(link.source) === selected || linkEndpointSlug(link.target) === selected
+}
+
+function activeSlugSet(links: GraphLink[], selected?: FullSlug): Set<FullSlug> | undefined {
+  if (!selected) return undefined
+  const active = new Set<FullSlug>([selected])
+  for (const link of links) {
+    const source = linkEndpointSlug(link.source)
+    const target = linkEndpointSlug(link.target)
+    if (source === selected) active.add(target)
+    if (target === selected) active.add(source)
+  }
+  return active
 }
 
 function spacingRadius(spacing: MemoryAtlasSpacing): number {
@@ -170,22 +184,38 @@ function createLabel(text: string, color: string) {
   return sprite
 }
 
-function createNodeObject(node: GraphNode, state: MemoryAtlasState) {
+function createNodeObject(
+  node: GraphNode,
+  state: MemoryAtlasState,
+  activeSlugs: Set<FullSlug> | undefined,
+) {
   const group = new THREE.Group()
   const radius = Math.max(4, Math.min(11, 4 + node.degree * 1.4 + node.sourceCount * 0.45))
+  const isDimmed = Boolean(activeSlugs && !activeSlugs.has(node.slug))
   const material = new THREE.MeshBasicMaterial({
     color: colorFor(node, state.colorBy),
     transparent: true,
-    opacity: state.selectedSlug && state.selectedSlug !== node.slug ? 0.42 : 0.95,
+    opacity: isDimmed ? 0.16 : 0.96,
   })
   group.add(new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 18), material))
   if (state.selectedSlug === node.slug) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(radius + 3, 0.7, 8, 48),
-      new THREE.MeshBasicMaterial({ color: COLORS.active, transparent: true, opacity: 0.86 }),
+    const innerRing = new THREE.Mesh(
+      new THREE.TorusGeometry(radius + 3, 0.45, 8, 64),
+      new THREE.MeshBasicMaterial({ color: COLORS.active, transparent: true, opacity: 0.72 }),
     )
-    ring.rotation.x = Math.PI / 2
-    group.add(ring)
+    const outerRing = new THREE.Mesh(
+      new THREE.TorusGeometry(radius + 7, 0.32, 8, 72),
+      new THREE.MeshBasicMaterial({
+        color: COLORS.topic,
+        transparent: true,
+        opacity: 0.58,
+      }),
+    )
+    innerRing.rotation.x = Math.PI / 2
+    outerRing.rotation.y = Math.PI / 2
+    innerRing.userData = { orbitRing: true, orbitSpeed: 0.012 }
+    outerRing.userData = { orbitRing: true, orbitSpeed: -0.008 }
+    group.add(innerRing, outerRing)
   }
   if (state.labels) group.add(createLabel(node.title, colorFor(node, state.colorBy)))
   return group
@@ -226,8 +256,28 @@ export function mountMemoryAtlas({
   let currentState = state
   let currentData = cloneData(data, currentState)
   let destroyed = false
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
   let nodeObjects = new Map<FullSlug, DisposableObject>()
+  let initialRecenterDone = false
+  let initialRecenterTimer: number | undefined
+  let initialRecenterFrame: number | undefined
   const createGraph = ForceGraph3D as unknown as () => GraphInstance
+  const cancelInitialRecenter = () => {
+    if (initialRecenterTimer !== undefined) {
+      window.clearTimeout(initialRecenterTimer)
+      initialRecenterTimer = undefined
+    }
+    if (initialRecenterFrame !== undefined) {
+      cancelAnimationFrame(initialRecenterFrame)
+      initialRecenterFrame = undefined
+    }
+  }
+  const runInitialRecenter = () => {
+    if (destroyed || initialRecenterDone || currentState.selectedSlug) return
+    initialRecenterDone = true
+    cancelInitialRecenter()
+    graph.zoomToFit(motionQuery.matches ? 0 : 500, 48)
+  }
   const graph = createGraph()(container)
     .backgroundColor("#07191b")
     .nodeRelSize(4)
@@ -235,7 +285,11 @@ export function mountMemoryAtlas({
     .nodeColor((node) => colorFor(node, currentState.colorBy))
     .nodeThreeObjectExtend(false)
     .nodeThreeObject((node) => {
-      const object = createNodeObject(node, currentState)
+      const object = createNodeObject(
+        node,
+        currentState,
+        activeSlugSet(currentData.links, currentState.selectedSlug),
+      )
       nodeObjects.set(node.slug, object)
       return object
     })
@@ -245,6 +299,7 @@ export function mountMemoryAtlas({
       linkIsActive(link, currentState.selectedSlug) ? COLORS.active : COLORS.link,
     )
     .onNodeClick((node) => onSelect(node.slug))
+    .onEngineStop(runInitialRecenter)
 
   const resize = () => {
     const rect = container.getBoundingClientRect()
@@ -262,8 +317,26 @@ export function mountMemoryAtlas({
   }
   renderGraphData(currentData)
   const initialFrame = requestAnimationFrame(() => {
-    if (!destroyed) graph.zoomToFit(500, 42)
+    if (!destroyed) graph.zoomToFit(motionQuery.matches ? 0 : 500, 42)
   })
+  initialRecenterTimer = window.setTimeout(() => {
+    initialRecenterFrame = requestAnimationFrame(runInitialRecenter)
+  }, 900)
+  const orbitFrame = () => {
+    if (destroyed) return
+    if (!motionQuery.matches) {
+      for (const object of nodeObjects.values()) {
+        object.traverse?.((child) => {
+          if (!child.userData?.orbitRing) return
+          const speed = Number(child.userData.orbitSpeed ?? 0)
+          const rotationTarget = child as DisposableObject & { rotation?: { z: number } }
+          if (rotationTarget.rotation) rotationTarget.rotation.z += speed
+        })
+      }
+    }
+    requestAnimationFrame(orbitFrame)
+  }
+  const orbitAnimation = requestAnimationFrame(orbitFrame)
 
   const apply = (nextData: MemoryAtlasData, nextState: MemoryAtlasState) => {
     if (destroyed) return
@@ -278,6 +351,7 @@ export function mountMemoryAtlas({
     },
     select(slug?: FullSlug) {
       if (destroyed) return
+      if (slug) cancelInitialRecenter()
       currentState = { ...currentState, selectedSlug: slug }
       renderGraphData(currentData)
       const selected = currentData.nodes.find((node) => node.slug === slug)
@@ -291,18 +365,20 @@ export function mountMemoryAtlas({
             z: (selected.z ?? 0) * ratio + distance,
           },
           selected,
-          window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650,
+          motionQuery.matches ? 0 : 650,
         )
       }
     },
     recenter() {
       if (destroyed) return
-      graph.zoomToFit(500, 48)
+      graph.zoomToFit(motionQuery.matches ? 0 : 500, 48)
     },
     destroy() {
       if (destroyed) return
       destroyed = true
       cancelAnimationFrame(initialFrame)
+      cancelInitialRecenter()
+      cancelAnimationFrame(orbitAnimation)
       observer.disconnect()
       graph.pauseAnimation()
       graph._destructor?.()
