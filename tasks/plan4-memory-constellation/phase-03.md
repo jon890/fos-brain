@@ -23,6 +23,8 @@
 ### 2. 그래프 중심 전체 화면 배치
 
 루트에서만 기존 `.page` 최대 폭과 3열 grid를 해제하고 272px 필터 레일과 전체 높이 그래프를 배치한다.
+Memory Atlas loader는 `body`에 `memory-atlas-page` class를 추가하고 SPA 이탈 cleanup에서 제거한다.
+이 class가 있을 때 기존 좌우 sidebar, header, article, 본문 앞 메타데이터, hr, footer를 숨기되 `.memory-atlas` 자체는 유지한다.
 상단 검색, 필터 chip, 수치, 배치 설정은 조밀하지만 44px 터치 목표와 보이는 focus 상태를 유지한다.
 일반 문서의 light/dark theme와 기존 Quartz 색상 변수는 바꾸지 않는다.
 

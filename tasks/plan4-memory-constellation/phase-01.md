@@ -18,6 +18,7 @@ Memory Atlas가 정적 콘텐츠 색인만으로 검색, 필터, 집계, 노드 
 
 `quartz/package.json`에 `3d-force-graph@1.80.0`과 `three@0.185.1`을 정확한 버전으로 추가하고 `quartz/pnpm-lock.yaml`을 갱신한다.
 브라우저 전역을 참조하는 모듈은 이 phase의 순수 데이터 파일에서 import하지 않는다.
+이 저장소의 package manager는 pnpm이므로 기존 `quartz/package-lock.json`은 수정하지 않는다.
 
 ### 2. 콘텐츠 색인 메타데이터 확장
 

@@ -26,8 +26,10 @@
 - `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
 - `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 3D 렌더러의 수명, 사용자 입력, SPA 정리, 선택 경로 강조를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 홈을 감지하고 별도 3D 모듈을 요청하며 사용자 입력과 SPA 정리를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasRuntime.ts` — Three.js 렌더러와 카메라, 3D 배치, 선택 경로 강조를 소유한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
+- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 3D runtime과 의존성을 별도 ESM 정적 파일로 묶어 내보낸다.
 
 표시 컴포넌트는 frontmatter가 일부만 있어도 동작해야 한다.
 OKF 내보내기 로직을 Quartz에 넣지 않고 교환 경계를 별도 스크립트로 유지한다.
@@ -39,6 +41,7 @@ Memory Atlas는 루트 `INDEX` 문서에서만 기존 페이지 그리드를 대
 Quartz는 기존 Preact, TypeScript, SCSS, PixiJS를 재사용한다.
 문서별 로컬 그래프는 기존 D3와 PixiJS를 계속 사용한다.
 홈의 실제 3D 회전과 카메라 제어에만 `3d-force-graph`와 `three`를 사용하고, 홈 진입 시 동적으로 불러와 일반 문서의 초기 실행 비용과 브라우저 전역 접근을 격리한다.
+Quartz의 공용 `postscript.js`에는 가벼운 loader만 포함하고 3D 의존성은 `/static/memory-atlas.js`에 별도로 내보낸다.
 3D canvas는 유일한 탐색 수단이 아니며 검색, 필터, 선택 상세, 결과 목록은 실제 HTML 요소로 유지한다.
 qmd 명령은 고정 wrapper만 실행하며, wrapper가 없으면 PATH의 실행 파일을 대신 사용하지 않는다.
 
