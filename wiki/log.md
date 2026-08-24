@@ -258,3 +258,9 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 정리: 백링크 2건 처리(활성 문장 제거 1 / 역사 링크 일반 텍스트 전환 1), INDEX 항목 11개 제거
 - 사유: OpenClaw를 더 이상 사용하지 않아 관련 지식을 검색·탐색 대상에서 제거
 - raw: 보존(1개)
+
+## [2026-08-24] add | fos-agents 현황과 문서 변환 품질 평가 갱신
+
+- Source: [[../raw/notes/2026-08-24-fos-agents-and-document-evaluation.md]]
+- 신규 0 페이지, 보강 4 페이지: ai-nodes, multi-workspace-monorepo, script-skill-separation, document-parsing-quality-evaluation
+- 현재 저장소 이름과 워크스페이스 구조를 반영하고, 원본 문서와 변환 Markdown을 LLM as Judge로 평가하는 방법을 보강했다.

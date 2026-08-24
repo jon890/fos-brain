@@ -1,24 +1,28 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-08-24
+title: "실행 코드와 skill 컨텍스트 분리"
+description: "반복 가능한 실행 코드는 scripts에, 에이전트 workflow 계약은 skill 디렉터리에 두는 구조"
+tags: [skill, script, agent, architecture]
 ---
 
-# 실행/컨텍스트 분리 표준 (ADR-006)
+# 실행 코드와 skill 컨텍스트 분리
 
-자동화 스킬을 실행 파일과 컨텍스트 자산 두 부분으로 나누는 ai-nodes 표준.
+자동화 skill을 반복 가능한 실행 코드와 에이전트가 읽는 workflow 계약으로 나누는 `fos-agents` 표준이다.
 
 ## 핵심 포인트
 
-- 실행 파일 — `<workspace>/scripts/<name>/`
-- 컨텍스트 자산 — `<workspace>/.claude/skills/<name>/{SKILL.md, references/}`
-- career-os 의 ADR-019 비대칭이 ADR-006 표준으로 격상됐다(2026-05-19). apartment 가 첫 적용.
-- 라우터·디스패처는 폐기하고 Claude **native skill 직접 호출**로 전환했다(ADR-031, ADR-002).
+- 실행 파일은 `<workspace>/scripts/<name>/`에 둔다.
+- workflow 계약과 참조는 `<workspace>/.claude/skills/<name>/{SKILL.md, references/}`에 둔다.
+- Codex에 같은 skill을 노출해야 하는 워크스페이스는 `.codex/skills/` 링크를 둘 수 있다.
+- 저장소 전역 Codex skill은 루트 `.agents/skills/`에 둔다.
 
 ## 왜
 
-- 실행(언제·어떻게 돌리나)과 지식(무엇을·왜)을 분리해 스킬을 재사용·감사하기 쉽게 만든다.
-- native skill 직접 호출은 dispatcher 중간층의 깨짐·디버깅 비용을 없앤다.
+- 수집, 파싱, 상태 전이, 렌더링과 검증은 코드로 반복 가능하게 만든다.
+- skill은 언제 어떤 코드를 실행하고 결과를 어떻게 판단할지 설명한다.
+- 실행 코드와 컨텍스트의 변경 이유를 분리해 검토와 재사용을 쉽게 만든다.
 
 ## 관련 개념
 
@@ -28,4 +32,5 @@ updated: 2026-05-28
 
 ## Sources
 
-- github.com/jon890/fos-claw — `AGENTS.md`, `docs/workspace-structure.md`
+- [[../../raw/notes/2026-08-24-fos-agents-and-document-evaluation.md]]
+- github.com/jon890/fos-agents — `docs/code-architecture.md`

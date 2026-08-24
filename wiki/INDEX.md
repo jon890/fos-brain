@@ -77,9 +77,9 @@
 
 - [[executive-personality-interview-risk-frame]] — 임원·인성면접을 조직 리스크 관리 관점에서 준비하는 프레임
 
-### 자동화 시스템 (ai-nodes)
+### 자동화 시스템 (fos-agents)
 
-- [[multi-workspace-monorepo]] — 워크스페이스 격리, _shared 규율
+- [[multi-workspace-monorepo]] — 독립 워크스페이스와 루트 공통 책임의 경계
 - [[script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006)
 
 ### 관측성 (학습)
@@ -97,7 +97,7 @@
 
 ### 품질 평가 (학습)
 
-- [[document-parsing-quality-evaluation]] — 문서 파싱 품질 평가 방법론 스펙트럼(회귀→golden→NED→docling-eval→LLM-judge), 비용·깊이로 조합
+- [[document-parsing-quality-evaluation]] — 원본 문서와 Markdown의 텍스트·표 구조를 정적 지표와 LLM as Judge로 평가
 
 ### 운영·트러블슈팅 (실전)
 
@@ -145,7 +145,7 @@
 - [[fos-accountbook]] — 가계부 프론트, 4계층 단방향·12스킬
 - [[fos-accountbook-backend]] — 가계부 Java 백엔드, 도메인 패키지·테스트 규율
 - [[fos-study]] — 기술 블로그 콘텐츠, 글쓰기 하네스·docs-audit
-- [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-claw), 멀티 워크스페이스
+- [[ai-nodes]] — 개인 자동화 에이전트 모노레포(fos-agents), 독립 워크스페이스 운영
 - [[coding-engineer-tv]] — 유튜버 코딩하는기술사(@codingpe), 성능·아키텍처 자료 추적 허브
 - [[career-strategy-youtube]] — 유튜버 취업전략:통념을 파괴하는 합격자의 관점, 면접·취업 전략 자료 추적 허브
 - [[jocoding-youtube]] — 유튜버 조코딩 JoCoding, AI·개발·창업·기술 인터뷰 자료 추적 허브
@@ -161,6 +161,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-07-30 (fos-skills 하네스 진화 — 신규 5, 보강 4)
+- 마지막 brain-add: 2026-08-24 (fos-agents 현황과 문서 변환 품질 평가 — 신규 0, 보강 4)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
