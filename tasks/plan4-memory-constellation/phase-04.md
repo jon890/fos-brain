@@ -6,9 +6,9 @@
 
 ## 목표
 
-Memory Atlas의 실제 3D 동작, 반응형 화면, 정적 빌드, 기존 문서 회귀를 검증하고 성공한 상태만 완료로 기록한다.
+Memory Atlas의 실제 3D 동작, 반응형 화면, 정적 빌드, 기존 문서 회귀를 검증한다.
 
-**범위 외**: 홈서버 배포와 Cloudflare 변경은 이 plan에서 실행하지 않는다.
+**범위 외**: 홈서버 배포와 Cloudflare 변경은 다음 phase가 담당한다.
 
 ---
 
@@ -35,17 +35,16 @@ browser error가 0개이며 홈에서는 `/static/memory-atlas.js`가 정확히 
 `agent-browser network route '**/static/contentIndex.json' --abort` 뒤 reload해 오류 안내, 다시 시도, 정적 안내 목록이 남는지 검사하고 마지막에 route를 제거한다.
 데스크톱과 모바일 screenshot, 접근성 snapshot, browser errors, network requests, assertion 결과를 고정 증거 경로에 저장한다.
 
-### 4. task 완료 상태 기록
+### 4. phase 성공 상태 기록
 
-모든 검사가 성공하면 `tasks/plan4-memory-constellation/index.json`의 `status`를 `completed`, `current_phases`를 `4`로 바꾼다.
-어느 검사라도 실패하면 완료 상태를 기록하지 않고 실패 원인을 담당 phase로 돌린다.
+모든 검사가 성공하면 team-lead가 이 phase 변경을 독립 커밋으로 만들고 원격 작업 브랜치에 push한다.
+어느 검사라도 실패하면 커밋하지 않고 실패 원인을 담당 phase로 돌린다.
 
 ## Critical Files
 
 | 파일 | 변경 |
 | --- | --- |
 | `quartz/scripts/verify-memory-atlas-browser.sh` | 신규 |
-| `tasks/plan4-memory-constellation/index.json` | 성공 시 완료 상태 수정 |
 
 ## 검증
 

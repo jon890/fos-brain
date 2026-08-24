@@ -3,7 +3,7 @@
   "description": "Quartz 홈을 3D 지식 그래프 중심의 Memory Atlas로 재설계한다.",
   "status": "pending",
   "created_at": "2026-08-24",
-  "total_phases": 4,
+  "total_phases": 5,
   "current_phases": 1,
   "phases": [
     {
@@ -29,6 +29,12 @@
       "title": "실제 브라우저와 통합 회귀 검증",
       "file": "phase-04.md",
       "execution_profile": "standard"
+    },
+    {
+      "number": 5,
+      "title": "홈서버 배포와 실제 URL 검증",
+      "file": "phase-05.md",
+      "execution_profile": "deep"
     }
   ]
 }

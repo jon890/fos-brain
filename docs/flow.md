@@ -49,6 +49,18 @@ Cloudflare Access는 보호 사이트 진입 전에 인증을 끝낸다.
 Memory Atlas는 별도 권한 API를 호출하지 않으며, 현재 빌드의 콘텐츠 색인에 포함된 네임스페이스만 보여준다.
 public 빌드에는 private 노드가 없고 private 필터도 표시하지 않는다.
 
+## Memory Atlas 배포 흐름
+
+1. 로컬 단위 검사와 정적 빌드, 데스크톱·모바일 브라우저 검사를 모두 통과시킨다.
+2. 작업 브랜치가 깨끗하고 원격 브랜치와 같은 커밋인지 확인한 뒤 홈서버에 detached public checkout을 만들고 기존 private checkout은 읽기 전용 입력으로 사용한다.
+3. 기존 보호 배포 스크립트로 새 release를 만든 뒤 `current` 링크를 원자적으로 전환한다.
+4. 기존 public checkout과 운영 설정은 바꾸지 않고, 실패하면 전환 전 `current` release로 되돌린다.
+5. 인증 없는 새 브라우저에서는 홈과 `/_private/`가 Cloudflare Access로 차단되는지 확인한다.
+6. 인증된 브라우저에서는 실제 URL의 홈, `/_private/`, 일반 문서를 확인하고 Memory Atlas의 3D runtime 요청 범위를 다시 검사한다.
+
+로컬 검증이나 새 release 검증이 하나라도 실패하면 홈서버의 `current`를 바꾸지 않는다.
+Cloudflare DNS, Access 정책, Tunnel, NPM 설정은 이 흐름에서 변경하지 않는다.
+
 ## OKF 내보내기 흐름
 
 1. 명령이 public `wiki/`와 `raw/`만 읽는다.
