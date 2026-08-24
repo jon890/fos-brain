@@ -18,16 +18,16 @@
 
 로컬 작업 브랜치가 깨끗하고 `origin/plan4-memory-constellation`과 같은 SHA인지 확인한다.
 운영 public·private checkout, 기존 `current` release, 컨테이너 ID·restart, Cloudflare Access 응답을 읽기 전용으로 기록한다.
-원격 보호 빌드 스크립트의 SHA-256이 아래 고정 값과 다르면 배포를 중단한다.
+원격 보호 빌드 스크립트의 SHA-256이 배포 시점에 별도 전달된 고정 값과 다르면 배포를 중단한다.
 
 ### 2. 격리 checkout과 원자 release 배포
 
-홈서버에서 작업 브랜치를 fetch하고 `/home/bifos/apps/fos-brain-previews/plan4-memory-constellation`에 같은 SHA의 detached worktree를 만든다.
+홈서버에서 작업 브랜치를 fetch하고 `<preview-checkout>`에 같은 SHA의 detached worktree를 만든다.
 기존 private checkout은 깨끗한 `main == origin/main`일 때만 읽기 전용 입력으로 사용한다.
 고정된 보호 빌드 스크립트로 새 release를 만들고 내부 검증이 끝난 뒤 `current`를 원자적으로 전환한다.
 
 release에는 `/raw`, `/work`, `/private`, `.git`, `.env`, PEM·key 파일, symlink가 없어야 한다.
-HTML과 JavaScript에는 `/home/bifos`, `TUNNEL_TOKEN`, `CLOUDFLARE_API_TOKEN`, `PRIVATE-SENTINEL` 문자열이 없어야 한다.
+HTML과 JavaScript에는 `<release-root>` 같은 서버 내부 경로, `TUNNEL_TOKEN`, `CLOUDFLARE_API_TOKEN`, `PRIVATE-SENTINEL` 문자열이 없어야 한다.
 `/_private/`만 비공개 문서 경로로 허용한다.
 
 ### 3. 실제 URL과 rollback 검증
@@ -36,7 +36,7 @@ HTML과 JavaScript에는 `/home/bifos`, `TUNNEL_TOKEN`, `CLOUDFLARE_API_TOKEN`, 
 인증된 브라우저에서는 `brain.fosworld.co.kr`, `/_private/`, 대표 일반 문서가 200이어야 한다.
 홈에서는 3D runtime이 한 번만 요청되고 일반 문서에서는 요청되지 않아야 한다.
 
-실패하면 같은 `quartz-protected` 디렉터리 안에서 임시 상대 symlink를 만들고 `mv -Tf`로 배포 전 release를 다시 가리킨다.
+실패하면 같은 보호 배포 디렉터리 안에서 임시 상대 symlink를 만들고 원자 이동으로 `<current-link>`가 배포 전 release를 다시 가리키게 한다.
 rollback 뒤 기존 홈과 문서가 다시 200인지 확인한다.
 운영 public checkout과 Cloudflare·NPM 설정은 변경하지 않는다.
 
@@ -55,14 +55,14 @@ rollback 뒤 기존 홈과 문서가 다시 200인지 확인한다.
 
 | 항목 | 고정 값 |
 | --- | --- |
-| SSH | `bifos@61.80.30.85:10022`, `/Users/nhn/.ssh/id_ed25519_bifos` |
-| 보호 빌드 스크립트 | `/home/bifos/apps/fos-brain-deploy/build-protected.sh` |
-| 스크립트 SHA-256 | `4900ba8bbe87eb46a0396c80e14aab4e96b67ae36e8f7ad61e3a03f4b8ecb645` |
-| private checkout | `/home/bifos/personal/fos-brain/private` |
-| release 루트 | `/home/bifos/personal/fos-brain/quartz-protected/releases` |
-| current 링크 | `/home/bifos/personal/fos-brain/quartz-protected/current` |
+| SSH | `<protected-host>` |
+| 보호 빌드 스크립트 | `<deploy-script>` |
+| 스크립트 SHA-256 | 배포 시점에 별도 전달 |
+| private checkout | `<private-checkout>` |
+| release 루트 | `<release-root>` |
+| current 링크 | `<current-link>` |
 
-운영 public checkout `/home/bifos/personal/fos-brain`의 branch, SHA, 작업 트리는 변경 전후에 같아야 한다.
+운영 public checkout의 branch, SHA, 작업 트리는 변경 전후에 같아야 한다.
 
 ## 검증
 
@@ -70,19 +70,18 @@ rollback 뒤 기존 홈과 문서가 다시 200인지 확인한다.
 # cwd: <worktree>/
 test -z "$(git status --porcelain)"
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/plan4-memory-constellation)"
-ssh -i /Users/nhn/.ssh/id_ed25519_bifos -p 10022 bifos@61.80.30.85 \
-  'sha256sum /home/bifos/apps/fos-brain-deploy/build-protected.sh'
+ssh <protected-host> 'sha256sum <deploy-script>'
 ```
 
 원격에서는 대상 SHA로 detached worktree를 만든 뒤 다음 환경으로 고정 스크립트를 한 번 호출한다.
 
 ```bash
-# cwd: /home/bifos/apps/fos-brain-deploy (home server)
-BRAIN_REPO=/home/bifos/apps/fos-brain-previews/plan4-memory-constellation \
-PRIVATE_BRAIN_REPO=/home/bifos/personal/fos-brain/private \
-PROTECTED_OUTPUT_ROOT=/home/bifos/personal/fos-brain/quartz-protected \
+# cwd: <deploy-script-dir> (home server)
+BRAIN_REPO=<preview-checkout> \
+PRIVATE_BRAIN_REPO=<private-brain-repo> \
+PROTECTED_OUTPUT_ROOT=<protected-output-root> \
 PROTECTED_RELEASE_ID=<public-12자-SHA>-<private-12자-SHA>-<UTC> \
-  /home/bifos/apps/fos-brain-deploy/build-protected.sh
+  <deploy-script>
 ```
 
 새 release ID의 public SHA와 작업 브랜치 SHA 앞 12자가 같아야 한다.

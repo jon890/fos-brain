@@ -164,7 +164,22 @@ capture_network() {
 capture_snapshot() {
   local name="$1"
   local stderr_file="$EVIDENCE_DIR/capture-snapshot-$name.stderr"
-  if ! ab snapshot >"$EVIDENCE_DIR/$name.snapshot.txt" 2>"$stderr_file"; then
+  local retry_stderr_file="$EVIDENCE_DIR/capture-snapshot-$name.retry.stderr"
+  if ab snapshot >"$EVIDENCE_DIR/$name.snapshot.txt" 2>"$stderr_file"; then
+    return
+  fi
+
+  if grep -Eq "Alarm clock|timed out|Timeout" "$stderr_file"; then
+    if ab snapshot >"$EVIDENCE_DIR/$name.snapshot.txt" 2>"$retry_stderr_file"; then
+      {
+        echo "Snapshot capture retry succeeded for $name"
+        cat "$stderr_file"
+      } >"$EVIDENCE_DIR/capture-snapshot-$name.retry.log"
+      return
+    fi
+    fail "capture-snapshot-$name"
+    maybe_restart_after_timeout "$retry_stderr_file"
+  else
     fail "capture-snapshot-$name"
     maybe_restart_after_timeout "$stderr_file"
   fi
