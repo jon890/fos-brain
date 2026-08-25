@@ -1,5 +1,29 @@
 # 지식 데이터 계약
 
+## 지식 후보 판정
+
+지식 후보 판정은 미리보기와 스킬 사이에서 쓰는 임시 계약이다.
+판정 자체를 wiki나 raw에 별도 지식으로 저장하지 않는다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `candidate` | 문자열 | 사용자가 판정 대상을 구분할 수 있는 제목이다. |
+| `decision` | `admit`, `reinforce`, `route`, `reject` | 저장, 기존 문서 보강, 다른 시스템으로 이동, 제외 중 하나다. |
+| `value_axes` | 문자열 배열 | `work-style`, `taste`, `decision`, `personal-system`, `career`, `durable-domain` 중 하나 이상이다. `route`와 `reject`는 빈 배열일 수 있다. |
+| `future_question` | 문자열 또는 `null` | 6개월 뒤 이 지식이 답할 구체적인 질문이다. `admit`과 `reinforce`에서는 필수다. |
+| `durability_reason` | 문자열 또는 `null` | 일회성 기록이 아닌 이유다. `admit`과 `reinforce`에서는 필수다. |
+| `destination` | `public`, `private`, `nbrain`, `skill`, `agents`, `repo-docs`, `none` | 실제 단일 소스다. |
+| `source_of_truth` | 문자열 | 이 정보를 장기 관리할 책임이 있는 위치다. |
+| `sensitivity` | `public`, `private`, `company` | 공개 범위 판정이다. |
+| `freshness` | `stable`, `review-date-required`, `historical` | 최신성 관리 방식이다. |
+| `evidence` | 문자열 배열 | 출처 경로나 URL이다. |
+| `reason` | 문자열 | 저장, 이동, 제외 이유를 사용자가 이해할 수 있게 설명한다. |
+
+`admit`과 `reinforce`는 `destination`이 `public` 또는 `private`여야 한다.
+`company` 민감도는 항상 `route`와 `nbrain`을 사용한다.
+실행 절차는 `skill`이나 `repo-docs`, 행동 규칙은 `agents`, 코드와 git으로 자명한 사실과 일회성 상태는 `none`으로 보낸다.
+숫자 점수만으로 `admit`을 만들 수 없으며 사용자의 미리보기 승인이 필요하다.
+
 ## 내부 wiki frontmatter
 
 기존 필수 필드는 계속 유지한다.
