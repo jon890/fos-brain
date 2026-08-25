@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""brain 큐레이션·페이지 미리보기를 Quartz 톤 HTML 로 생성한다.
+"""brain 큐레이션·페이지 미리보기를 Memory Atlas 톤 HTML 로 생성한다.
 
-채팅 인라인 본문만으로는 표·페이지 레이아웃이 잘 안 보여서, 등록 전 검토용으로
-실제 Quartz 렌더에 가까운 HTML 미리보기를 만들어 브라우저로 띄운다.
+채팅 인라인 본문만으로는 후보와 페이지 레이아웃이 잘 안 보여서, 등록 전 검토용으로
+현재 Memory Atlas 문서 화면의 시각 언어를 반영한 HTML 미리보기를 브라우저로 띄운다.
+3D 그래프와 실제 링크 동작은 등록 후 Quartz에서 따로 검증한다.
 (채팅 인라인 본문 표시 원칙은 유지 — HTML 은 보조다.)
 
 입력 JSON 스키마:
@@ -20,7 +21,7 @@ candidates·pages 는 선택. 둘 중 있는 것만 렌더된다.
 
 사용:
   python3 generate_preview.py --data preview.json --out /tmp/brain-preview.html
-  cmux browser open "file:///tmp/brain-preview.html"
+  ./show_preview.sh /tmp/brain-preview.html
 """
 import argparse
 import json
