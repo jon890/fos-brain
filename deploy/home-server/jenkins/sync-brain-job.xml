@@ -40,7 +40,8 @@
       <regexpFilterExpression>^(jon890/fos-brain|jon890/fos-brain-private):refs/heads/main$</regexpFilterExpression>
       <printPostContent>false</printPostContent>
       <printContributedVariables>false</printContributedVariables>
-      <token>sync-brain-github</token>
+      <token></token>
+      <tokenCredentialId>fos-brain-webhook-token</tokenCredentialId>
       <silentResponse>false</silentResponse>
       <overrideQuietPeriod>false</overrideQuietPeriod>
       <shouldNotFlattern>false</shouldNotFlattern>

@@ -10,6 +10,7 @@ OUTPUT_ROOT="$TEST_ROOT/output"
 RENDERER="$TEST_ROOT/render-fixture.sh"
 NODE_IMAGE="$(sed -n 's/^NODE_IMAGE="\([^"]*\)"/\1/p' "$DEPLOY_DIR/build-protected.sh")"
 NGINX_IMAGE="$(sed -n 's/^NGINX_IMAGE=//p' "$DEPLOY_DIR/.env.example")"
+JENKINS_JOB="$DEPLOY_DIR/jenkins/sync-brain-job.xml"
 
 cleanup() {
   local exit_code=$?
@@ -221,6 +222,12 @@ grep -Fq 'read_only: true' "$COMPOSE_CONFIG"
 grep -Fq 'root /usr/share/nginx/html/current;' "$DEPLOY_DIR/nginx.conf"
 grep -Fq 'X-Robots-Tag "noindex, nofollow, noarchive" always;' "$DEPLOY_DIR/nginx.conf"
 grep -Fq 'Cache-Control "private, no-store" always;' "$DEPLOY_DIR/nginx.conf"
+grep -Fq '<token></token>' "$JENKINS_JOB"
+grep -Fq '<tokenCredentialId>fos-brain-webhook-token</tokenCredentialId>' "$JENKINS_JOB"
+if grep -Fq '<token>sync-brain-github</token>' "$JENKINS_JOB"; then
+  echo "The Jenkins webhook token must not be stored in the public job XML." >&2
+  exit 1
+fi
 
 docker run --rm \
   --mount "type=bind,src=$DEPLOY_DIR/nginx.conf,dst=/etc/nginx/conf.d/default.conf,readonly" \
