@@ -1,5 +1,5 @@
 ---
-id: RETRO-0005
+id: RETRO-0014
 plan: plan5-knowledge-quality-contract
 date: 2026-08-25
 phase: phase-02
