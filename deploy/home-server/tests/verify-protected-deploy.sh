@@ -12,9 +12,12 @@ NODE_IMAGE="$(sed -n 's/^NODE_IMAGE="\([^"]*\)"/\1/p' "$DEPLOY_DIR/build-protect
 NGINX_IMAGE="$(sed -n 's/^NGINX_IMAGE=//p' "$DEPLOY_DIR/.env.example")"
 
 cleanup() {
-  rm -rf -- "$TEST_ROOT"
+  local exit_code=$?
+
+  rm -rf -- "$TEST_ROOT" || exit_code=1
+  exit "$exit_code"
 }
-trap 'status=$?; cleanup || status=1; exit "$status"' EXIT
+trap cleanup EXIT
 
 mkdir -p \
   "$PUBLIC_REPO/quartz" \
@@ -90,8 +93,18 @@ run_build() {
     "$DEPLOY_DIR/build-protected.sh"
 }
 
+assert_release_state() {
+  local output_root="$1"
+  local expected_current="$2"
+  local expected_releases="$3"
+
+  [[ "$(readlink "$output_root/current")" == "$expected_current" ]]
+  [[ "$(find "$output_root/releases" -mindepth 1 -maxdepth 1 -type d ! -name '.*.tmp.*' | wc -l | tr -d ' ')" == "$expected_releases" ]]
+  [[ "$(find "$output_root/releases" -mindepth 1 -maxdepth 1 -type d -name '.*.tmp.*' | wc -l | tr -d ' ')" == "0" ]]
+}
+
 run_build release-1
-[[ "$(readlink "$OUTPUT_ROOT/current")" == "releases/release-1" ]]
+assert_release_state "$OUTPUT_ROOT" "releases/release-1" 1
 [[ -s "$OUTPUT_ROOT/current/index.html" ]]
 [[ -s "$OUTPUT_ROOT/current/_private/index.html" ]]
 [[ ! -e "$OUTPUT_ROOT/current/raw" && ! -e "$OUTPUT_ROOT/current/work" ]]
@@ -104,13 +117,13 @@ if PROTECTED_TEST_FORBIDDEN_OUTPUT=1 run_build release-forbidden; then
   echo "A forbidden output path was accepted." >&2
   exit 1
 fi
-[[ "$(readlink "$OUTPUT_ROOT/current")" == "releases/release-1" ]]
+assert_release_state "$OUTPUT_ROOT" "releases/release-1" 1
 
 if PROTECTED_TEST_RENDER_FAIL=1 run_build release-failed; then
   echo "A failed renderer was accepted." >&2
   exit 1
 fi
-[[ "$(readlink "$OUTPUT_ROOT/current")" == "releases/release-1" ]]
+assert_release_state "$OUTPUT_ROOT" "releases/release-1" 1
 
 if BRAIN_REPO="$PUBLIC_REPO" \
   PRIVATE_BRAIN_REPO="$PRIVATE_REPO" \
@@ -120,7 +133,20 @@ if BRAIN_REPO="$PUBLIC_REPO" \
   echo "A default release id was accepted without readable git HEADs." >&2
   exit 1
 fi
-[[ "$(readlink "$OUTPUT_ROOT/current")" == "releases/release-1" ]]
+assert_release_state "$OUTPUT_ROOT" "releases/release-1" 1
+
+SMOKE_OUTPUT_ROOT="$TEST_ROOT/quartz-smoke-output"
+BRAIN_REPO="$(cd "$DEPLOY_DIR/../.." && pwd)" \
+PRIVATE_BRAIN_REPO="$PRIVATE_REPO" \
+PROTECTED_OUTPUT_ROOT="$SMOKE_OUTPUT_ROOT" \
+PROTECTED_RELEASE_ID=quartz-smoke \
+TMPDIR="$TEST_ROOT" \
+  "$DEPLOY_DIR/build-protected.sh"
+assert_release_state "$SMOKE_OUTPUT_ROOT" "releases/quartz-smoke" 1
+[[ -s "$SMOKE_OUTPUT_ROOT/current/index.html" ]]
+[[ -s "$SMOKE_OUTPUT_ROOT/current/_private/index.html" ]]
+[[ -s "$SMOKE_OUTPUT_ROOT/current/static/contentIndex.json" ]]
+[[ ! -e "$SMOKE_OUTPUT_ROOT/current/raw" && ! -e "$SMOKE_OUTPUT_ROOT/current/work" ]]
 
 mkdir -p "$TEST_ROOT/lock-public/.git" "$TEST_ROOT/lock-private/.git" "$TEST_ROOT/bin"
 cp -a "$PUBLIC_REPO/quartz" "$PUBLIC_REPO/wiki" "$TEST_ROOT/lock-public/"
