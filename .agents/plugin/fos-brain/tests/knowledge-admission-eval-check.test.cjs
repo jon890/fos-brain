@@ -1,9 +1,11 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const os = require("node:os");
 const test = require("node:test");
 
 const { validateDocument } = require("../scripts/knowledge-admission-eval-check.cjs");
+const { parseArgs, treeHash } = require("../scripts/knowledge-admission-eval-runner.cjs");
 
 const fixturePath = path.join(__dirname, "fixtures", "knowledge-admission-eval-result.json");
 const pluginRoot = path.join(__dirname, "..");
@@ -44,6 +46,38 @@ function assertSkillCreatorEval(skill) {
 test("keeps both evaluation definitions in the skill-creator schema", () => {
   assertSkillCreatorEval("brain-add");
   assertSkillCreatorEval("brain-curate");
+});
+
+test("keeps plugin and marketplace versions aligned", () => {
+  const codexManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json"), "utf8"));
+  const claudeManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8"));
+  const marketplace = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "marketplace.json"), "utf8"));
+
+  assert.equal(codexManifest.version, "0.2.0");
+  assert.equal(claudeManifest.version, codexManifest.version);
+  assert.equal(marketplace.version, codexManifest.version);
+  assert.equal(marketplace.plugins[0].version, codexManifest.version);
+});
+
+test("the reusable runner rejects incomplete arguments", () => {
+  assert.throws(() => parseArgs(["--baseline", "main"]), /--baseline and --output are required/);
+  assert.deepEqual(parseArgs(["--baseline", "main", "--output", "/tmp/result"]), {
+    baseline: "main",
+    output: "/tmp/result",
+    codex: "codex",
+  });
+});
+
+test("the reusable runner detects isolated workspace writes", (context) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "knowledge-admission-runner-test-"));
+  context.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(directory, "nested"));
+  fs.writeFileSync(path.join(directory, "nested", "note.md"), "before\n");
+
+  const before = treeHash(directory);
+  assert.equal(treeHash(directory), before);
+  fs.writeFileSync(path.join(directory, "nested", "note.md"), "after\n");
+  assert.notEqual(treeHash(directory), before);
 });
 
 test("accepts a representative knowledge admission evaluation result", () => {
