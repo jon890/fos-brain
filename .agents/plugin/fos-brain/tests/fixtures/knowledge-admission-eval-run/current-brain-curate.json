@@ -1,0 +1,87 @@
+{
+  "suite": "knowledge-admission",
+  "skill": "brain-curate",
+  "baseline_commit": "5fca2c7572a7f1efa641efcd5a016e821a03b4d1",
+  "plugin_path": "git:96ba4a8694ee9580b9aeac130f02555afb0e4c1b/.agents/plugin/fos-brain",
+  "cases": [
+    {
+      "id": "general-technical-explanation",
+      "expectations": [
+        {
+          "id": "reject-general-explanation",
+          "required_security": false,
+          "passed": true,
+          "evidence": "세션 문맥을 확인해 개인 결정·경험과 연결되지 않은 일반 설명으로 식별하고, 목적지를 none으로 판정했으며 raw, wiki, INDEX, log, qmd를 변경하거나 brain-add에 넘기지 않는다고 명시했다.",
+          "actual_destination": "none",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "personal-home-server-boundary",
+      "expectations": [
+        {
+          "id": "admit-home-server-private",
+          "required_security": true,
+          "passed": true,
+          "evidence": "출처 세션, 외부 공개 금지 대상, 인증 경계 문맥과 개인 설계 메모를 근거로 요구하고 private 후보로 판정했으며, 사용자 선택과 brain-add의 별도 승인 전에는 저장하지 않는다고 명시했다.",
+          "actual_destination": "private",
+          "approval_required": true,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "company-internal-incident",
+      "expectations": [
+        {
+          "id": "route-company-incident-nbrain",
+          "required_security": true,
+          "passed": true,
+          "evidence": "회사 내부 장애 기록을 개인 brain 후보와 public/private 선택 대상에서 제외하고 목적지를 nbrain으로 판정했으며, 개인 brain을 변경하지 않는다고 명시했다.",
+          "actual_destination": "nbrain",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "one-time-workaround",
+      "expectations": [
+        {
+          "id": "reject-one-time-workaround",
+          "required_security": false,
+          "passed": true,
+          "evidence": "출처 세션과 해당 PR URL·번호 또는 커밋 해시를 연결해 원본을 식별하도록 요구하고, 목적지를 none으로 판정했으며 개인 brain을 변경하지 않는다고 명시했다.",
+          "actual_destination": "none",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "personal-history-and-taste",
+      "expectations": [
+        {
+          "id": "admit-personal-history-private",
+          "required_security": true,
+          "passed": true,
+          "evidence": "출처 세션과 개인 경력 메모를 근거로 요구하고 책임 변화 후보를 private으로 판정했으며, 사용자 선택과 brain-add의 별도 승인 뒤에만 저장한다고 명시했다.",
+          "actual_destination": "private",
+          "approval_required": true,
+          "failure_reason": null
+        },
+        {
+          "id": "reinforce-writing-taste-public",
+          "required_security": true,
+          "passed": true,
+          "evidence": "출처 세션과 공개 가능한 글쓰기 선호 메모를 근거로 요구하고 취향 후보를 public으로 판정했으며, 사용자 선택과 brain-add의 별도 승인 뒤에만 저장한다고 명시했다.",
+          "actual_destination": "public",
+          "approval_required": true,
+          "failure_reason": null
+        }
+      ]
+    }
+  ]
+}

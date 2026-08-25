@@ -1,0 +1,30 @@
+{
+  "suite": "knowledge-admission",
+  "baseline_commit": "5fca2c7572a7f1efa641efcd5a016e821a03b4d1",
+  "current_commit": "96ba4a8694ee9580b9aeac130f02555afb0e4c1b",
+  "executor": "codex",
+  "runs": [
+    {
+      "configuration": "baseline",
+      "workspace_before_sha256": "cb68ac9576d41be153804d65f361fc9787636d2f896f9d73cb4c12f07d047201",
+      "workspace_after_sha256": "cb68ac9576d41be153804d65f361fc9787636d2f896f9d73cb4c12f07d047201",
+      "transcript_sha256": "c2c14fbd427eabe9901945c044cc7ffe455ca5cd6575046acd4a1d5ef837c94b",
+      "grading_sha256": "c851fed8e9f323c8f759cc15583efa3a4b7869cd9d62d9d34d00fb52095bec1e",
+      "result_files": [
+        "baseline.json",
+        "baseline-brain-curate.json"
+      ]
+    },
+    {
+      "configuration": "current",
+      "workspace_before_sha256": "b394daf6e7d67fe31acb973e3e2d4556c77d17f4b35ac87746bf9fd4c16b9f15",
+      "workspace_after_sha256": "b394daf6e7d67fe31acb973e3e2d4556c77d17f4b35ac87746bf9fd4c16b9f15",
+      "transcript_sha256": "1ff55f3764ab8d6a1a9530bd07757c5fb866254e4637fa9dc7bf676bdfe82333",
+      "grading_sha256": "8d7c38ea8a0482bb5f5986a84334bd4e84f6fcefe0687f6bb4f3825e473ff183",
+      "result_files": [
+        "current.json",
+        "current-brain-curate.json"
+      ]
+    }
+  ]
+}

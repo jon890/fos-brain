@@ -1,0 +1,108 @@
+{
+  "candidates": [
+    {
+      "candidate": "AI 하네스의 실행자 선택 근거",
+      "decision": "admit",
+      "value_axes": ["work-style", "decision"],
+      "future_question": "복잡도와 실패 비용에 따라 어떤 실행자를 선택하는가?",
+      "durability_reason": "여러 저장소와 다음 세션에도 적용할 개인 업무 방식이다.",
+      "destination": "public",
+      "source_of_truth": "fos-brain public wiki",
+      "sensitivity": "public",
+      "freshness": "review-date-required",
+      "evidence": ["session://personal/harness-routing"],
+      "reason": "사용자의 반복 가능한 하네스 결정과 그 근거를 설명한다."
+    },
+    {
+      "candidate": "개인 홈서비스의 공개와 비공개 경계",
+      "decision": "admit",
+      "value_axes": ["personal-system", "decision"],
+      "future_question": "개인 홈서비스에서 외부 공개를 금지한 구성 요소는 무엇인가?",
+      "durability_reason": "개인 서비스의 장기 보안 경계와 설계 결정을 기록한다.",
+      "destination": "private",
+      "source_of_truth": "fos-brain private wiki",
+      "sensitivity": "private",
+      "freshness": "review-date-required",
+      "evidence": ["file://personal/home-service-design.md"],
+      "reason": "개인 환경에 고유하며 공개하면 안 되는 지속적 시스템 경계다."
+    },
+    {
+      "candidate": "백엔드 개발 경험에서 얻은 역할 변화",
+      "decision": "admit",
+      "value_axes": ["career"],
+      "future_question": "사용자의 백엔드 경력에서 책임 범위는 어떻게 변해 왔는가?",
+      "durability_reason": "시간이 지나도 개인 이력과 성장 맥락을 설명한다.",
+      "destination": "private",
+      "source_of_truth": "fos-brain private wiki",
+      "sensitivity": "private",
+      "freshness": "historical",
+      "evidence": ["file://personal/career-notes.md"],
+      "reason": "사용자에게 고유한 장기 이력이다."
+    },
+    {
+      "candidate": "기술 문서에서 쉬운 한국어를 선호함",
+      "decision": "reinforce",
+      "value_axes": ["taste", "work-style"],
+      "future_question": "사용자는 기술 문서의 용어와 문장 구성을 어떻게 선호하는가?",
+      "durability_reason": "다른 세션의 문서 작성에도 반복 적용되는 개인 취향이다.",
+      "destination": "public",
+      "source_of_truth": "fos-brain public wiki",
+      "sensitivity": "public",
+      "freshness": "stable",
+      "evidence": ["file://personal/writing-preferences.md"],
+      "reason": "기존 취향 문서에 새로운 근거를 보강한다."
+    },
+    {
+      "candidate": "회사 내부 장애 분류 기록",
+      "decision": "route",
+      "value_axes": [],
+      "future_question": null,
+      "durability_reason": null,
+      "destination": "nbrain",
+      "source_of_truth": "nbrain",
+      "sensitivity": "company",
+      "freshness": "review-date-required",
+      "evidence": ["company://internal/incident-note"],
+      "reason": "회사 내부 운영 지식은 개인 brain이 아니라 nbrain에서 관리한다."
+    },
+    {
+      "candidate": "일반적인 REST API 설명",
+      "decision": "reject",
+      "value_axes": [],
+      "future_question": null,
+      "durability_reason": null,
+      "destination": "none",
+      "source_of_truth": "none",
+      "sensitivity": "public",
+      "freshness": "stable",
+      "evidence": ["https://example.invalid/rest-overview"],
+      "reason": "개인 맥락이나 결정과 연결되지 않은 일반 설명이다."
+    },
+    {
+      "candidate": "특정 PR의 테스트 파일 수정",
+      "decision": "reject",
+      "value_axes": [],
+      "future_question": null,
+      "durability_reason": null,
+      "destination": "none",
+      "source_of_truth": "git history",
+      "sensitivity": "private",
+      "freshness": "historical",
+      "evidence": ["git://personal/repository/commit-example"],
+      "reason": "일회성 변경이며 코드와 git으로 확인할 수 있다."
+    },
+    {
+      "candidate": "개인 서비스 인증서 갱신 절차",
+      "decision": "route",
+      "value_axes": ["personal-system"],
+      "future_question": null,
+      "durability_reason": null,
+      "destination": "skill",
+      "source_of_truth": "certificate-renewal skill",
+      "sensitivity": "private",
+      "freshness": "review-date-required",
+      "evidence": ["file://personal/runbooks/certificate-renewal.md"],
+      "reason": "반복 실행 순서가 핵심이므로 지식 페이지가 아니라 skill에서 관리한다."
+    }
+  ]
+}

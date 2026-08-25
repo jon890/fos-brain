@@ -5,18 +5,24 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 # brain-curate
 
 여러 Claude Code 세션 기록을 훑어 brain 에 올릴 가치가 있는 durable 지식을 발굴하는 큐레이션 워크플로우.
-실제 등록은 `brain-add` 에 위임한다 — 이 스킬은 **무엇을 올릴지 발굴·선별**까지 책임진다.
+실제 등록은 `brain-add`에 위임한다. 이 스킬은 **무엇을 올릴지 발굴·선별**까지 책임진다.
 
 핵심 설계 사실:
 
 - 세션 jsonl 은 한 파일이 수 MB~십수 MB 이고 대부분이 tool 출력이다. 통째로 LLM 에 못 넣는다 → 전처리 스크립트가 필수다.
 - 세션은 일회성 작업의 연속이라 그대로 옮기면 brain 이 오염된다 → 작업이 아니라 **거기서 배운 재사용 가능한 것**을 뽑는다.
-- 회사·팀 지식(사내에서만 통하는 운영 방식·조회법·업무 기록)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키) 대상이므로 후보에서 제외한다.
+- 회사·팀 지식(사내에서만 통하는 운영 방식·조회법·업무 기록)은 개인 brain 저장 후보에서 제외하고 `route`와 `nbrain`으로 기록한다.
 - 자동 등록은 절대 하지 않는다 (fos-brain 철칙) → 항상 미리보기 → 선택 → 등록.
+
+## 0단계: 공용 지식 유입 정책 읽기
+
+추출 기준이나 세션 목록을 적용하기 전에 [`../../references/knowledge-admission-policy.md`](../../references/knowledge-admission-policy.md)를 읽는다.
+모든 후보는 공용 정책의 판정 기록 계약을 사용한다.
+의미 적합성을 숫자 점수나 키워드 일치로 자동 승인하지 않는다.
 
 ## 대상 디렉터리
 
-세션 기록은 두 소스에서 온다 — `--tool` 로 선택한다(기본 `both`).
+세션 기록은 두 소스에서 온다. `--tool`로 선택한다(기본 `both`).
 
 - Claude Code: `~/.claude/projects/<인코딩된-경로>/<세션id>.jsonl`
 - Codex CLI: `~/.codex/sessions/<yyyy>/<mm>/<dd>/rollout-*.jsonl` (OpenAI Responses API 계열 스키마 — `event_msg.user_message`/`agent_message`, `response_item.function_call`/`function_call_output`)
@@ -25,7 +31,7 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 
 ## 상태 파일 (증분 워터마크)
 
-`~/.claude/brain-curate.state.json` — 마지막 큐레이션 시점을 기록해 같은 세션을 두 번 보지 않는다.
+`~/.claude/brain-curate.state.json`은 마지막 큐레이션 시점을 기록해 같은 세션을 두 번 보지 않는다.
 
 ```json
 {
@@ -37,7 +43,7 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 
 없으면 첫 실행으로 간주한다.
 
-## 1단계 — 범위 선정
+## 1단계: 범위 선정
 
 `scripts/list_sessions.py` 로 분석 대상을 좁힌다. 결과는 mtime 내림차순 JSON.
 
@@ -53,14 +59,15 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 python3 scripts/list_sessions.py --since <last_curated> --min-bytes 51200
 ```
 
-노이즈 필터(`--exclude-temp`)는 기본 끈다 — 가치 판단은 추출 단계 sub-agent 에 맡긴다.
+노이즈 필터(`--exclude-temp`)는 기본 끈다. 가치 판단은 추출 단계 sub-agent에 맡긴다.
 단 대상이 너무 많으면(수십 개 이상) 사용자에게 규모를 알리고 `--exclude-temp` 나 범위 축소를 제안한다.
 
-`brain` 플러그인(`.agents/plugin/brain`)의 Stop hook 이 세션 종료마다 `staging/pending-sessions.jsonl` 에 포인터(도구·session_id·transcript 경로)를 남긴다. 이건 발굴 데이터 소스가 아니라 "세션이 끝났다"는 트리거 신호일 뿐이다 — 실제 대상 목록은 항상 `list_sessions.py` 의 디렉터리 스캔으로 만든다(더 정확하고 mtime 기준 정렬도 된다).
+`brain` 플러그인(`.agents/plugin/brain`)의 Stop hook이 세션 종료마다 `staging/pending-sessions.jsonl`에 포인터(도구·session_id·transcript 경로)를 남긴다.
+이 파일은 발굴 데이터 소스가 아니라 "세션이 끝났다"는 트리거 신호일 뿐이다. 실제 대상 목록은 항상 `list_sessions.py`의 디렉터리 스캔으로 만든다(더 정확하고 mtime 기준 정렬도 된다).
 
 대상 목록(개수·크기·네임스페이스 추정·경로)을 사용자에게 간단히 보고하고 진행한다.
 
-## 2단계 — 전처리 (정제)
+## 2단계: 전처리 (정제)
 
 각 대상 세션을 `scripts/extract_transcript.py` 로 정제 텍스트로 변환한다.
 tool 출력·중간 로그를 걷어내 16배 안팎으로 줄이면서 "무엇을 왜 했고 무엇을 알아냈는가" 맥락은 남긴다.
@@ -73,59 +80,61 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 - 기본 `--max-result-chars 1500` (tool_result 절단 상한). 에러·실패 라인은 우선 보존된다.
 - 정제 후에도 큰 세션(수백 KB+)은 추출 agent 입력 한도를 넘을 수 있다 → 그 세션만 절반으로 나눠 두 agent 에 분배하거나 `--max-result-chars` 를 줄인다.
 
-## 3단계 — 병렬 추출 (fan-out)
+## 3단계: 병렬 추출
 
 정제된 transcript 들을 sub-agent 에 분배해 durable 후보를 뽑는다.
-각 agent 는 `references/extraction-criteria.md` 의 기준과 출력 스키마를 따른다.
+각 agent는 공용 정책과 `references/extraction-criteria.md`의 세션 전처리 기준을 따른다.
 
 **규모에 따라 방식을 고른다:**
 
 - 대상이 **8개 이하**: `Agent` 도구를 한 메시지에 여러 개 띄워 병렬 처리한다.
-- 대상이 많으면: `Workflow` 로 fan-out 한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
+- 대상이 많으면: `Workflow`로 병렬 처리한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
 
 각 추출 agent 프롬프트에 담을 것:
 
 - 정제 transcript 파일 경로 (또는 내용)
-- `references/extraction-criteria.md` 를 읽으라는 지시
+- 공용 정책과 `references/extraction-criteria.md`를 읽으라는 지시
 - 출력은 스키마대로의 JSON 만 (`{"candidates": [...]}`, durable 후보 없으면 빈 배열)
 - 세션의 프로젝트 경로 (네임스페이스 1차 추정용)
-- 회사·팀 지식(사내 운영 방식·업무 기록)으로 보이는 후보는 nbrain 대상이므로 제외하라는 지시
+- 회사·팀 지식은 `route`와 `nbrain`으로만 판정하라는 지시
 
 각 후보에 출처 세션 경로를 붙여 둔다(나중에 Sources 추적·중복 판단에 쓴다).
 
-## 4단계 — 중복 제거
+## 4단계: 중복 제거
 
-추출된 각 후보를 brain 에서 검색해 신규/보강을 가른다. 같은 지식이 이미 있으면 새로 만들지 않는다.
+추출된 각 판정 기록을 합친 뒤 brain에서 검색해 `admit`과 `reinforce`를 가른다.
+같은 지식이 이미 있으면 새로 만들지 않는다.
 
 - public: `qmd query "<후보 제목·핵심>"` 또는 `qmd search "<키워드>" -c brain-wiki`. 의미 중복은 `qmd vsearch` 도 본다.
-- 분류: **신규** / **기존 보강**(어느 페이지) / **후보끼리 중복**(여러 세션이 같은 걸 말함 → 하나로 병합).
-- 회사·팀 지식으로 판단되는 후보는 이 brain 이 아니라 nbrain 대상이므로 제외한다.
+- 분류: **신규** / **기존 보강**(어느 페이지) / **후보끼리 중복**(여러 세션이 같은 내용을 말하면 하나로 병합).
+- 병합한 기록은 공용 정책 필드를 유지하고 모든 근거 세션을 `evidence`에 모은다.
+- 회사·팀 지식은 개인 brain 후보와 합치지 않고 `route`와 `nbrain`을 유지한다.
 
 여러 세션에서 같은 후보가 나오면 병합해 한 항목으로 만들고, 근거 세션을 모두 모은다.
 
-## 5단계 — 네임스페이스 라우팅
+## 5단계: 네임스페이스 라우팅
 
-각 후보의 네임스페이스를 확정한다. 1차 추정(경로 기반)을 검토한다.
+각 후보의 목적지와 공개 범위를 공용 정책으로 확정한다.
 
 - fos-study 출처처럼 이미 공개 검증된 내용은 `public` 기본.
-- 사내 레포·내부 문서·미공개 아키텍처·회사 운영 세부는 이 brain 대상이 아니다 — nbrain 으로 안내하고 제외한다.
+- 사내 레포·내부 문서·미공개 아키텍처·회사 운영 세부는 `nbrain`으로 보낸다.
 - 개인 비공개는 `private`.
 - 애매하면 미리보기에서 사용자에게 묻는다.
 
-## 6단계 — 통합 리포트 미리보기 (사용자 개입, 필수)
+## 6단계: 통합 리포트 미리보기 (사용자 개입, 필수)
 
 후보 전체를 채팅 본문에 **인라인 표**로 보여준다. 파일로만 저장하지 않는다(사용자가 검토·수정해야 한다).
 
 
-| #   | 후보  | 타입      | 신규/보강         | NS      | 근거 세션          | durable 이유 |
-| --- | --- | ------- | ------------- | ------- | -------------- | ---------- |
-| 1   | ... | concept | 신규            | public  | docu-parser 2건 | ...        |
-| 2   | ... | concept | 보강: [[기존페이지]] | private | ...            | ...        |
+| # | 후보 | 판정 | 가치 축 | 목적지 | 근거 세션 | 이유 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | ... | `admit` | `decision` | public | 개인 세션 2건 | ... |
+| 2 | ... | `reinforce` | `taste` | private | ... | ... |
 
 
 - 함정에만 편중되지 않았는지 점검한다(개념·결정·도메인 지식이 같이 있는가).
-- 회사·팀 지식으로 제외한 후보는 "nbrain 대상 — 등록 제외" / "코드로 자명해 제외" / "skill 로 라우팅" 중 하나를 표에 드러낸다.
-- `verified:false` 후보는 "미검증 — 확인 필요" 로 표시한다.
+- `route`와 `reject` 후보도 목적지와 제외 이유를 표에 드러낸다.
+- 근거가 불충분해 저장하지 않은 후보는 판정과 이유를 "확인 필요"로 표시한다.
 - 표가 길면 핵심 후보 위주로 추리고 나머지는 접어 둔다.
 
 ### HTML 미리보기 (보조)
@@ -137,21 +146,24 @@ python3 scripts/generate_preview.py --data <preview.json> --out /tmp/brain-previ
 cmux browser open "file:///tmp/brain-preview.html"
 ```
 
-- 입력 JSON: `{title, namespace, stats, candidates[], pages[]}`. candidates(후보 표)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
-- 템플릿은 `templates/preview.html` — Quartz 실측 색(`#faf8f8`·`#284b63`)·폰트(Schibsted Grotesk·Source Sans 3). 네임스페이스 색 뱃지(public·private) 지원.
-- 폰트는 Google Fonts CDN — 오프라인이면 시스템 폰트로 대체된다.
+- 입력 JSON: `{title, stats, candidates[], pages[]}`. candidates(후보 표)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
+- 후보는 공용 판정 스키마의 판정, 가치 축, 목적지, 근거, 이유를 렌더한다.
+- 템플릿은 `templates/preview.html`이다. Quartz 실측 색(`#faf8f8`·`#284b63`)과 폰트(Schibsted Grotesk·Source Sans 3)를 사용하며 public과 private 목적지를 구분한다.
+- 폰트는 Google Fonts CDN을 사용하며 오프라인이면 시스템 폰트로 대체된다.
 - 본문에 `</script>` 가 있으면 생성기가 거부한다.
 
-## 7단계 — 선택 (AskUserQuestion)
+## 7단계: 선택 (AskUserQuestion)
 
 등록할 후보를 `AskUserQuestion`(multiSelect)으로 받는다. 후보가 많으면 묶음으로 나눠 묻거나 번호로 받는다.
-네임스페이스가 갈리는 후보는 그 결정도 함께 묻는다. 미리보기와 질문을 같은 턴에 묶지 않는다 — 사용자가 표를 읽은 다음 턴에 선택받는다.
+네임스페이스가 갈리는 후보는 그 결정도 함께 묻는다. 미리보기와 질문을 같은 턴에 묶지 않고 사용자가 표를 읽은 다음 턴에 선택받는다.
 
-## 8단계 — 등록 (brain-add 위임)
+## 8단계: 등록 (brain-add 위임)
 
-선택된 후보만 `brain-add` 로 넘긴다. 후보의 정보(제목·요약·핵심·네임스페이스·근거 세션)를 brain-add 의 입력으로 정리해 호출한다.
+선택된 `admit`과 `reinforce` 후보만 판정 기록과 함께 `brain-add`로 넘긴다.
+brain-add가 다시 미리보기와 승인을 거친 뒤에만 raw와 wiki에 저장한다.
+선택한 저장 후보가 없으면 raw, wiki, INDEX, log, qmd를 바꾸지 않는다.
 
-## 9단계 — 마무리
+## 9단계: 마무리
 
 - **워터마크 갱신**: `~/.claude/brain-curate.state.json` 의 `last_curated` 를 이번 실행 시작 시각으로, `runs` 에 요약 추가.
 - **log**: brain-add 가 각 네임스페이스 `wiki/log.md` 에 add 기록을 남긴다. 추가로 큐레이션 단위 요약 한 줄을 남겨도 된다.
@@ -165,4 +177,3 @@ cmux browser open "file:///tmp/brain-preview.html"
 - 일회성 작업 기록을 durable 지식으로 등록 (git 으로 자명한 것).
 - 공개 페이지에서 private 링크.
 - 한 번에 너무 많은 세션을 무차별 처리 (규모를 사용자에게 알리고 범위를 좁힌다).
-

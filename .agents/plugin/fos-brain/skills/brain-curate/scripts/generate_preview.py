@@ -8,10 +8,9 @@
 입력 JSON 스키마:
   {
     "title": "SkillOpt 등록",
-    "namespace": "public",
     "stats": {"신규": {"n": 26, "kind": "new"}, "보강": {"n": 3, "kind": "augment"}, "드롭": {"n": 7, "kind": "drop"}},
     "candidates": [
-      {"n": 1, "title": "...", "type": "concept", "status": "신규", "ns": "public", "evidence": "fos-study 5건", "flag": "work 제안"}
+      {"candidate": "...", "decision": "admit", "value_axes": ["decision"], "destination": "public", "evidence": ["session://example"], "reason": "6개월 뒤에도 적용할 결정 근거"}
     ],
     "pages": [
       {"frontmatter": "type: concept · created: 2026-06-12", "markdown": "# 제목\n본문..."}
@@ -41,7 +40,7 @@ def main():
     with open(args.data, encoding="utf-8") as f:
         raw = f.read()
 
-    # 안전 점검: 본문에 </script> 가 있으면 템플릿 주입이 깨진다
+    # 안전 점검: 본문에 </script>가 있으면 템플릿 주입이 깨진다
     if "</script>" in raw.lower():
         sys.exit("오류: 데이터에 </script> 문자열이 있어 HTML 주입이 깨집니다. 제거 후 재시도.")
 

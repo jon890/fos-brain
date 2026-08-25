@@ -9,13 +9,15 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 
 ## 대상 디렉터리
 
-`~/personal/fos-brain` — 두 개인 네임스페이스를 독립적으로 로컬 검색한다.
+`~/personal/fos-brain`에서 두 개인 네임스페이스를 독립적으로 로컬 검색한다.
 
 - public — 루트 `wiki/`, `raw/`
 - private — `private/wiki/`, `private/raw/`
 
 특정 네임스페이스로 한정하라는 지시가 있으면 그 트리만 검색한다.
-회사·팀·Dooray·사내 위키 지식 요청은 `work/`를 검색하지 말고 `nbrain`으로 라우팅한다.
+회사·팀·Dooray·사내 위키 지식 요청은 개인 brain을 검색하지 말고 `nbrain`으로 라우팅한다.
+
+환원 후보를 만들기 전에 [`../../references/knowledge-admission-policy.md`](../../references/knowledge-admission-policy.md)를 읽는다.
 
 ## 절차
 
@@ -30,7 +32,9 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
    - 출처와 **네임스페이스 태그**를 함께 명시한다(예: `[public] [[ai-harness-pattern]]`, `[private] [[개념명]]`).
    - brain 에 없는 정보로 답한 경우 명시 — "이 부분은 brain 에 없어 일반 지식으로 답함".
 6. **환원 (Loop back)**
-   - 답변이 추가 가치가 있으면 `AskUserQuestion` 으로 묻고, **어느 네임스페이스에** 환원할지도 함께 확인.
+   - 답변에서 생긴 후보를 공용 정책의 전체 판정 기록으로 다시 판정한다.
+   - `admit`이나 `reinforce`일 때만 `AskUserQuestion`으로 묻고, **어느 네임스페이스에** 환원할지도 함께 확인한다.
+   - `route`나 `reject`면 목적지와 이유를 설명하고 개인 brain에 쓰지 않는다.
    - 공개 페이지에 비공개 출처 내용을 그대로 옮기지 않는다(유출 방지).
    - 사용자가 거부하면 환원하지 않는다.
 7. **log append (필수)** — 환원한 네임스페이스의 `<ns>/wiki/log.md` 에:

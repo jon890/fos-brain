@@ -13,13 +13,12 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 
 ## 대상 디렉터리
 
-`~/personal/fos-brain` — 네임스페이스별(public·private·work)로 동작한다.
+`~/personal/fos-brain`의 개인 네임스페이스인 public과 private에서 동작한다.
 
 | 네임스페이스 | 경로 |
 | --- | --- |
 | public | 루트(`wiki/`) |
 | private | `private/wiki/` |
-| work | `work/<회사>/wiki/` |
 
 대상 페이지가 어느 네임스페이스인지 먼저 확정한다. 모호하면 `AskUserQuestion` 으로 확인.
 
@@ -30,6 +29,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 3. **끊기는 백링크는 매번 확인 후 처리.** 자동 일괄 제거 금지 — 링크마다 처리 방식을 사용자에게 묻는다.
 4. **사용자가 직접 수정한 흔적이 보이면** 덮어쓰기·삭제 전 확인.
 5. **공개 빌드를 깨지 않는다.** public 페이지 삭제 시, 그 페이지를 가리키는 다른 public 백링크를 반드시 정리한다.
+6. **정책 판정을 사유로 받을 수 있다.** [`../../references/knowledge-admission-policy.md`](../../references/knowledge-admission-policy.md)의 `reject`나 다른 목적지로의 `route` 판정을 삭제 사유로 사용할 수 있다. 이 경우에도 미리보기와 사용자 승인을 생략하지 않고 raw를 기본 보존한다.
 
 ## 절차
 
@@ -44,7 +44,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 ### 2. 영향 분석 (read-only)
 삭제 전, 파급을 먼저 수집해 보고한다.
 
-- **백링크** — 대상을 `[[...]]` 로 가리키는 다른 페이지 목록(같은 네임스페이스 + 비공개→공개 cross-link 포함).
+- **백링크** — 대상을 `[[...]]`로 가리키는 다른 페이지 목록(같은 네임스페이스와 비공개→공개 cross-link 포함).
   ```bash
   # 대상 slug 를 가리키는 페이지 찾기 (네임스페이스 루트에서)
   grep -rln "\[\[.*<대상-slug>.*\]\]" <ns>/wiki/
@@ -82,7 +82,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 - **INDEX 갱신**: `<ns>/wiki/INDEX.md` 에서 대상 항목 제거.
 
 ### 5. log append (필수)
-`<ns>/wiki/log.md` **파일 맨 끝**에 추가한다 (시간순 오름차순 — 맨 위나 중간에 끼워 넣지 않는다):
+`<ns>/wiki/log.md` **파일 맨 끝**에 추가한다. 시간순 오름차순이므로 맨 위나 중간에 끼워 넣지 않는다.
 ```
 ## [YYYY-MM-DD] delete | <한 줄 요약>
 - 대상: <페이지 경로> (방식: 완전 삭제 | archive)
@@ -93,7 +93,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 
 ### 6. public 이면 commit·push (별도 승인)
 - public 네임스페이스 변경은 commit·push 까지 **별도 승인 절차**를 따른다(다른 brain 스킬과 동일).
-- private 는 자체 repo commit, work 는 로컬 git commit(원격 push 금지).
+- private는 자체 repo commit 절차를 따른다.
 - 커밋 메시지 예: `remove(<영역>): <대상> brain-delete + 백링크 정리`
 
 ## raw 원본 삭제 (예외 경로)

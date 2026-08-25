@@ -21,7 +21,7 @@
     --new: #2f855a;
     --augment: #b7791f;
     --drop: #9b9b9b;
-    --work: #c05621;
+    --warning: #c05621;
   }
   * { box-sizing: border-box; }
   body {
@@ -42,11 +42,11 @@
   /* 네임스페이스·상태 뱃지 */
   .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 0.1rem 0.5rem; border-radius: 999px; font-family: "Schibsted Grotesk"; vertical-align: middle; }
   .b-public { background: rgba(47,133,90,0.12); color: var(--new); }
-  .b-work { background: rgba(192,86,33,0.12); color: var(--work); }
+  .b-route { background: rgba(192,86,33,0.12); color: var(--warning); }
   .b-private { background: rgba(120,120,120,0.15); color: #555; }
-  .b-new { background: rgba(47,133,90,0.12); color: var(--new); }
-  .b-augment { background: rgba(183,121,31,0.14); color: var(--augment); }
-  .b-drop { background: rgba(150,150,150,0.15); color: var(--drop); }
+  .b-admit { background: rgba(47,133,90,0.12); color: var(--new); }
+  .b-reinforce { background: rgba(183,121,31,0.14); color: var(--augment); }
+  .b-reject { background: rgba(150,150,150,0.15); color: var(--drop); }
   /* 통계 카드 */
   .stats { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .stat { flex: 1; min-width: 110px; background: #fff; border: 1px solid var(--lightgray); border-radius: 10px; padding: 0.9rem 1rem; }
@@ -74,7 +74,7 @@
   .page li { margin: 0.2rem 0; color: var(--darkgray); }
   .page p { color: var(--darkgray); }
   blockquote { border-left: 3px solid var(--gray); margin: 0.8rem 0; padding: 0.2rem 0 0.2rem 1rem; color: var(--darkgray); background: var(--highlight); }
-  .flag { color: var(--work); font-weight: 600; }
+  .flag { color: var(--warning); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -82,21 +82,20 @@
 <script>
 const DATA = __DATA__;
 
-function nsBadge(ns) {
-  const map = { public: "b-public", work: "b-work", private: "b-private" };
-  return `<span class="badge ${map[ns] || "b-private"}">${ns}</span>`;
+function destinationBadge(destination) {
+  const map = { public: "b-public", private: "b-private" };
+  return `<span class="badge ${map[destination] || "b-route"}">${destination}</span>`;
 }
-function statusBadge(s) {
-  if (s.startsWith("신규")) return `<span class="badge b-new">${s}</span>`;
-  if (s.startsWith("보강")) return `<span class="badge b-augment">${s}</span>`;
-  return `<span class="badge b-drop">${s}</span>`;
+function decisionBadge(decision) {
+  const map = { admit: "b-admit", reinforce: "b-reinforce", route: "b-route", reject: "b-reject" };
+  return `<span class="badge ${map[decision] || "b-reject"}">${decision}</span>`;
 }
 
 const d = DATA;
 let html = "";
 html += `<div class="masthead">
   <div class="brand">fos-brain · 큐레이션 미리보기</div>
-  <div class="sub">${d.title} ${nsBadge(d.namespace)}</div>
+  <div class="sub">${d.title}</div>
 </div>`;
 
 // 통계 카드
@@ -112,15 +111,15 @@ if (d.stats) {
 if (d.candidates && d.candidates.length) {
   html += `<div class="section-title">후보 목록</div>
     <div class="section-hint">등록할 항목을 검토하세요. 표는 채팅 본문과 동일합니다.</div>`;
-  html += `<table><thead><tr><th>#</th><th>후보</th><th>타입</th><th>상태</th><th>NS</th><th>근거</th></tr></thead><tbody>`;
-  for (const c of d.candidates) {
+  html += `<table><thead><tr><th>#</th><th>후보</th><th>판정</th><th>가치 축</th><th>목적지</th><th>근거와 이유</th></tr></thead><tbody>`;
+  for (const [index, c] of d.candidates.entries()) {
     html += `<tr>
-      <td class="num">${c.n}</td>
-      <td>${c.title}${c.flag ? ` <span class="flag">⚠ ${c.flag}</span>` : ""}</td>
-      <td class="mono">${c.type}</td>
-      <td>${statusBadge(c.status)}</td>
-      <td>${nsBadge(c.ns)}</td>
-      <td style="color:var(--darkgray);font-size:0.85rem">${c.evidence || ""}</td>
+      <td class="num">${index + 1}</td>
+      <td>${c.candidate}</td>
+      <td>${decisionBadge(c.decision)}</td>
+      <td class="mono">${(c.value_axes || []).join(", ")}</td>
+      <td>${destinationBadge(c.destination)}</td>
+      <td style="color:var(--darkgray);font-size:0.85rem">${(c.evidence || []).join("<br>")}<br>${c.reason || ""}</td>
     </tr>`;
   }
   html += `</tbody></table>`;

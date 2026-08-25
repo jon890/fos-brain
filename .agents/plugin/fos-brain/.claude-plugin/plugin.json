@@ -1,6 +1,6 @@
 {
   "name": "fos-brain",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "fos-brain 개인 지식 기반 hook·스킬 통합 번들 (Claude Code)",
   "author": {
     "name": "jon890"
