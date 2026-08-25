@@ -105,7 +105,7 @@ def known_slugs(roots: list[str]) -> list[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="brain wiki 페이지 미리보기 HTML 생성")
-    ap.add_argument("--ns", default="public", choices=["public", "private", "work"])
+    ap.add_argument("--ns", default="public", choices=["public", "private"])
     ap.add_argument("--title", default="brain 미리보기")
     ap.add_argument("--summary", default="")
     ap.add_argument("--new", nargs="*", default=[], help="신규 생성 페이지 .md 경로")

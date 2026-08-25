@@ -3,7 +3,7 @@
 이 저장소는 Karpathy 스타일 LLM 지식 기반(brain)이다.
 원본(`raw/`)은 사용자가 수집하거나 brain-add 로 가져오고, 위키(`wiki/`)는 Claude Code 가 컴파일·유지한다.
 
-범용 개인 brain 이다 — 기술 연구뿐 아니라 일지·목표·건강·취미 등 개인 지식 전반을 다룬다.
+범용 개인 brain이다. 기술 연구뿐 아니라 일지·목표·건강·취미 등 개인 지식 전반을 다룬다.
 
 ## 네임스페이스 (공개·비공개 분리)
 
@@ -16,7 +16,7 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 | private | `private/`          | **gitignore** | 제외        | 개인 비공개 자료    |
 
 
-회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain 의 대상이 아니다 — `nbrain`(Dooray 위키 기반 사내 지식 검색)으로 관리한다.
+회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain의 대상이 아니다. `nbrain`(Dooray 위키 기반 사내 지식 검색)으로 관리한다.
 
 규칙:
 
@@ -73,30 +73,14 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 5. **점진적 컴파일**: 한 번에 raw 전체를 처리하지 않는다. 새 raw 파일 또는 사용자가 지정한 범위만 처리.
 6. **lint 는 별도 호출**: 무결성 점검은 사용자가 brain-lint 를 명시 요청할 때만 실행.
 
-## brain 의 목적과 무엇을 넣는가 (durable vs 일회성)
+## 지식 유입 정책
 
-brain 은 compounding 자산이다. 미래의 나(또는 나를 돕는 에이전트)가 나에 대해 — 어떻게 일하는지, 무엇을 선호하는지, 무엇을 왜 그렇게 정했는지, 어떤 AI 에이전트 스킬을 어떻게 관리하는지 — 빠르게 파악하게 하는 개인 프로필과 결정 아카이브다.
+fos-brain은 6개월 뒤에도 사용자의 업무 방식, 취향, 결정, 개인 시스템, 이력, 장기 분야 지식을 이해하는 데 필요한 개인 지식만 저장한다.
+일반 설명, 일회성 작업, 코드와 git으로 자명한 사실, 실행 절차, 행동 규칙, 좁은 장애 우회법, 일시 상태는 올바른 단일 소스로 보내거나 제외한다.
+회사 내부 지식은 public과 private 어느 쪽에도 저장하지 않고 nbrain으로 보낸다.
 
-넣는다 (4축, durable):
-
-- **업무 스타일** — 어떻게 일하는가. 하네스 운영 방식, 코딩 습관, 협업·커뮤니케이션 방식.
-- **취향(taste)** — 무엇을 선호하는가. 기술 스택, 도구, 표현·문체.
-- **기술 의사결정과 근거** — 무엇을 왜 그렇게 정했는가. 대안 기각과 트레이드오프.
-- **관리하는 AI 에이전트 스킬의 구조** — 어떤 스킬을 왜 그렇게 설계했는가. 스킬 목록·역할·관계·버저닝.
-
-공통 기준: 단편적인 개별 사실이 아니라 **범용적으로 일반화된 지식**이거나, 재사용 가치가 있는 **스킬 내용 자체**여야 한다. 다른 세션이 컨텍스트로 참고해 바로 쓸 수 있는 문서인가가 핵심이다.
-
-넣지 않는다 (일회성·자명·좁은 함정):
-
-- **코드·git 으로 자명한 것** — 특정 파일 구조, 함수 위치, 변경 이력.
-- **일회성 업무 기록** — 특정 plan·PR 로 끝난 작업, 특정 시점의 버그·drift 실측 사례.
-- **좁은 기술 함정·디버깅 워크어라운드** — 특정 환경·라이브러리의 버그 회피(예: 특정 셸의 함수 export 제약, 스크립트 상대경로 cwd 오류). git 커밋이나 프로젝트 자체 pitfalls 문서가 담당한다.
-- **이미 널리 알려진 원칙의 단순 사례** — 그 자체로 새 인사이트가 아니면 durable 가치가 낮다.
-- 실행 절차(→skill), 행동 규칙(→CLAUDE.md), 일시적·세션 한정 상태.
-
-판단 기준: **"6개월 뒤 이 페이지를 검색해서, 나 또는 다른 세션이 나를 이해하는 데 바로 쓸 수 있는가?"** 아니면 넣지 않는다.
-
-이미 들어온 페이지도 주기적으로 이 기준으로 재평가해 솎아낸다(brain-delete 또는 brain-lint). 좁은 함정류로 쏠린 기존 항목은 이 기준을 소급 적용해 일괄 정리하지 않고, 별도 감사에서 사용자 확인 후 정리 여부를 정한다.
+상세 판정 순서, 목적지, 공개 범위, 판정 기록 계약은 [`.agents/plugin/fos-brain/references/knowledge-admission-policy.md`](.agents/plugin/fos-brain/references/knowledge-admission-policy.md)를 단일 소스로 사용한다.
+의미 적합성은 숫자 점수로 자동 승인하지 않으며, 저장 전 미리보기와 사용자 승인을 거친다.
 
 ## 페이지 스키마
 
@@ -155,10 +139,10 @@ tags: ["주제"]
 
 ### 새 머신 설정
 
-**권장 — 플러그인으로 설치** (스킬과 hook 을 함께 적용):
+**권장: 플러그인으로 설치** (스킬과 hook을 함께 적용):
 
 ```bash
-# Claude Code — settings.json 을 직접 편집하는 것만으로는 반영되지 않는다. CLI 로 등록·설치까지 실행한다.
+# Claude Code: settings.json을 직접 편집하는 것만으로는 반영되지 않는다. CLI로 등록·설치까지 실행한다.
 claude plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
 claude plugin install fos-brain@fos-brain
 
@@ -167,14 +151,18 @@ codex plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
 codex plugin add fos-brain@fos-brain
 ```
 
-두 도구 모두 로컬 마켓플레이스도 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다 — fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code 는 `claude plugin update fos-brain` 도 가능).
+두 도구 모두 로컬 마켓플레이스를 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다.
+fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code는 `claude plugin update fos-brain`도 가능).
 
 사용자 프롬프트마다 지식을 자동 주입하지 않는다.
 필요한 지식은 사용자가 요청하거나 현재 작업에 실질적으로 필요할 때 `brain-search`를 명시적으로 호출해 검색한다.
 
-`**.claude-plugin/plugin.json` 에 `hooks`/`skills` 필드를 넣지 않는다** — Claude Code 는 플러그인 루트의 `hooks/hooks.json` 과 `skills/` 를 관례로 자동 로드한다. manifest 에 `"hooks": "./hooks/hooks.json"` 처럼 명시하면 "Duplicate hooks file detected" 로 설치가 실패한다. Codex 쪽 루트 `plugin.json` 은 반대로 이 필드가 필수다(oh-my-codex 관례) — 두 매니페스트가 다르게 생긴 이유.
+`**.claude-plugin/plugin.json`에 `hooks`/`skills` 필드를 넣지 않는다**.
+Claude Code는 플러그인 루트의 `hooks/hooks.json`과 `skills/`를 관례로 자동 로드한다.
+manifest에 `"hooks": "./hooks/hooks.json"`처럼 명시하면 "Duplicate hooks file detected"로 설치가 실패한다.
+Codex 쪽 루트 `plugin.json`은 반대로 이 필드가 필수다(oh-my-codex 관례). 두 매니페스트가 다르게 생긴 이유다.
 
-**대안 — 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
+**대안: 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
@@ -216,7 +204,7 @@ Karpathy 가 권장한 qmd(BM25, 벡터, LLM rerank)를 사용한다.
 
 `brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
-### 런타임 함정 — wrapper 로 node 버전 고정 (ABI 불일치 방지)
+### wrapper로 node 버전 고정 (ABI 불일치 방지)
 
 qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **실행 런타임에 종속**된다.
 mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대로 타면 실행 자체가 깨진다.

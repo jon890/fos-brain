@@ -11,7 +11,8 @@ brain-curate 의 1단계(범위 선정)에서 쓴다. 증분(워터마크) 또�
 
 출력(JSON, stdout): mtime 내림차순 목록. 각 항목:
     {path, folder, decoded(표시용), mtime, mtime_iso, size, namespace_guess}
-namespace_guess 는 폴더 경로 문자열 기반 거친 추정이며, 최종 확정은 사용자 확인을 거친다.
+namespace_guess는 폴더 경로 문자열 기반 거친 추정이다.
+`company`는 개인 brain 네임스페이스가 아니라 nbrain 이동 후보이며, 최종 판정은 공용 지식 유입 정책을 따른다.
 """
 import argparse
 import json
@@ -38,11 +39,11 @@ def decode_folder(folder: str) -> str:
 
 
 def guess_namespace(decoded: str) -> str:
-    """경로 문자열로 네임스페이스를 거칠게 추정한다. 최종 확정은 사용자 확인."""
+    """경로 문자열로 개인 네임스페이스나 회사 자료 후보를 거칠게 추정한다."""
     low = decoded.lower()
     # 회사 업무 레포로 보이는 경로 패턴 (사용자 환경에 맞게 조정 가능)
     if any(k in low for k in ("/projects/", "/work/", "nhnent", "/ai-playground")):
-        return "work"
+        return "company"
     if "/personal/" in low or "/obsidian" in low:
         return "public"
     return "unknown"
