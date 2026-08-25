@@ -11,3 +11,7 @@
 | RETRO-0007 | 2026-08-18 | plan2-cloudflare-access-home-server | Pending 영역에서 Access 애플리케이션 생성이 거부됨 | 해결 | DNS 전환 격리 절차 |
 | RETRO-0008 | 2026-08-20 | plan2-cloudflare-access-home-server | Tunnel HTTP 원본이 Force SSL 리다이렉트를 반복함 | 해결 | Tunnel HTTPS 원본 계약 |
 | RETRO-0009 | 2026-08-20 | plan2-cloudflare-access-home-server | 같은 디렉터리 상대 private URL을 누출 검사에서 놓침 | 해결 | public 배포 누출 검사 |
+| RETRO-0010 | 2026-08-20 | plan3-protected-private-brain | Linux fixture 산출물이 root 소유로 남음 | 해결 | 배포 회귀 검사 |
+| RETRO-0011 | 2026-08-20 | plan3-protected-private-brain | 동기화 잠금이 checkout을 스스로 dirty하게 만듦 | 해결 | docs/data-schema.md |
+| RETRO-0012 | 2026-08-20 | plan3-protected-private-brain | mock renderer가 Quartz output 초기화를 놓침 | 해결 | 배포 회귀 검사 |
+| RETRO-0013 | 2026-08-20 | plan3-protected-private-brain | merge 전 배포가 새 산출물을 untracked로 만듦 | 해결 | 배포 순서 계약 |

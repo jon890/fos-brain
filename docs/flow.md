@@ -74,7 +74,7 @@ DNSSEC DS가 있으면 네임서버 변경 전에 제거하고 Cloudflare가 Act
 - 공개 요청은 Cloudflare edge에서 Tunnel을 거쳐 NPM의 HTTPS 원본과 기존 서비스로 전달한다.
 - 보호 요청은 Access 정책을 통과한 뒤 같은 Tunnel과 NPM 경로를 사용한다.
 - Jenkins 웹훅은 Access 로그인 없이 전달되지만 Jenkins 플러그인이 원문 body와 `X-Hub-Signature-256`을 검증한 뒤에만 작업을 찾는다.
-- `brain` 요청은 NPM에서 public Quartz 정적 컨테이너로 전달한다.
+- `brain` 요청은 NPM에서 Access로 보호된 public·private Quartz 정적 컨테이너로 전달한다.
 - `brain`의 ACME challenge 경로만 인증서 자동 갱신을 위해 Access를 우회하며 일반 경로는 계속 Allow 정책을 적용한다.
 - Hermes와 9119 요청은 Tunnel에 등록하지 않고 기존 SSH 포워딩만 사용한다.
 
@@ -83,3 +83,19 @@ Active 전환 뒤 Access 생성이 실패하면 보호 호스트를 503으로 �
 네임서버 전환 뒤 장애가 나면 먼저 NPM의 80·81·443 공인 바인딩을 복구하고 Cloudflare DNS를 이전 A 레코드로 되돌린다.
 Cloudflare 자체 장애가 길어지면 hosting.kr 권한 네임서버 복귀를 마지막 수단으로 사용한다.
 동시에 두 전환 작업을 실행하지 않도록 DNS 스냅샷과 전환 기록을 단일 작업 디렉터리에서 관리한다.
+
+## 보호 brain 갱신 흐름
+
+1. 검증한 동기화·빌드 스크립트를 checkout 밖의 운영 경로에 설치하고 두 저장소 checkout을 clean `main`으로 맞춘다.
+2. public 또는 private 저장소의 `main` push가 GitHub HMAC 웹훅으로 Jenkins `sync-brain` 작업을 호출한다.
+3. 작업은 중복 실행 잠금을 잡고 두 저장소가 clean 상태인지 확인한 뒤 fast-forward만 허용해 갱신한다.
+4. private 저장소가 없거나 분기됐거나 필수 INDEX가 비어 있으면 현재 산출물을 바꾸지 않고 실패한다.
+5. 빌더는 public wiki를 기존 루트 경로에 두고 private wiki를 `/_private/` 아래에 둔 임시 Quartz 입력을 만든다.
+6. 고정 Node 컨테이너가 새 release를 만들며 private raw와 회사 자료는 입력으로 받지 않는다.
+7. 빌더는 public 기존 경로, private INDEX, private 문서 수, 금지 경로와 정적 파일을 검사한다.
+8. 모든 검사가 통과하면 `current` 링크를 새 release로 원자적으로 바꾸고 Nginx가 같은 상위 디렉터리에서 새 산출물을 읽는다.
+9. 실패하면 직전 `current`를 유지하며 운영자는 Jenkins에서 같은 작업을 수동으로 다시 실행할 수 있다.
+
+두 저장소 push가 겹치면 뒤 작업이 잠금을 기다린다.
+잠금을 얻은 작업은 두 저장소의 최신 `main`을 다시 읽으므로 중간 push를 하나의 최종 산출물로 합칠 수 있다.
+Quartz 빌드는 웹 검색 색인을 갱신하지만 Codex가 로컬에서 쓰는 qmd 임베딩은 변경하지 않는다.

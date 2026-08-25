@@ -35,7 +35,9 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 
 ### 홈서버 게시와 접근 제어
 
-- public wiki만 `brain.fosworld.co.kr`에 게시하고 private 네임스페이스는 빌드 입력과 컨테이너 마운트에서 제외한다.
+- public 전용 빌드는 private 네임스페이스를 계속 제외한다.
+- Access로 보호하는 `brain.fosworld.co.kr`에는 public과 private의 컴파일된 wiki를 하나의 Quartz 그래프로 게시한다.
+- 보호 산출물은 private raw와 회사 자료를 포함하지 않으며 public 산출물과 다른 경로에 보관한다.
 - Cloudflare Tunnel의 outbound 연결로 홈서버를 공개하며, `brain`, Grafana, Jenkins, Nginx Proxy Manager는 Cloudflare Access 인증 뒤에 둔다.
 - `fosworld.co.kr`, `blog`, `accountbook`, `accountbook-api`는 로그인 없이 계속 공개한다.
 - Jenkins 웹훅 경로만 Access 인증에서 제외하고 Generic Webhook Trigger의 HMAC-SHA256 검증을 필수로 한다.
@@ -58,12 +60,16 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - Tunnel 전환 뒤 홈서버의 공인 80·81·443 포트는 닫히고 SSH 10022와 기존 SSH 터널 사용은 유지된다.
 - 공개 호스트는 전환 전후의 대표 경로에서 기존 성공·리다이렉트·권한 응답을 유지한다.
 - DNSSEC 검증 응답에는 AD(Authenticated Data) 표시가 있고 Cloudflare 영역은 Active 상태를 유지한다.
+- 보호 brain의 기존 public URL은 유지되고 private 문서는 `/_private/` 아래에서 렌더된다.
+- public 또는 private 저장소의 `main` push 뒤 Jenkins가 보호 산출물을 갱신하며 실패하면 직전 산출물을 유지한다.
+- 보호 산출물과 정적 서버에서 private raw, 회사 네임스페이스, 호스트 공개 포트가 발견되지 않는다.
 
 ## 범위 밖
 
 - 별도 벡터 데이터베이스나 GraphRAG 서비스를 도입하지 않는다.
 - 100여 개 기존 페이지의 메타데이터를 한 번에 채우지 않는다.
 - private 저장소를 공개 산출물에 포함하지 않는다.
+- private raw 원본을 원격 Quartz에 게시하지 않는다.
 - 검색 결과를 사용자 승인 없이 wiki에 자동 환원하지 않는다.
 - Cloudflare를 도메인 등록기관으로 이전하지 않는다.
 - Hermes와 9119 포트를 Cloudflare Tunnel에 연결하지 않는다.

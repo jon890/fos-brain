@@ -15,7 +15,7 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 - private — `private/wiki/`, `private/raw/`
 
 특정 네임스페이스로 한정하라는 지시가 있으면 그 트리만 검색한다.
-회사·팀·Dooray·사내 위키 지식 요청은 `work/`를 검색하지 말고 `nbrain`으로 라우팅한다.
+회사·팀·Dooray·사내 위키 지식 요청은 개인 brain을 검색하지 말고 `nbrain`으로 라우팅한다.
 
 ## 절차
 

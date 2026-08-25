@@ -72,6 +72,10 @@ worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하
 | `HOST_GID` | 정수 | Quartz 산출물을 소유할 홈서버 사용자 GID다. |
 | `CLOUDFLARED_IMAGE` | digest가 포함된 이미지 | 검증한 `cloudflare/cloudflared` 다중 아키텍처 digest를 사용한다. |
 | `NGINX_IMAGE` | digest가 포함된 이미지 | 검증한 `nginx` stable-alpine digest를 사용한다. |
+| `PRIVATE_BRAIN_REPO` | 절대 경로 | 독립 private 저장소이며 기본값은 `${BRAIN_REPO}/private`다. |
+| `PROTECTED_OUTPUT_ROOT` | 절대 경로 | 보호 산출물의 `releases/`와 `current`를 담으며 기본값은 `${BRAIN_REPO}/quartz-protected`다. |
+| `BRAIN_SYNC_LOCK` | checkout 밖 절대 경로 | public·private push의 중복 빌드를 직렬화하며 `BRAIN_DEPLOY_ROOT` 아래에 둔다. |
+| `BRAIN_DEPLOY_ROOT` | 절대 경로 | 검증한 동기화·빌드 스크립트와 Jenkins 작업 정의를 설치하는 운영 경로다. |
 
 ### 비밀값
 
@@ -109,3 +113,27 @@ NPM 호스트 포트 80·81·443은 loopback에만 바인딩하고 Tunnel의 `pu
 
 배포 중 생성하는 DNS 스냅샷, Tunnel token, Access 계정, HMAC secret은 git 추적 대상이 아니다.
 정적 산출물 `quartz/public`도 기존대로 gitignore 상태를 유지한다.
+
+## 보호 Quartz 산출물
+
+| 경로 | 내용 | 규칙 |
+| --- | --- | --- |
+| `quartz-protected/releases/<release-id>/` | public·private wiki의 Quartz 정적 파일 | gitignore 대상이며 빌드 성공 뒤에만 활성화한다. |
+| `quartz-protected/current` | 활성 release를 가리키는 상대 심볼릭 링크 | 같은 상위 디렉터리 안에서 원자적으로 교체한다. |
+| `/concepts`, `/topics`, `/entities` | public wiki의 기존 URL | 보호 빌드 전환 전후에 경로를 유지한다. |
+| `/_private/` | private wiki URL prefix | Access Allow 정책 안에서만 제공한다. |
+
+`release-id`는 public과 private commit 식별자와 UTC 빌드 시각으로 만든다.
+release에는 public과 private의 컴파일된 wiki만 들어가며 두 네임스페이스의 raw와 모든 회사 자료를 포함하지 않는다.
+private INDEX가 없거나 private Markdown 수가 0이면 새 release를 활성화하지 않는다.
+
+## 보호 brain 웹훅 입력
+
+| 필드 | 허용값 | 실패 처리 |
+| --- | --- | --- |
+| `repository.full_name` | `jon890/fos-brain`, `jon890/fos-brain-private` | 다른 저장소는 작업 대상에서 제외한다. |
+| `ref` | `refs/heads/main` | 다른 branch push는 작업 대상에서 제외한다. |
+| `X-Hub-Signature-256` | Jenkins HMAC 검증 성공 | 누락하거나 일치하지 않으면 403으로 끝낸다. |
+
+Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
+작업은 두 checkout이 clean이고 원격 `main`으로 fast-forward할 수 있을 때만 빌드를 시작한다.
