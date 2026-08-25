@@ -1,10 +1,10 @@
 {
   "name": "plan4-memory-constellation",
   "description": "Quartz 홈을 3D 지식 그래프 중심의 Memory Atlas로 재설계한다.",
-  "status": "pending",
+  "status": "completed",
   "created_at": "2026-08-24",
   "total_phases": 5,
-  "current_phases": 1,
+  "current_phases": 5,
   "phases": [
     {
       "number": 1,

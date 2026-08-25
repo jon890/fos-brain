@@ -45,6 +45,15 @@ rollback 뒤 기존 홈과 문서가 다시 200인지 확인한다.
 모든 검사가 성공하면 `tasks/plan4-memory-constellation/index.json`의 `status`를 `completed`, `current_phases`를 `5`로 바꾼다.
 어느 검사라도 실패하면 완료 상태를 기록하지 않고 배포 전 release를 유지한다.
 
+## 실행 결과
+
+- 작업 브랜치의 검증된 Memory Atlas v2를 public과 private 병합 release로 빌드했다.
+- `brain-web` 하나만 재생성했으며 다른 컨테이너의 ID는 바뀌지 않았다.
+- 원점의 홈, `/_private/`, 대표 문서는 200이고 `/raw/`, `/work/`, `/private/`는 404다.
+- 모든 응답에 검색 제외와 저장 금지 헤더가 있으며, 실제 제공 자산과 release 자산의 해시가 같다.
+- 외부 무인증 홈과 `/_private/`는 Cloudflare Access로 이동한다.
+- public과 private checkout은 배포 전후 모두 깨끗한 `main`을 유지한다.
+
 ## Critical Files
 
 | 파일 | 변경 |
