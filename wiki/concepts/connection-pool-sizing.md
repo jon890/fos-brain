@@ -60,7 +60,6 @@ DB 커넥션 풀의 최대 크기를 결정하는 공식과 진단법. 핵심은
 
 - [[connection-pool-pitfalls]] — 공식대로 잡아도 터지는 4대 함정
 - [[red-use-metrics]] — USE 의 Saturation(포화도)이 곧 이 한계점
-- [[coding-engineer-tv]] — 출처 채널
 
 ## Sources
 

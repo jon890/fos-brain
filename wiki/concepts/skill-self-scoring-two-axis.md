@@ -18,7 +18,6 @@ updated: 2026-07-30
 ## 관련 개념
 
 - [[two-tier-reward-static-llm-judge]] — 정적 규칙(기계축)과 LLM judge(판단축)를 나누는 같은 구조의 원형 개념. 이 페이지는 그 구조를 "스킬 문서 자체 채점"에 적용한 실측 사례
-- [[docs-six-axis-audit]] — docs 품질을 축으로 나눠 점검하는 자매 방법론
 - brain-lint 스킬의 `brain_score.py` — 이 저장소 자신도 같은 구조(가중 감점 기계축)를 쓴다
 
 ## Sources

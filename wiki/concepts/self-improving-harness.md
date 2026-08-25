@@ -30,7 +30,7 @@ updated: 2026-06-25
 
 - critic 의 REVISE — plan 설계 패턴으로 환원한다(회피 패턴 wiki 의 plan 카테고리).
 - code-reviewer 의 FIX — 코드 패턴으로 환원한다(code-review 카테고리).
-- docs-verifier 의 UPDATE — docs 영향 표의 한 행으로 환원한다([[planning-eight-step-design]] 의 변경 영향 표).
+- docs-verifier 의 UPDATE — 기획 문서의 변경 영향 표 한 행으로 환원한다.
 
 핵심은 거울 구조다 — 회고 결과를 **별도 회고 문서로 신설하지 않고 기존 단일 소스에 직접 누적**한다.
 회고 산출물이 또 다른 문서가 되면 그것이 새로운 rot 소스가 된다.
@@ -78,13 +78,9 @@ GNOSIS 발표는 성장형 에이전트가 스킬을 무제한 누적하면 안 
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 루프가 붙는 베이스 하네스
-- [[build-with-teams-rules]] — 회고 학습이 누적되는 build-with-teams 규칙 모음
-- [[pr-review-fix-workflow]] — 리뷰 학습 누적을 수행하는 사후 단계 (이 루프의 입력원)
-- [[docs-six-axis-audit]] — docs 품질 분류·흡수가 누적되는 점검 단계
 - [[skillopt-trainable-skill-document]] — 이 수동 루프를 자동화·형식화한 외부 방법론(SkillOpt)
 - [[merge-conflict-free-append]] — 회피 패턴 wiki 의 파일 per 패턴과 INDEX 구조 (이 루프가 운영 규율을 더한다)
-- [[gnosis-agent-autonomous-growth]] — 외부 레이어 갱신으로 성장하는 에이전트 프레임워크
-- [[constitutional-growth-gate]] — 자기개선이 넘어서는 안 되는 invariant를 검사하는 강제 점검 장치
+- [[testing-philosophy]] — 반복 결함을 결정적 검사로 승격하는 검증 방식
 
 ## Sources
 

@@ -22,7 +22,7 @@ updated: 2026-07-30
 ## 관련 개념
 
 - [[self-improving-harness]] — 회고를 스킬 문서에 되먹임하는 상위 루프. 이 페이지는 그 루프의 입력을 "실행 기록"과 "회고" 두 흐름으로 나눈 구체화
-- [[build-with-teams-rules]] — 이 실행 기록·회고 계약이 실제로 적용된 파이프라인
+- [[ai-harness-pattern]] — 실행 기록과 회고를 사용하는 상위 하네스 방식
 
 ## Sources
 

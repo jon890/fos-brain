@@ -53,7 +53,6 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
 
 - [[ai-harness-pattern]]
 - [[agent-friendly-cli-design]] — 이 도구가 정립한 에이전트 친화 CLI 패턴
-- [[commit-convention-style]]
 - [[tech-stack-preferences]]
 - [[work-style]]
 

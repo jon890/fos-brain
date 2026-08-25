@@ -35,7 +35,6 @@ updated: 2026-06-16
 ## 관련 개념
 
 - [[connection-pool-sizing]] — 풀 사이징 공식·진단
-- [[coding-engineer-tv]] — 출처 채널
 
 ## Sources
 

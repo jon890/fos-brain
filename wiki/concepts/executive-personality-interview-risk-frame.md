@@ -51,10 +51,6 @@ updated: 2026-07-02
 - 자동자막 기반이라 세부 표현은 오인식 가능성이 있다.
 - "책을 읽은 척한다"처럼 원출처에 포함된 일부 전술은 그대로 따르기보다, 실제로 짧은 근거를 만들어 답변하는 방식으로 바꾸는 편이 안전하다.
 
-## 관련 개념
-
-- [[career-strategy-youtube]] — 출처 채널
-
 ## Sources
 
 - [[../../raw/videos/2026-06-01-final-executive-interview-strategy.md]]

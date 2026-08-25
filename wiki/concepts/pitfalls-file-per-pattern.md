@@ -64,7 +64,7 @@ frontmatter(id·category·triggers·tool_catchable·source·related) 와 본문(
 
 - [[self-improving-harness]] — 이 wiki 에 패턴을 누적하는 메타 루프
 - [[merge-conflict-free-append]] — 파일 per 항목, INDEX 의 충돌 제거 구조 (이 패턴의 일반형)
-- [[custom-domain-agent]] — Self_Check 에서 이 wiki 를 단일 소스로 참조하는 전용 agent
+- [[self-improving-harness]] — 반복 교훈을 테스트나 올바른 단일 원본으로 환원하는 루프
 
 ## Sources
 

@@ -35,7 +35,7 @@ dooray-cli 에서 정립해 nhncloud-cli 로 포팅한 재사용 패턴이다.
 - [[dooray-cli]] — 이 패턴을 정립한 원형 도구
 - [[nhncloud-cli]] — 이 패턴을 포팅한 도구
 - [[ai-harness-pattern]] — 이런 CLI 를 에이전트 자동화에 끼워 쓰는 상위 워크플로우
-- [[ai-nodes]] — 에이전트 자동화 시스템 맥락
+- [[fos-agents]] — 에이전트 자동화 시스템 맥락
 
 ## Sources
 

@@ -42,13 +42,11 @@ AI는 자신이 만든 결과를 옹호하는 경향이 있다.
 
 ## 관련 개념
 
-- [[ai-era-debt-triad]] — 검증 레이어가 줄이려는 인지부채와 의도부채
 - [[ai-generated-code-acceptance-criteria]] — 사람이 최종 채택을 설명할 수 있어야 한다는 기준
-- [[agent-autonomy-growth-levels]] — 자율성이 높아질수록 필요한 검증과 안전 장치
-- [[constitutional-growth-gate]] — 성장형 에이전트 업데이트 전 강제 점검 장치
-- [[ai-era-professional-operator]] — 검증 레이어를 설계하고 운영하는 전문가상
+- [[ai-harness-pattern]] — 자율 실행의 목표, 권한과 검증 경계
+- [[testing-philosophy]] — 결정적 검사와 실제 경로 검증
+- [[ai-era-professionalism]] — 검증과 운영 책임을 전문성으로 보는 관점
 
 ## Sources
 
 - [[../../raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md]]
-
