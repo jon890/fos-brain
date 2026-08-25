@@ -161,3 +161,43 @@ private INDEX가 없거나 private Markdown 수가 0이면 새 release를 활성
 
 Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
 작업은 두 checkout이 clean이고 원격 `main`으로 fast-forward할 수 있을 때만 빌드를 시작한다.
+
+## Memory Atlas 콘텐츠 색인
+
+정적 `/static/contentIndex.json`의 문서 항목은 기존 검색 필드에 다음 선택 필드를 더한다.
+필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `description` | 문자열 | frontmatter 설명이며 노드 상세에 사용한다. |
+| `type` | `concept`, `topic`, `entity` | 기존 정규화 결과를 사용한다. |
+| `status` | `draft`, `stable`, `deprecated` | 잘못된 값은 생략한다. |
+| `freshness` | `{ date?: string, state: current\|stale\|invalid }` | `stale_after`의 날짜와 판정 결과다. |
+| `updated` | ISO 8601 문자열 | Quartz가 선택한 수정일을 직렬화한다. |
+| `sourceCount` | 0 이상의 정수 | 유효한 `sources` 항목 수다. |
+
+브라우저는 slug가 `_private/`로 시작하면 private, 아니면 public 네임스페이스로 계산한다.
+공개 빌드에는 `_private/` 입력이 없으므로 private 항목과 필터가 생성되지 않는다.
+
+Memory Atlas의 연결은 기존 `links` 배열에서 대상 slug가 현재 색인에 있는 항목만 사용한다.
+중복된 source와 target 쌍은 하나로 합치며 self-link는 제외한다.
+supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 근거가 없으므로 생성하지 않는다.
+
+브라우저 상태는 다음 값을 메모리에만 보관하며 wiki와 콘텐츠 색인을 수정하지 않는다.
+
+| 필드 | 값 | 기본값 |
+| --- | --- | --- |
+| `query` | 문자열 | 빈 문자열 |
+| `lens` | `all`, `topic`, `type`, `freshness`, `namespace` | `all` |
+| `types` | 지식 유형 집합 | 전체 |
+| `tags` | 태그 집합 | 전체 |
+| `freshness` | 최신성 상태 집합 | 전체 |
+| `namespaces` | `public`, `private` 집합 | 현재 색인의 전체 |
+| `layout` | `constellation`, `cluster`, `orbit` | `constellation` |
+| `colorBy` | `type`, `freshness`, `namespace` | `type` |
+| `spacing` | `compact`, `normal`, `wide` | `normal` |
+| `labels` | boolean | `true` |
+| `selectedSlug` | slug 또는 없음 | 없음 |
+
+검색은 제목과 태그의 대소문자를 구분하지 않는 부분 일치다.
+필터 묶음 사이는 AND, 같은 필터 묶음의 선택값 사이는 OR로 결합한다.
