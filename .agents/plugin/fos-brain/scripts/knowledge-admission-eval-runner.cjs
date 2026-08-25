@@ -163,16 +163,18 @@ function evaluateConfiguration({ configuration, root, codex, outputDir, baseline
   const before = treeHash(root);
   const transcriptPath = path.join(outputDir, `${configuration}-transcript.json`);
   codexExec(codex, root, evaluationPrompt(configuration, evals), transcriptPath, schema);
+  const transcript = parseJsonFile(transcriptPath);
+  fs.writeFileSync(transcriptPath, `${JSON.stringify(transcript, null, 2)}\n`, { mode: 0o600 });
   const afterEvaluation = treeHash(root);
   if (before !== afterEvaluation) throw new Error(`${configuration} evaluator changed the isolated workspace`);
 
-  const transcript = parseJsonFile(transcriptPath);
   const gradingPath = path.join(outputDir, `${configuration}-grading.json`);
   codexExec(codex, root, gradePrompt(configuration, transcript, evals, fixture), gradingPath, null);
+  const grading = parseJsonFile(gradingPath);
+  fs.writeFileSync(gradingPath, `${JSON.stringify(grading, null, 2)}\n`, { mode: 0o600 });
   const afterGrading = treeHash(root);
   if (before !== afterGrading) throw new Error(`${configuration} grader changed the isolated workspace`);
 
-  const grading = parseJsonFile(gradingPath);
   if (!Array.isArray(grading.results) || grading.results.length !== 2) {
     throw new Error(`${configuration} grader must return two results`);
   }

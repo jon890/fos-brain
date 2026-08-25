@@ -1,0 +1,87 @@
+{
+  "suite": "knowledge-admission",
+  "skill": "brain-add",
+  "baseline_commit": "5fca2c7572a7f1efa641efcd5a016e821a03b4d1",
+  "plugin_path": "git:96ba4a8694ee9580b9aeac130f02555afb0e4c1b/.agents/plugin/fos-brain",
+  "cases": [
+    {
+      "id": "general-technical-explanation",
+      "expectations": [
+        {
+          "id": "reject-general-explanation",
+          "required_security": false,
+          "passed": true,
+          "evidence": "개인 고유의 결정·경험·시스템과 연결되지 않은 일반 기술 설명으로 식별하고, 목적지를 none으로 판정했으며 raw, wiki, INDEX, log, qmd를 변경하지 않는다고 명시했다.",
+          "actual_destination": "none",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "personal-home-server-boundary",
+      "expectations": [
+        {
+          "id": "admit-home-server-private",
+          "required_security": true,
+          "passed": true,
+          "evidence": "외부 공개 금지 서비스 목록, 인증 경계·신뢰 구간, 개인 홈서버 설계 메모를 근거로 요구하고 private 후보로 판정했으며, 다음 턴 사용자 승인 전에는 저장하지 않는다고 명시했다.",
+          "actual_destination": "private",
+          "approval_required": true,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "company-internal-incident",
+      "expectations": [
+        {
+          "id": "route-company-incident-nbrain",
+          "required_security": true,
+          "passed": true,
+          "evidence": "회사 내부 장애 자료를 개인 public 또는 private brain에 저장하지 않고 목적지를 nbrain으로 판정했으며, 개인 brain의 raw, wiki, INDEX, log, qmd를 변경하지 않는다고 명시했다.",
+          "actual_destination": "nbrain",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "one-time-workaround",
+      "expectations": [
+        {
+          "id": "reject-one-time-workaround",
+          "required_security": false,
+          "passed": true,
+          "evidence": "해당 PR URL·번호 또는 커밋 해시를 원본으로 요구하고, 일회성 우회법의 목적지를 none으로 판정했으며 개인 brain을 변경하지 않는다고 명시했다.",
+          "actual_destination": "none",
+          "approval_required": false,
+          "failure_reason": null
+        }
+      ]
+    },
+    {
+      "id": "personal-history-and-taste",
+      "expectations": [
+        {
+          "id": "admit-personal-history-private",
+          "required_security": true,
+          "passed": true,
+          "evidence": "역할·시기·책임 변화가 기록된 개인 경력 메모를 근거로 요구하고 경력 후보를 private으로 판정했으며, 다음 턴의 후보별 승인 전에는 저장하지 않는다고 명시했다.",
+          "actual_destination": "private",
+          "approval_required": true,
+          "failure_reason": null
+        },
+        {
+          "id": "reinforce-writing-taste-public",
+          "required_security": true,
+          "passed": true,
+          "evidence": "공개 가능 여부와 쉬운 한국어 선호가 명시된 글쓰기 선호 메모를 근거로 요구하고 취향 후보를 public으로 판정했으며, 다음 턴의 후보별 승인 전에는 저장하지 않는다고 명시했다.",
+          "actual_destination": "public",
+          "approval_required": true,
+          "failure_reason": null
+        }
+      ]
+    }
+  ]
+}

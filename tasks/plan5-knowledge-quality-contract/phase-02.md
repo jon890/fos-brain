@@ -24,9 +24,11 @@ skill-creator 절차에 따라 brain-add와 brain-curate의 `evals/evals.json`�
 
 ### 2. 이전 스킬과 새 스킬 행동 비교
 
-Phase 01 commit 직후와 Phase 02 수정 전 `BASELINE_COMMIT=$(git rev-parse HEAD^)`로 planning commit을 고정한다.
+기준 commit을 `5fca2c7572a7f1efa641efcd5a016e821a03b4d1`로 고정한다.
 기준 commit의 스킬과 worktree의 새 스킬을 각각 읽는 독립 native subagent에 같은 평가 프롬프트를 실행한다.
 별도 verifier가 두 결과를 기대값별로 채점하고 저장소 밖 임시 디렉터리에 기준 버전과 새 버전 결과 JSON을 만든다.
+`knowledge-admission-eval-runner.cjs`는 두 commit을 임시 격리 복사본에서 읽기 전용으로 실행하고 평가 원문, 채점, 전후 파일 hash, 결과를 함께 기록한다.
+대표 실행 산출물은 테스트 fixture로 보존해 이후 세션이 원문과 hash를 다시 검증한다.
 결과 JSON은 `suite`, `skill`, `baseline_commit`, `plugin_path`, `cases`를 가진다.
 각 case는 `id`, `expectations`를 가지며, 각 expectation은 `id`, `required_security`, `passed`, `evidence`, `actual_destination`, `approval_required`, `failure_reason`을 가진다.
 새 플러그인은 모든 보안 필수 기대값을 통과해야 하며 기준 버전과 새 결과의 점수와 실패 항목을 phase 보고에 남긴다.
@@ -56,10 +58,13 @@ marketplace를 worktree의 `.agents/plugin/fos-brain`으로 임시 교체하고 
 | `.agents/plugin/fos-brain/skills/brain-add/evals/evals.json` | 신규 |
 | `.agents/plugin/fos-brain/skills/brain-curate/evals/evals.json` | 신규 |
 | `.agents/plugin/fos-brain/scripts/knowledge-admission-eval-check.cjs` | 신규 |
+| `.agents/plugin/fos-brain/scripts/knowledge-admission-eval-runner.cjs` | 신규 |
 | `.agents/plugin/fos-brain/tests/knowledge-admission-eval-check.test.cjs` | 신규 |
 | `.agents/plugin/fos-brain/tests/fixtures/knowledge-admission-eval-result.json` | 신규 |
+| `.agents/plugin/fos-brain/tests/fixtures/knowledge-admission-eval-run/` | 신규 |
 | `.agents/plugin/fos-brain/plugin.json` | 버전 수정 |
 | `.agents/plugin/fos-brain/.claude-plugin/plugin.json` | 버전 수정 |
+| `.agents/plugin/fos-brain/.claude-plugin/marketplace.json` | 버전 수정 |
 | `tasks/plan5-knowledge-quality-contract/index.json` | 완료 상태 수정 |
 
 ## 검증
@@ -72,7 +77,12 @@ node .agents/plugin/fos-brain/scripts/retrieval-benchmark.cjs .agents/plugin/fos
 for skill in brain-add brain-curate brain-search brain-lint brain-delete; do python3 /Users/nhn/.codex/skills/.system/skill-creator/scripts/quick_validate.py ".agents/plugin/fos-brain/skills/$skill"; done
 eval_root=$(mktemp -d)
 node .agents/plugin/fos-brain/scripts/knowledge-admission-eval-check.cjs .agents/plugin/fos-brain/tests/fixtures/knowledge-admission-eval-result.json
-node .agents/plugin/fos-brain/scripts/knowledge-admission-eval-check.cjs "$eval_root/new.json"
+node .agents/plugin/fos-brain/scripts/knowledge-admission-eval-runner.cjs \
+  --baseline 5fca2c7572a7f1efa641efcd5a016e821a03b4d1 \
+  --output "$eval_root"
+for result in "$eval_root"/baseline.json "$eval_root"/baseline-brain-curate.json "$eval_root"/current.json "$eval_root"/current-brain-curate.json; do
+  node .agents/plugin/fos-brain/scripts/knowledge-admission-eval-check.cjs "$result"
+done
 git diff --check
 ```
 
@@ -93,8 +103,10 @@ phase 보고에는 기준 버전과 새 플러그인 평가 JSON 경로, verifie
 - 기준판은 12개 기대값 가운데 11개를 통과했다.
 - 기준판 brain-curate는 일반 기술 설명의 목적지를 `none`으로 확정하지 않고 brain-add로 넘길 여지를 남겼다.
 - 새 플러그인은 12개 기대값을 모두 통과했고 보안 필수 기대값 실패는 없었다.
-- 결과 JSON은 `/tmp/plan5-knowledge-eval/baseline.json`, `/tmp/plan5-knowledge-eval/baseline-brain-curate.json`, `/tmp/plan5-knowledge-eval/new.json`, `/tmp/plan5-knowledge-eval/new-brain-curate.json`에 만들었다.
-- 네 결과 모두 `knowledge-admission-eval-check.cjs` 검사를 통과했다.
+- 첫 native subagent 비교에서 기준판은 11개, 새 플러그인은 12개를 통과했다.
+- 저장소 재실행기로 다시 평가한 실행에서는 기준판과 새 플러그인 모두 12개를 통과했다.
+- 모델 평가의 변동을 숨기지 않기 위해 대표 실행의 원문, 별도 채점, 결과, 전후 파일 hash를 `tests/fixtures/knowledge-admission-eval-run/`에 함께 보존했다.
+- 재실행기의 두 격리 복사본은 평가 전후 SHA-256 값이 각각 같았고 네 결과 모두 `knowledge-admission-eval-check.cjs` 검사를 통과했다.
 - Codex CLI와 Claude Code에 0.2.0을 설치했다.
 - 두 마켓플레이스 주소는 `/Users/nhn/personal/fos-brain/.agents/plugin/fos-brain`으로 복원했다.
 - 소스와 두 설치 캐시의 공용 정책 SHA-256 값은 `1d0c0846af51a3073276d4b6b72f15942e7d081c534ec47d5c30b18c07a1f659`로 같았다.

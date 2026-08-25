@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "skills"
+  ],
+  "properties": {
+    "skills": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "cases"
+        ],
+        "properties": {
+          "skill": {
+            "type": "string",
+            "enum": [
+              "brain-add",
+              "brain-curate"
+            ]
+          },
+          "cases": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "response"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "general-technical-explanation",
+                    "personal-home-server-boundary",
+                    "company-internal-incident",
+                    "one-time-workaround",
+                    "personal-history-and-taste"
+                  ]
+                },
+                "response": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

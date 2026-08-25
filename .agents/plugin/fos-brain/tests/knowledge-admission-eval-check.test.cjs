@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
@@ -8,6 +9,7 @@ const { validateDocument } = require("../scripts/knowledge-admission-eval-check.
 const { parseArgs, treeHash } = require("../scripts/knowledge-admission-eval-runner.cjs");
 
 const fixturePath = path.join(__dirname, "fixtures", "knowledge-admission-eval-result.json");
+const runFixtureRoot = path.join(__dirname, "fixtures", "knowledge-admission-eval-run");
 const pluginRoot = path.join(__dirname, "..");
 
 function fixture() {
@@ -16,6 +18,10 @@ function fixture() {
 
 function copy(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function fileSha256(file) {
+  return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 }
 
 function expectation(document, caseId, expectationId) {
@@ -78,6 +84,25 @@ test("the reusable runner detects isolated workspace writes", (context) => {
   assert.equal(treeHash(directory), before);
   fs.writeFileSync(path.join(directory, "nested", "note.md"), "after\n");
   assert.notEqual(treeHash(directory), before);
+});
+
+test("the persisted behavior run has intact provenance and passing current results", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(runFixtureRoot, "run.json"), "utf8"));
+
+  assert.equal(manifest.runs.length, 2);
+  for (const run of manifest.runs) {
+    assert.equal(run.workspace_before_sha256, run.workspace_after_sha256);
+    assert.equal(fileSha256(path.join(runFixtureRoot, `${run.configuration}-transcript.json`)), run.transcript_sha256);
+    assert.equal(fileSha256(path.join(runFixtureRoot, `${run.configuration}-grading.json`)), run.grading_sha256);
+    for (const resultFile of run.result_files) {
+      const result = JSON.parse(fs.readFileSync(path.join(runFixtureRoot, resultFile), "utf8"));
+      validateDocument(result);
+      if (run.configuration === "current") {
+        assert.ok(result.cases.every((entry) => entry.expectations.every((item) => item.passed)));
+        assert.equal(result.plugin_path, `git:${manifest.current_commit}/.agents/plugin/fos-brain`);
+      }
+    }
+  }
 });
 
 test("accepts a representative knowledge admission evaluation result", () => {

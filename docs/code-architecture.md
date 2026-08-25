@@ -15,12 +15,14 @@
 - `.agents/plugin/fos-brain/skills/brain-add/` — 정책 판정, 새 문서의 메타데이터 작성, 검색 검증 절차를 소유한다.
 - `.agents/plugin/fos-brain/skills/brain-curate/` — 여러 세션에서 후보를 찾되 같은 정책으로 저장 가치와 목적지를 판정한다.
 - `.agents/plugin/fos-brain/skills/brain-lint/` — 기존 문서가 정책에 맞는지 품질 점검에서 분류한다.
-- `.agents/plugin/fos-brain/scripts/` — OKF 내보내기와 검색 벤치마크처럼 반복 실행해야 하는 결정적 동작을 소유한다.
-- `.agents/plugin/fos-brain/tests/` — 지식 유입 정책, 내보내기 계약, 스크립트 회귀를 검증한다.
+- `.agents/plugin/fos-brain/scripts/` — OKF 내보내기, 검색 벤치마크, 격리된 지식 유입 행동 평가처럼 반복 실행해야 하는 동작을 소유한다.
+- `.agents/plugin/fos-brain/tests/` — 지식 유입 정책, 행동 평가의 원문과 채점 근거, 내보내기 계약, 스크립트 회귀를 검증한다.
 
 스킬은 언제 어떤 단계를 실행할지 설명한다.
 다섯 줄을 넘는 파싱, 변환, 판정은 스크립트에 둔다.
 의미 적합성은 에이전트와 사용자가 판단하고, 스크립트는 판정 기록의 필드와 허용값만 검사한다.
+행동 평가는 기준 commit과 현재 commit을 임시 복사본에서 읽기 전용으로 실행한다.
+평가 원문, 별도 채점, 전후 파일 hash, 결과 JSON을 함께 보존해 결과만 임의로 작성하는 검사를 막는다.
 
 ### 사람용 렌더링
 
