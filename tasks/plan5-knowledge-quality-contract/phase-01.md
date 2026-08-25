@@ -39,10 +39,13 @@ brain-search는 환원 후보를 공용 정책으로 다시 판정한다.
 brain-lint는 품질 점검에서 정책 위반을 유지, 갱신, 병합, 보관, 삭제 후보로 분류한다.
 brain-delete는 정책 점검 결과를 삭제 사유로 받을 수 있게 하되 사용자 승인과 raw 보존 원칙을 유지한다.
 `brain-curate/references/extraction-criteria.md`는 중복 기준을 복사하지 않고 공용 정책을 참조한다.
+`brain-curate/scripts/list_sessions.py`는 회사 경로를 `work` 네임스페이스로 만들지 않고 nbrain 이동 후보인 `company`로만 표시한다.
+brain-add와 brain-curate의 미리보기 생성기와 템플릿에서도 `work` 네임스페이스 선택값과 배지를 제거한다.
 
 ### 4. 프로젝트 지침과 네임스페이스 정합성 수정
 
-`AGENTS.md`와 `CLAUDE.md`에는 정책의 짧은 요약과 공용 정책 경로만 남긴다.
+`AGENTS.md`는 `CLAUDE.md`를 가리키는 symlink이므로 실제 파일인 `CLAUDE.md`만 편집한다.
+`CLAUDE.md`에는 정책의 짧은 요약과 공용 정책 경로만 남기며 symlink를 바꾸거나 일반 파일로 교체하지 않는다.
 상세 판정표를 두 파일에 복사하지 않는다.
 brain-lint와 brain-delete에 남은 `work` 네임스페이스 계약을 제거하고 개인 brain은 public·private 둘뿐임을 맞춘다.
 회사 자료는 nbrain 대상이라는 기존 보안 경계를 유지한다.
@@ -58,10 +61,14 @@ brain-lint와 brain-delete에 남은 `work` 네임스페이스 계약을 제거�
 | `.agents/plugin/fos-brain/skills/brain-add/SKILL.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-curate/SKILL.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-curate/references/extraction-criteria.md` | 수정 |
+| `.agents/plugin/fos-brain/skills/brain-curate/scripts/list_sessions.py` | 수정 |
+| `.agents/plugin/fos-brain/skills/brain-curate/scripts/generate_preview.py` | 수정 |
+| `.agents/plugin/fos-brain/skills/brain-curate/templates/preview.html` | 수정 |
+| `.agents/plugin/fos-brain/skills/brain-add/scripts/generate_preview.py` | 수정 |
+| `.agents/plugin/fos-brain/skills/brain-add/templates/preview.html` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-search/SKILL.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-lint/SKILL.md` | 수정 |
 | `.agents/plugin/fos-brain/skills/brain-delete/SKILL.md` | 수정 |
-| `AGENTS.md` | 수정 |
 | `CLAUDE.md` | 수정 |
 
 ## 검증
@@ -75,7 +82,9 @@ for skill in brain-add brain-curate brain-search brain-lint brain-delete; do pyt
 python3 ~/.claude/scripts/check-readability.py AGENTS.md CLAUDE.md .agents/plugin/fos-brain/references/knowledge-admission-policy.md .agents/plugin/fos-brain/skills/brain-add/SKILL.md .agents/plugin/fos-brain/skills/brain-curate/SKILL.md .agents/plugin/fos-brain/skills/brain-curate/references/extraction-criteria.md .agents/plugin/fos-brain/skills/brain-search/SKILL.md .agents/plugin/fos-brain/skills/brain-lint/SKILL.md .agents/plugin/fos-brain/skills/brain-delete/SKILL.md
 ```
 
-모든 명령이 성공하고 `rg -n 'public.*private.*work|private.*work|work/<회사>' .agents/plugin/fos-brain/skills`가 결과를 내지 않아야 한다.
+모든 명령이 성공해야 한다.
+`rg -n 'work/<회사>|choices=.*work|namespace_guess.*work|return "work"|ns-work|b-work|--work:' .agents/plugin/fos-brain/skills`는 결과를 내지 않아야 한다.
+`test -L AGENTS.md`와 `test "$(readlink AGENTS.md)" = CLAUDE.md`가 성공해야 한다.
 
 ## 의도 메모 (왜)
 
