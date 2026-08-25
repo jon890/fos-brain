@@ -63,6 +63,7 @@ Tunnel은 기존 `public-net`에만 참여하고 공개 호스트 이름 8개를
 
 public 검증 빌드는 `quartz/public`에 남고 private 경로를 보거나 복사하지 않는다.
 보호 빌드는 gitignore된 `quartz-protected/releases/`에 public·private wiki만 만들고 `quartz-protected/current`로 활성 release를 가리킨다.
+빌드 컨테이너에는 release 상위 디렉터리를 마운트하고 Quartz output은 그 아래 staging 경로로 지정해 빌더의 초기화 동작을 허용한다.
 정적 서버는 `quartz-protected/` 상위 디렉터리만 읽기 전용으로 마운트해 `current` 전환을 재시작 없이 읽는다.
 보호 Nginx는 HTML과 검색 색인에 private cache 정책과 검색 엔진 차단 헤더를 적용한다.
 Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.

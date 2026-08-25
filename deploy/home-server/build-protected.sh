@@ -50,6 +50,7 @@ normalize_index() {
 render_quartz() {
   local content_dir="$1"
   local output_dir="$2"
+  local output_parent output_name
 
   if [[ -n "$RENDERER" ]]; then
     [[ -x "$RENDERER" ]] || fail "PROTECTED_BUILD_RENDERER is not executable: $RENDERER"
@@ -57,20 +58,26 @@ render_quartz() {
     return
   fi
 
+  output_parent="$(dirname "$output_dir")"
+  output_name="$(basename "$output_dir")"
+
   docker run --rm \
     --user "$BUILD_UID:$BUILD_GID" \
     --workdir /workspace/quartz \
     --env HOME=/tmp/quartz-home \
     --env COREPACK_HOME=/tmp/corepack \
     --env CI=true \
+    --env "PROTECTED_OUTPUT_NAME=$output_name" \
     --mount "type=bind,src=$QUARTZ_DIR,dst=/workspace/quartz" \
     --mount "type=bind,src=$content_dir,dst=/workspace/content,readonly" \
-    --mount "type=bind,src=$output_dir,dst=/workspace/output" \
+    --mount "type=bind,src=$output_parent,dst=/workspace/releases" \
     "$NODE_IMAGE" \
     sh -euc '
       mkdir -p "$HOME" "$COREPACK_HOME"
       corepack pnpm@10.33.0 install --frozen-lockfile --store-dir /tmp/pnpm-store
-      corepack pnpm@10.33.0 quartz build --directory /workspace/content --output /workspace/output
+      corepack pnpm@10.33.0 quartz build \
+        --directory /workspace/content \
+        --output "/workspace/releases/$PROTECTED_OUTPUT_NAME"
     '
 }
 

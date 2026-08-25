@@ -42,6 +42,7 @@ Nginx는 private를 포함한 HTML과 검색 색인에 `noindex`와 비공개 ca
 ### 5. 회귀 검증 추가
 
 fixture public·private wiki로 성공 전환, 금지 입력 차단, 실패 시 `current` 불변, 동시 실행 잠금을 검사한다.
+pinned Node의 실제 Quartz smoke로 output 디렉터리 초기화와 release 상위 mount 계약을 검사한다.
 기존 public-only 검증도 실행해 private URL과 파일이 `quartz/public`에 생기지 않음을 보존한다.
 
 ## Critical Files

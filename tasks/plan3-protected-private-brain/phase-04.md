@@ -22,6 +22,7 @@ Cloudflare Access·Tunnel, NPM brain proxy, Compose, 실행 컨테이너, 기존
 ### 2. 첫 보호 release 생성
 
 두 checkout이 clean이고 원격 `main`과 같은 commit인지 확인한 뒤 운영 경로의 `sync-protected.sh`를 실행한다.
+`BRAIN_SYNC_LOCK`은 checkout을 스스로 dirty하게 만들지 않도록 `BRAIN_DEPLOY_ROOT` 아래에 둔다.
 새 release에 public 기존 문서와 private 문서가 있고 raw·work·회사 경로가 없음을 확인한다.
 
 ### 3. brain-web 전환
