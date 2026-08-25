@@ -34,7 +34,7 @@
       71px 67px;
     content: "";
     inset: 0;
-    opacity: 0.34;
+    opacity: 0.42;
     pointer-events: none;
     position: absolute;
   }
@@ -78,7 +78,7 @@
 }
 
 .memory-atlas__rail {
-  background: linear-gradient(90deg, rgba(2, 7, 9, 0.66), rgba(2, 7, 9, 0.34) 80%, transparent);
+  background: linear-gradient(90deg, rgba(2, 7, 9, 0.48), rgba(2, 7, 9, 0.12) 76%, transparent);
   border: 0;
   border-radius: 0;
   display: flex;

@@ -16,8 +16,10 @@ Memory Atlas의 실제 3D 동작, 반응형 화면, 정적 빌드, 기존 문서
 
 ### 1. 전체 자동 검사
 
-Quartz 단위 검사, TypeScript, Prettier, 정적 빌드를 실행한다.
-빌드된 `INDEX.html`에는 Memory Atlas가 있고 대표 concept 문서에는 Memory Atlas 본문이 없으며 기존 KnowledgeMeta와 로컬 그래프가 있어야 한다.
+`quartz/scripts/verify-memory-atlas.sh`를 재실행 가능한 단일 진입점으로 추가한다.
+실행기는 Quartz 단위 검사, TypeScript, Prettier, 정적 빌드, 임시 서버, 브라우저 검사를 순서대로 실행하고 서버를 정리한다.
+빌드된 `INDEX.html`에는 Memory Atlas가 있어야 한다.
+대표 concept 문서에는 Memory Atlas 본문과 중복 그래프가 없어야 하며 KnowledgeMeta는 남아 있어야 한다.
 
 ### 2. 데스크톱 실제 브라우저 검사
 
@@ -44,25 +46,14 @@ browser error가 0개이며 홈에서는 `/static/memory-atlas.js`가 정확히 
 
 | 파일 | 변경 |
 | --- | --- |
+| `quartz/scripts/verify-memory-atlas.sh` | 전체 회귀 검사의 단일 실행기 신규 |
 | `quartz/scripts/verify-memory-atlas-browser.sh` | 신규 |
 
 ## 검증
 
 ```bash
 # cwd: <worktree>/quartz
-pnpm install --frozen-lockfile
-pnpm test
-pnpm check
-pnpm quartz build
-rg -n 'memory-atlas|기억의 항해도' public/INDEX.html
-test -n "$(find public -path '*concepts/*.html' -print -quit)"
-```
-
-로컬 server가 실행 중인 상태에서 browser 계약을 검사한다.
-
-```bash
-# cwd: <worktree>/quartz
-bash scripts/verify-memory-atlas-browser.sh http://127.0.0.1:8080
+scripts/verify-memory-atlas.sh
 test -s /tmp/fos-brain-memory-atlas-plan4/desktop.png
 test -s /tmp/fos-brain-memory-atlas-plan4/mobile.png
 test -s /tmp/fos-brain-memory-atlas-plan4/network-home.json
@@ -77,7 +68,9 @@ python3 ~/.claude/scripts/check-readability.py docs/prd.md docs/flow.md docs/cod
 git diff --check origin/main...HEAD
 ```
 
-browser 검증 스크립트는 assertion 실패 시 0이 아닌 종료 코드를 반환하고 session과 network route를 cleanup해야 한다.
+전체 실행기는 HTTP와 실시간 갱신 포트가 이미 사용 중이면 다른 프로세스를 건드리지 않고 실패해야 한다.
+browser 검증 스크립트는 assertion 실패 시 0이 아닌 종료 코드를 반환하고 session과 network route를 정리해야 한다.
+완료 뒤 임시 Quartz 서버와 두 포트를 모두 정리해야 한다.
 실행 보고에는 `/tmp/fos-brain-memory-atlas-plan4` 아래의 screenshot, 접근성 snapshot, browser errors, network, assertion 파일을 남긴다.
 
 ## 의도 메모 (왜)

@@ -106,7 +106,6 @@ function slugUrl(slug: FullSlug): URL {
 
 function navigateToSlug(slug: FullSlug) {
   const url = slugUrl(slug)
-  window.sessionStorage.setItem("memoryAtlasSelectedSlug", slug)
   window.spaNavigate(url, false)
 }
 
@@ -412,12 +411,11 @@ async function initMemoryAtlas() {
     const urlSelectedSlug = new URL(window.location.toString()).searchParams.get(
       "node",
     ) as FullSlug | null
-    const storedSelectedSlug = window.sessionStorage.getItem(
-      "memoryAtlasSelectedSlug",
-    ) as FullSlug | null
-    const selectedSlug = urlSelectedSlug ?? storedSelectedSlug ?? undefined
+    const selectedSlug = urlSelectedSlug ?? state.selectedSlug
     if (selectedSlug && fullData.nodes.some((node) => node.slug === selectedSlug)) {
       state = { ...state, selectedSlug }
+    } else {
+      state = { ...state, selectedSlug: undefined }
     }
     storeState(state)
     syncControls(root, state)
@@ -425,6 +423,7 @@ async function initMemoryAtlas() {
     updateTagOptions(root, fullData)
     updateStats(root, visibleData)
     updateResults(root, visibleData, state, selectNode)
+    updateDetail(root, visibleData, state.selectedSlug)
 
     setStatus("3D 탐색 엔진을 불러오는 중입니다.")
     const runtimeUrl = runtimeSrc
@@ -439,7 +438,6 @@ async function initMemoryAtlas() {
     })
     setRuntimeState(root, "ready")
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
-    if (state.selectedSlug) selectNode(state.selectedSlug)
   } catch (error) {
     if (destroyed) return
     console.error(error)

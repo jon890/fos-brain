@@ -176,6 +176,12 @@ function stableUnit(value: string, salt: number): number {
 
 function layoutNodes(nodes: GraphNode[], layout: MemoryAtlasLayout, spacing: MemoryAtlasSpacing) {
   const radius = spacingRadius(spacing)
+  const constellationCenters = [
+    { x: -0.64, y: -0.58 },
+    { x: -0.18, y: 0.18 },
+    { x: 0.38, y: 0.62 },
+    { x: 0.62, y: -0.36 },
+  ]
   const tagBuckets = new Map<string, GraphNode[]>()
   const typeBuckets = new Map<string, GraphNode[]>()
   nodes.forEach((node) => {
@@ -184,10 +190,14 @@ function layoutNodes(nodes: GraphNode[], layout: MemoryAtlasLayout, spacing: Mem
     node.fz = undefined
     const angle = stableUnit(node.slug, 17) * Math.PI * 2
     if (layout === "constellation") {
-      const distance = Math.pow(stableUnit(node.slug, 73), 1.55)
-      const drift = (stableUnit(node.slug, 131) - 0.5) * radius * 0.38
-      node.fx = Math.cos(angle) * radius * distance * 1.46 + drift
-      node.fy = Math.sin(angle) * radius * distance * 1.18 - drift * 0.34
+      const cluster =
+        constellationCenters[
+          Math.floor(stableUnit(node.tags[0] ?? node.slug, 43) * constellationCenters.length)
+        ]
+      const distance = Math.sqrt(stableUnit(node.slug, 73)) * radius * 0.5
+      const drift = (stableUnit(node.slug, 131) - 0.5) * radius * 0.22
+      node.fx = cluster.x * radius + Math.cos(angle) * distance * 1.18 + drift
+      node.fy = cluster.y * radius + Math.sin(angle) * distance - drift * 0.22
       node.fz = (stableUnit(node.slug, 211) - 0.5) * radius * 0.56
     }
     const tag = node.tags[0] ?? "untagged"
@@ -265,6 +275,31 @@ function createGlow(color: string, scale: number, opacity: number) {
   return sprite
 }
 
+function createEchoes(node: GraphNode, color: string, isDimmed: boolean) {
+  const echoCount = 3
+  const positions = new Float32Array(echoCount * 3)
+  for (let index = 0; index < echoCount; index += 1) {
+    const angle = stableUnit(node.slug, 307 + index) * Math.PI * 2
+    const distance = 5 + stableUnit(node.slug, 401 + index) * 9
+    positions[index * 3] = Math.cos(angle) * distance
+    positions[index * 3 + 1] = Math.sin(angle) * distance
+    positions[index * 3 + 2] = (stableUnit(node.slug, 503 + index) - 0.5) * 5
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
+  return new THREE.Points(
+    geometry,
+    new THREE.PointsMaterial({
+      color,
+      opacity: isDimmed ? 0.025 : 0.2,
+      size: 0.72,
+      sizeAttenuation: true,
+      transparent: true,
+      depthWrite: false,
+    }),
+  )
+}
+
 function createNodeObject(
   node: GraphNode,
   state: MemoryAtlasState,
@@ -276,13 +311,14 @@ function createNodeObject(
     Math.min(2.2, 0.52 + Math.sqrt(Math.max(node.degree, 0)) * 0.23 + node.sourceCount * 0.035),
   )
   const isDimmed = Boolean(activeSlugs && !activeSlugs.has(node.slug))
+  const color = colorFor(node, state.colorBy)
   const material = new THREE.MeshBasicMaterial({
-    color: colorFor(node, state.colorBy),
+    color,
     transparent: true,
     opacity: isDimmed ? 0.16 : 0.96,
   })
-  const color = colorFor(node, state.colorBy)
   group.add(createGlow(color, Math.max(5.4, radius * 7.8), isDimmed ? 0.04 : 0.48))
+  group.add(createEchoes(node, color, isDimmed))
   group.add(new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 18), material))
   if (state.selectedSlug === node.slug) {
     const innerRing = new THREE.Mesh(
@@ -351,6 +387,8 @@ export function mountMemoryAtlas({
   let initialRecenterDone = false
   let initialRecenterTimer: number | undefined
   let initialRecenterFrame: number | undefined
+  let resizeTimer: number | undefined
+  let previousAspect = window.innerWidth / window.innerHeight
   const storedView = restoreStoredView()
   const createGraph = ForceGraph3D as unknown as () => GraphInstance
   const cancelInitialRecenter = () => {
@@ -364,12 +402,12 @@ export function mountMemoryAtlas({
     }
   }
   const zoomToImmersiveFit = (ms: number) => {
-    graph.zoomToFit(ms, window.innerWidth <= 800 ? 22 : 0)
+    graph.zoomToFit(ms, window.innerWidth <= 800 ? 6 : 0)
     const tighten = () => {
       if (destroyed) return
       const camera = graph.cameraPosition()
       const target = graph.controls().target
-      const factor = window.innerWidth <= 800 ? 1 : 0.64
+      const factor = window.innerWidth <= 800 ? 0.44 : 0.58
       graph.cameraPosition(
         {
           x: target.x + (camera.x - target.x) * factor,
@@ -416,6 +454,12 @@ export function mountMemoryAtlas({
     const rect = container.getBoundingClientRect()
     graph.width(Math.max(320, Math.floor(rect.width)))
     graph.height(Math.max(320, Math.floor(rect.height)))
+    const nextAspect = rect.width / Math.max(rect.height, 1)
+    if (Math.abs(nextAspect - previousAspect) > 0.18 && !currentState.selectedSlug) {
+      if (resizeTimer !== undefined) window.clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(() => zoomToImmersiveFit(motionQuery.matches ? 0 : 260), 90)
+    }
+    previousAspect = nextAspect
   }
   const observer = new ResizeObserver(resize)
   observer.observe(container)
@@ -445,7 +489,7 @@ export function mountMemoryAtlas({
   }, 900)
   const orbitFrame = () => {
     if (destroyed) return
-    if (!motionQuery.matches) {
+    if (!motionQuery.matches && currentState.selectedSlug) {
       for (const object of nodeObjects.values()) {
         object.traverse?.((child) => {
           if (!child.userData?.orbitRing) return
@@ -504,6 +548,7 @@ export function mountMemoryAtlas({
       cancelAnimationFrame(initialFrame)
       cancelInitialRecenter()
       cancelAnimationFrame(orbitAnimation)
+      if (resizeTimer !== undefined) window.clearTimeout(resizeTimer)
       observer.disconnect()
       graph.pauseAnimation()
       graph._destructor?.()

@@ -20,7 +20,7 @@ Quartz 루트 홈에서 실제 3D 그래프를 회전·확대·검색하고 노�
 `allFiles`의 제목과 slug로 기본 결과 목록을 server-render해 콘텐츠 색인이나 WebGL 초기화가 실패해도 원문 이동 경로를 남긴다.
 `quartz/quartz/components/index.ts`에서 export하고 `quartz/quartz.layout.ts`의 `beforeBody`에서 slug를 소문자로 바꾼 값이 `index`일 때만 렌더한다.
 브라우저 검증이 안정된 selector를 사용하도록 주요 상태와 조작에 `data-testid`를 부여한다.
-일반 문서의 기존 좌우 사이드바와 `Graph` 구성을 바꾸지 않는다.
+일반 문서는 Memory Atlas의 어두운 읽기 셸을 사용하고, 별도의 기존 `Graph`를 중복 초기화하지 않는다.
 
 ### 2. 별도 3D runtime asset
 
@@ -74,7 +74,7 @@ test "$(wc -c < public/static/memory-atlas.js)" -gt 100000
 ! rg -q 'three.module|3d-force-graph' public/postscript.js
 ```
 
-일반 문서 HTML에는 Memory Atlas 본문이 없고 기존 로컬 그래프와 문서 레이아웃이 남아 있어야 한다.
+일반 문서 HTML에는 Memory Atlas 본문과 runtime 요청이 없어야 하며, 읽기 셸과 KnowledgeMeta는 남아 있어야 한다.
 실제 browser network에서 runtime asset의 홈 전용 요청 여부는 Phase 04가 검증한다.
 
 ## 의도 메모 (왜)

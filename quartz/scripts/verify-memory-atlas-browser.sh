@@ -309,6 +309,20 @@ return ({
 JS
 }
 
+assert_ssr_home_shell() {
+  local name="$1"
+  local stdout_file="$EVIDENCE_DIR/assert-${name}.stdout"
+  local stderr_file="$EVIDENCE_DIR/assert-${name}.stderr"
+  if curl -fsS "$BASE_URL/" >"$EVIDENCE_DIR/home-ssr.html" 2>"$stderr_file" &&
+    grep -Eq '<body[^>]*class="memory-atlas-page"' "$EVIDENCE_DIR/home-ssr.html"; then
+    printf '{"ok":true,"class":"memory-atlas-page"}\n' >"$stdout_file"
+    append_assertion "$name" "passed" "$stdout_file"
+  else
+    append_assertion "$name" "failed" "$stderr_file"
+    fail "$name"
+  fi
+}
+
 assert_mobile_ready_canvas() {
   local name="$1"
   assert_eval "$name" <<'JS'
@@ -774,6 +788,33 @@ NODE
     append_assertion "${name}-network" "failed" "$stderr_file"
     fail "${name}-network"
   fi
+
+  ab click '.memory-atlas-doc-return' >/dev/null
+  wait_ready
+  assert_eval "${name}-restored-selection" <<'JS'
+const root = document.querySelector('[data-testid="memory-atlas"]')
+if (!root?.classList.contains("memory-atlas--detail-open")) {
+  throw new Error("returning from a document did not restore its selected node")
+}
+const close = document.querySelector('[data-testid="memory-atlas-detail-close"]')
+if (!close) throw new Error("detail close control is missing after return")
+close.click()
+await new Promise((resolve) => setTimeout(resolve, 100))
+const stored = JSON.parse(sessionStorage.getItem("memoryAtlasState") ?? "{}")
+if (stored.selectedSlug) throw new Error(`cleared selection remained persisted: ${stored.selectedSlug}`)
+return ({ ok: true, selectedSlug: stored.selectedSlug ?? null })
+JS
+  ab open "$BASE_URL" >/dev/null
+  wait_ready
+  assert_eval "${name}-cleared-selection-stays-cleared" <<'JS'
+const root = document.querySelector('[data-testid="memory-atlas"]')
+if (root?.classList.contains("memory-atlas--detail-open")) {
+  throw new Error("a cleared selection was revived after returning to the atlas")
+}
+const stored = JSON.parse(sessionStorage.getItem("memoryAtlasState") ?? "{}")
+if (stored.selectedSlug) throw new Error(`stale selected slug was restored: ${stored.selectedSlug}`)
+return ({ ok: true, selectedSlug: null })
+JS
 }
 
 assert_mobile_drawer_touch() {
@@ -947,6 +988,7 @@ JS
 run_with_timeout 10 agent-browser --session "$SESSION" close >/dev/null 2>&1 || true
 rotate_namespace "desktop-static"
 open_desktop_home
+assert_ssr_home_shell "home-ssr-shell-before-runtime"
 assert_static_build_contract "desktop-static-build-contract"
 assert_viewport_horizontal_contract "desktop-visible-elements-fit-1440x1000" 1440 1000
 assert_canvas_fills_primary_viewport "desktop-canvas-fills-primary-viewport"
