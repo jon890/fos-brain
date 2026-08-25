@@ -288,7 +288,7 @@ if (!atlas) throw new Error("Memory Atlas root is missing from home")
 const title = document.body.innerText.includes("기억의 항해도")
 if (!title) throw new Error("Memory Atlas title is missing from home")
 const graph = document.querySelector(".graph-container")
-if (!graph) throw new Error("local graph container is missing from home layout")
+if (graph) throw new Error("legacy local graph should not render beside Memory Atlas")
 const knowledgeMeta = document.querySelector(".knowledge-meta")
 if (knowledgeMeta) throw new Error("KnowledgeMeta should not appear on the home Memory Atlas page")
 const canvas = document.querySelector('[data-testid="memory-atlas-canvas"] canvas')
@@ -298,7 +298,7 @@ if (rect.width <= 0 || rect.height <= 0) throw new Error(`invalid canvas size ${
 return ({
   ok: true,
   hasAtlas: Boolean(atlas),
-  hasLocalGraph: Boolean(graph),
+  hasLegacyGraph: Boolean(graph),
   canvas: {
     x: Math.max(0, Math.floor(rect.x)),
     y: Math.max(0, Math.floor(rect.y)),
@@ -339,6 +339,163 @@ return ({
 JS
 }
 
+assert_viewport_horizontal_contract() {
+  local name="$1"
+  local width="$2"
+  local height="$3"
+  assert_eval "$name" <<JS
+const viewport = { width: window.innerWidth, height: window.innerHeight }
+if (viewport.width !== $width || viewport.height !== $height) {
+  throw new Error(\`expected viewport ${width}x${height}, got \${viewport.width}x\${viewport.height}\`)
+}
+const documentOverflow = Math.max(
+  document.documentElement.scrollWidth,
+  document.body?.scrollWidth ?? 0,
+) - document.documentElement.clientWidth
+if (documentOverflow > 1) {
+  throw new Error(\`document horizontal overflow \${documentOverflow}px\`)
+}
+const isRendered = (element) => {
+  if (element.hidden || element.closest("[hidden]")) return false
+  const style = getComputedStyle(element)
+  if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) === 0) {
+    return false
+  }
+  const rect = element.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return false
+  if (rect.right <= 0 || rect.left >= viewport.width) return false
+  if (rect.bottom <= 0 || rect.top >= viewport.height) return false
+  return true
+}
+const violations = [...document.body.querySelectorAll("*")]
+  .filter(isRendered)
+  .map((element) => {
+    const rect = element.getBoundingClientRect()
+    return {
+      tag: element.tagName.toLowerCase(),
+      testid: element.getAttribute("data-testid"),
+      className: typeof element.className === "string" ? element.className : "",
+      left: Number(rect.left.toFixed(2)),
+      right: Number(rect.right.toFixed(2)),
+      width: Number(rect.width.toFixed(2)),
+    }
+  })
+  .filter((entry) => entry.left < -1 || entry.right > viewport.width + 1)
+if (violations.length > 0) {
+  throw new Error(\`visible elements exceed viewport horizontally: \${JSON.stringify(violations.slice(0, 8))}\`)
+}
+const canvas = document.querySelector('[data-testid="memory-atlas-canvas"] canvas')
+if (canvas) {
+  const rect = canvas.getBoundingClientRect()
+  if (rect.left < -1 || rect.right > viewport.width + 1) {
+    throw new Error(\`canvas exceeds viewport horizontally: left=\${rect.left}, right=\${rect.right}, viewport=\${viewport.width}\`)
+  }
+}
+return ({ ok: true, viewport, documentOverflow, violations: violations.length })
+JS
+}
+
+assert_canvas_fills_primary_viewport() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const root = document.querySelector('[data-testid="memory-atlas"]')
+if (!root) throw new Error("Memory Atlas root is missing")
+const stage = document.querySelector(".memory-atlas__stage")
+const topbar = document.querySelector(".memory-atlas__topbar")
+const canvasRegion = document.querySelector('[data-testid="memory-atlas-canvas"]')
+const canvas = canvasRegion?.querySelector("canvas")
+if (!stage || !topbar || !canvasRegion || !canvas) {
+  throw new Error("primary stage, topbar, canvas region, or WebGL canvas is missing")
+}
+const rootRect = root.getBoundingClientRect()
+const stageRect = stage.getBoundingClientRect()
+const topbarRect = topbar.getBoundingClientRect()
+const regionRect = canvasRegion.getBoundingClientRect()
+const canvasRect = canvas.getBoundingClientRect()
+const expectedMinHeight = Math.max(320, rootRect.height - topbarRect.height - 96)
+if (regionRect.height < expectedMinHeight) {
+  throw new Error(
+    `canvas region is squeezed: region=${regionRect.height}, expected>=${expectedMinHeight}, root=${rootRect.height}, topbar=${topbarRect.height}`,
+  )
+}
+if (canvasRect.width < stageRect.width - 2) {
+  throw new Error(`canvas width ${canvasRect.width} does not fill stage width ${stageRect.width}`)
+}
+if (canvasRect.height < regionRect.height - 2) {
+  throw new Error(`canvas height ${canvasRect.height} does not fill canvas region ${regionRect.height}`)
+}
+return ({
+  ok: true,
+  root: { width: rootRect.width, height: rootRect.height },
+  stage: { width: stageRect.width, height: stageRect.height },
+  canvasRegion: { width: regionRect.width, height: regionRect.height },
+  canvas: { width: canvasRect.width, height: canvasRect.height },
+})
+JS
+}
+
+assert_results_default_collapsed_and_search_usable() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const waitFor = async (predicate, label) => {
+  for (let i = 0; i < 60; i++) {
+    const value = predicate()
+    if (value) return value
+    await sleep(100)
+  }
+  throw new Error(`timed out waiting for ${label}`)
+}
+const byTestId = (id) => {
+  const element = document.querySelector(`[data-testid="${id}"]`)
+  if (!element) throw new Error(`${id} not found`)
+  return element
+}
+const visibleBox = (element) => {
+  if (element.hidden || element.closest("[hidden]")) return false
+  const style = getComputedStyle(element)
+  const rect = element.getBoundingClientRect()
+  return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0
+}
+const root = byTestId("memory-atlas")
+if (root.dataset.runtimeState !== "ready") throw new Error(`runtime state is ${root.dataset.runtimeState}`)
+const section = document.querySelector(".memory-atlas__results")
+const list = byTestId("memory-atlas-results")
+if (!section) throw new Error("results section is missing")
+const defaultRect = section.getBoundingClientRect()
+const defaultCollapsed =
+  section.hidden ||
+  section.getAttribute("aria-hidden") === "true" ||
+  defaultRect.height <= 72 ||
+  getComputedStyle(section).display === "none"
+if (!defaultCollapsed) {
+  throw new Error(`results must be hidden or collapsed by default, height=${defaultRect.height}`)
+}
+const seed = [...list.querySelectorAll("button, a")]
+  .map((element) => element.textContent?.trim().split(/\s+/)[0])
+  .find(Boolean)
+if (!seed) throw new Error("results list has no searchable seed item")
+const search = byTestId("memory-atlas-search")
+search.value = seed
+search.dispatchEvent(new Event("input", { bubbles: true }))
+await waitFor(() => {
+  const controls = [...list.querySelectorAll("button, a")]
+  return visibleBox(section) && controls.some((control) => visibleBox(control))
+}, "results to become usable after search")
+const usableControls = [...list.querySelectorAll("button, a")].filter(visibleBox)
+usableControls[0].focus()
+if (document.activeElement !== usableControls[0]) {
+  throw new Error("first visible result cannot receive focus")
+}
+return ({
+  ok: true,
+  defaultHeight: defaultRect.height,
+  seed,
+  usableControls: usableControls.length,
+})
+JS
+}
+
 assert_desktop_type_filter() {
   local name="$1"
   assert_eval "$name" <<'JS'
@@ -363,9 +520,6 @@ const nodeCount = () => Number(byTestId("memory-atlas-node-count").textContent)
 const resultButtons = () => [...document.querySelectorAll('[data-testid="memory-atlas-results"] button')]
 const initialCount = nodeCount()
 if (initialCount <= 1) throw new Error(`expected multiple nodes, got ${initialCount}`)
-if (resultButtons().length !== initialCount) {
-  throw new Error(`result count ${resultButtons().length} did not match node count ${initialCount}`)
-}
 
 const type = document.querySelector('input[name="memory-atlas-type"][value="topic"]')
 if (!type) throw new Error("topic type checkbox is missing")
@@ -465,6 +619,12 @@ const nodeCount = () => Number(byTestId("memory-atlas-node-count").textContent)
 const resultButtons = () => [...document.querySelectorAll('[data-testid="memory-atlas-results"] button')]
 const initialCount = nodeCount()
 if (initialCount <= 1) throw new Error(`expected multiple nodes, got ${initialCount}`)
+const seed = resultButtons().map((button) => button.textContent.trim().split(/\s+/)[0]).find(Boolean)
+if (!seed) throw new Error("no result seed is available for detail selection")
+const search = byTestId("memory-atlas-search")
+search.value = seed
+search.dispatchEvent(new Event("input", { bubbles: true }))
+await waitFor(() => resultButtons().length > 0, "search results for detail selection")
 const selectedTitle = resultButtons()[0].textContent.trim()
 resultButtons()[0].click()
 await waitFor(() => root.classList.contains("memory-atlas--detail-open"), "detail panel to open")
@@ -525,6 +685,26 @@ NODE
 assert_doc_navigation_contract() {
   local name="$1"
   assert_eval "$name" <<'JS'
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const waitFor = async (predicate, label) => {
+  for (let i = 0; i < 60; i++) {
+    const value = predicate()
+    if (value) return value
+    await sleep(100)
+  }
+  throw new Error(`timed out waiting for ${label}`)
+}
+const list = document.querySelector('[data-testid="memory-atlas-results"]')
+if (!list) throw new Error("results list is missing before document navigation")
+const seed = [...list.querySelectorAll("button, a")]
+  .map((element) => element.textContent?.trim().split(/\s+/)[0])
+  .find(Boolean)
+if (!seed) throw new Error("no result seed is available before document navigation")
+const search = document.querySelector('[data-testid="memory-atlas-search"]')
+if (!search) throw new Error("search input is missing before document navigation")
+search.value = seed
+search.dispatchEvent(new Event("input", { bubbles: true }))
+await waitFor(() => document.querySelector('[data-testid="memory-atlas-results"] button'), "search-backed result button")
 const button = document.querySelector('[data-testid="memory-atlas-results"] button')
 if (!button) throw new Error("result button is missing before document navigation")
 button.click()
@@ -538,7 +718,7 @@ if (!href || new URL(href).origin !== window.location.origin) {
 return ({ ok: true, href })
 JS
   ab click '[data-testid="memory-atlas-detail-link"]' >/dev/null
-  ab wait --fn "!document.querySelector('[data-testid=\"memory-atlas\"]') && document.querySelector('.knowledge-meta') && document.querySelector('.graph-container')" >/dev/null
+  ab wait --fn "!document.querySelector('[data-testid=\"memory-atlas\"]') && document.body.classList.contains('memory-atlas-doc-page') && document.querySelector('.knowledge-meta') && document.querySelector('.memory-atlas-doc-return')" >/dev/null
   capture_network "doc"
   capture_errors "doc"
   assert_eval "${name}-after-navigation" <<'JS'
@@ -547,10 +727,21 @@ if (atlas) throw new Error("Memory Atlas leaked onto a representative concept do
 const meta = document.querySelector(".knowledge-meta")
 if (!meta) throw new Error("KnowledgeMeta is missing on representative concept document")
 const graph = document.querySelector(".graph-container")
-if (!graph) throw new Error("local graph is missing on representative concept document")
+if (graph) throw new Error("legacy local graph should not render in the focused document shell")
+const returnLink = document.querySelector(".memory-atlas-doc-return")
+if (!returnLink || !returnLink.textContent.includes("항해도로 돌아가기")) {
+  throw new Error("document return-to-atlas action is missing")
+}
+const paragraph = document.querySelector("article p")
+if (paragraph) {
+  const color = getComputedStyle(paragraph).color.match(/\d+(?:\.\d+)?/g)?.map(Number)
+  if (!color || Math.max(...color.slice(0, 3)) < 140) {
+    throw new Error(`document body contrast is too low: ${getComputedStyle(paragraph).color}`)
+  }
+}
 const overflow = document.documentElement.scrollWidth - document.documentElement.clientWidth
 if (overflow > 1) throw new Error(`document horizontal overflow ${overflow}px`)
-return ({ ok: true, url: location.href, overflow })
+return ({ ok: true, url: location.href, overflow, legacyGraphAbsent: true })
 JS
   local stdout_file="$EVIDENCE_DIR/assert-${name}-network.stdout"
   local stderr_file="$EVIDENCE_DIR/assert-${name}-network.stderr"
@@ -663,8 +854,15 @@ const byTestId = (id) => {
 const root = byTestId("memory-atlas")
 if (root.dataset.runtimeState !== "ready") throw new Error(`runtime state is ${root.dataset.runtimeState}`)
 const button = document.querySelector('[data-testid="memory-atlas-results"] button')
-if (!button) throw new Error("mobile result button is missing")
-button.click()
+const seed = button?.textContent?.trim().split(/\s+/)[0]
+if (!seed) throw new Error("mobile result seed is missing")
+const search = byTestId("memory-atlas-search")
+search.value = seed
+search.dispatchEvent(new Event("input", { bubbles: true }))
+await waitFor(() => document.querySelector('[data-testid="memory-atlas-results"] button'), "mobile search results")
+const nextButton = document.querySelector('[data-testid="memory-atlas-results"] button')
+if (!nextButton) throw new Error("mobile result button is missing")
+nextButton.click()
 await waitFor(() => root.classList.contains("memory-atlas--detail-open"), "mobile detail sheet open")
 const close = byTestId("memory-atlas-detail-close")
 const closeBox = close.getBoundingClientRect()
@@ -750,6 +948,9 @@ run_with_timeout 10 agent-browser --session "$SESSION" close >/dev/null 2>&1 || 
 rotate_namespace "desktop-static"
 open_desktop_home
 assert_static_build_contract "desktop-static-build-contract"
+assert_viewport_horizontal_contract "desktop-visible-elements-fit-1440x1000" 1440 1000
+assert_canvas_fills_primary_viewport "desktop-canvas-fills-primary-viewport"
+assert_results_default_collapsed_and_search_usable "desktop-results-collapsed-then-search-usable"
 write_canvas_rect_from_assertion "desktop-static-build-contract" "desktop-canvas-rect"
 capture_screenshot "desktop"
 assert_canvas_screenshot_nonblank "desktop-canvas-screenshot-nonblank" "$EVIDENCE_DIR/desktop.png" "$EVIDENCE_DIR/desktop-canvas-rect.rect.json"
@@ -785,6 +986,9 @@ assert_doc_navigation_contract "document-navigation-contract"
 rotate_namespace "mobile"
 open_mobile_home
 assert_mobile_ready_canvas "mobile-ready-canvas"
+assert_viewport_horizontal_contract "mobile-visible-elements-fit-390x844" 390 844
+assert_canvas_fills_primary_viewport "mobile-canvas-fills-primary-viewport"
+assert_results_default_collapsed_and_search_usable "mobile-results-collapsed-then-search-usable"
 write_canvas_rect_from_assertion "mobile-ready-canvas" "mobile-canvas-rect"
 capture_screenshot "mobile"
 assert_canvas_screenshot_nonblank "mobile-canvas-screenshot-nonblank" "$EVIDENCE_DIR/mobile.png" "$EVIDENCE_DIR/mobile-canvas-rect.rect.json"

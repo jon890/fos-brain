@@ -77,13 +77,16 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
         <div class="memory-atlas__brand">
           <p>FOS / MEMORY</p>
           <h1>기억의 항해도</h1>
+          <span data-testid="memory-atlas-status">3D 탐색 엔진을 준비하고 있습니다.</span>
         </div>
 
         <div class="memory-atlas__stats" aria-live="polite">
-          <strong data-testid="memory-atlas-node-count">{fallbackFiles.length}</strong>
-          <span>nodes</span>
-          <strong data-testid="memory-atlas-link-count">0</strong>
-          <span>links</span>
+          <span>
+            <strong data-testid="memory-atlas-node-count">{fallbackFiles.length}</strong> nodes
+          </span>
+          <span>
+            <strong data-testid="memory-atlas-link-count">0</strong> links
+          </span>
         </div>
 
         <label class="memory-atlas__field">
@@ -96,76 +99,105 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           />
         </label>
 
-        <fieldset class="memory-atlas__fieldset" data-testid="memory-atlas-type-filter">
-          <legend>유형</legend>
-          {TYPE_OPTIONS.map((type) => (
-            <label>
-              <input type="checkbox" name="memory-atlas-type" value={type} checked />
-              <span>{label(type)}</span>
-            </label>
-          ))}
-        </fieldset>
+        <details class="memory-atlas__section" open>
+          <summary>렌즈</summary>
+          <fieldset class="memory-atlas__chips" data-testid="memory-atlas-type-filter">
+            <legend>유형</legend>
+            {TYPE_OPTIONS.map((type) => (
+              <label>
+                <input type="checkbox" name="memory-atlas-type" value={type} checked />
+                <span>{label(type)}</span>
+              </label>
+            ))}
+          </fieldset>
 
-        <fieldset class="memory-atlas__fieldset" data-testid="memory-atlas-freshness-filter">
-          <legend>최신성</legend>
-          {FRESHNESS_OPTIONS.map((freshness) => (
-            <label>
-              <input type="checkbox" name="memory-atlas-freshness" value={freshness} checked />
-              <span>{label(freshness)}</span>
-            </label>
-          ))}
-        </fieldset>
+          <fieldset class="memory-atlas__chips" data-testid="memory-atlas-namespace-filter">
+            <legend>공개 범위</legend>
+            {namespaces.map((namespace) => (
+              <label>
+                <input type="checkbox" name="memory-atlas-namespace" value={namespace} checked />
+                <span>{label(namespace)}</span>
+              </label>
+            ))}
+          </fieldset>
+        </details>
 
-        <fieldset class="memory-atlas__fieldset" data-testid="memory-atlas-namespace-filter">
-          <legend>공개 범위</legend>
-          {namespaces.map((namespace) => (
-            <label>
-              <input type="checkbox" name="memory-atlas-namespace" value={namespace} checked />
-              <span>{label(namespace)}</span>
-            </label>
-          ))}
-        </fieldset>
+        <details class="memory-atlas__section">
+          <summary>상태와 태그</summary>
+          <fieldset class="memory-atlas__chips" data-testid="memory-atlas-freshness-filter">
+            <legend>최신성</legend>
+            {FRESHNESS_OPTIONS.map((freshness) => (
+              <label>
+                <input type="checkbox" name="memory-atlas-freshness" value={freshness} checked />
+                <span>{label(freshness)}</span>
+              </label>
+            ))}
+          </fieldset>
 
-        <label class="memory-atlas__field">
-          <span>태그</span>
-          <select data-testid="memory-atlas-tag-filter" multiple size={5}></select>
-        </label>
-
-        <div class="memory-atlas__controls">
           <label class="memory-atlas__field">
-            <span>배치</span>
-            <select data-testid="memory-atlas-layout">
-              {LAYOUT_OPTIONS.map((layout) => (
-                <option value={layout}>{label(layout)}</option>
-              ))}
-            </select>
+            <span>태그</span>
+            <select data-testid="memory-atlas-tag-filter" multiple size={5}></select>
           </label>
-          <label class="memory-atlas__field">
-            <span>색상</span>
-            <select data-testid="memory-atlas-color">
-              {COLOR_OPTIONS.map((color) => (
-                <option value={color}>{label(color)}</option>
-              ))}
-            </select>
+        </details>
+
+        <details class="memory-atlas__section">
+          <summary>표시</summary>
+          <div class="memory-atlas__controls">
+            <label class="memory-atlas__field">
+              <span>배치</span>
+              <select data-testid="memory-atlas-layout">
+                {LAYOUT_OPTIONS.map((layout) => (
+                  <option value={layout}>{label(layout)}</option>
+                ))}
+              </select>
+            </label>
+            <label class="memory-atlas__field">
+              <span>색상</span>
+              <select data-testid="memory-atlas-color">
+                {COLOR_OPTIONS.map((color) => (
+                  <option value={color}>{label(color)}</option>
+                ))}
+              </select>
+            </label>
+            <label class="memory-atlas__field">
+              <span>간격</span>
+              <select data-testid="memory-atlas-spacing">
+                {SPACING_OPTIONS.map((spacing) => (
+                  <option value={spacing}>{label(spacing)}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label class="memory-atlas__toggle">
+            <input data-testid="memory-atlas-labels" type="checkbox" checked />
+            <span>라벨 표시</span>
           </label>
-          <label class="memory-atlas__field">
-            <span>간격</span>
-            <select data-testid="memory-atlas-spacing">
-              {SPACING_OPTIONS.map((spacing) => (
-                <option value={spacing}>{label(spacing)}</option>
-              ))}
-            </select>
-          </label>
+        </details>
+
+        <div class="memory-atlas__actions">
+          <button type="button" data-testid="memory-atlas-recenter" class="memory-atlas__button">
+            중앙 정렬
+          </button>
         </div>
 
-        <label class="memory-atlas__toggle">
-          <input data-testid="memory-atlas-labels" type="checkbox" checked />
-          <span>라벨 표시</span>
-        </label>
-
-        <button type="button" data-testid="memory-atlas-recenter" class="memory-atlas__button">
-          화면 중앙 정렬
-        </button>
+        <section class="memory-atlas__results" aria-label="검색 결과">
+          <h2>검색 결과</h2>
+          <ol data-testid="memory-atlas-results">
+            {fallbackFiles.map((file) => {
+              const slug = file.slug as FullSlug
+              const title = file.frontmatter?.title ?? slug
+              return (
+                <li data-slug={slug}>
+                  <a class="internal" href={resolveRelative(fileData.slug!, slug)}>
+                    {title}
+                  </a>
+                  <span>{slug}</span>
+                </li>
+              )
+            })}
+          </ol>
+        </section>
       </aside>
 
       <div class="memory-atlas__stage">
@@ -180,9 +212,15 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           >
             필터
           </button>
-          <div class="memory-atlas__status" data-testid="memory-atlas-status">
-            3D 탐색 엔진을 준비하고 있습니다.
-          </div>
+          <label class="memory-atlas__field">
+            <span>검색</span>
+            <input
+              data-testid="memory-atlas-mobile-search"
+              type="search"
+              placeholder="기억 검색"
+              autocomplete="off"
+            />
+          </label>
         </div>
 
         <div
@@ -209,24 +247,6 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
             다시 시도
           </button>
         </div>
-
-        <section class="memory-atlas__results" aria-label="검색 결과">
-          <h2>문서 목록</h2>
-          <ol data-testid="memory-atlas-results">
-            {fallbackFiles.map((file) => {
-              const slug = file.slug as FullSlug
-              const title = file.frontmatter?.title ?? slug
-              return (
-                <li data-slug={slug}>
-                  <a class="internal" href={resolveRelative(fileData.slug!, slug)}>
-                    {title}
-                  </a>
-                  <span>{slug}</span>
-                </li>
-              )
-            })}
-          </ol>
-        </section>
       </div>
 
       <aside

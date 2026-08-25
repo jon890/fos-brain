@@ -33,6 +33,7 @@ const TYPE_OPTIONS = ["concept", "topic", "entity"] as const
 const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
 const NAMESPACE_OPTIONS = ["public", "private"] as const
 const DEFAULT_TAGS: string[] = []
+const STATE_STORAGE_KEY = "memoryAtlasState"
 
 function selectedValues(root: ParentNode, name: string): string[] {
   return [...root.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`)].map(
@@ -105,7 +106,44 @@ function slugUrl(slug: FullSlug): URL {
 
 function navigateToSlug(slug: FullSlug) {
   const url = slugUrl(slug)
+  window.sessionStorage.setItem("memoryAtlasSelectedSlug", slug)
   window.spaNavigate(url, false)
+}
+
+function syncSearchInputs(root: HTMLElement, value: string, source?: HTMLInputElement | null) {
+  root
+    .querySelectorAll<HTMLInputElement>(
+      '[data-testid="memory-atlas-search"], [data-testid="memory-atlas-mobile-search"]',
+    )
+    .forEach((input) => {
+      if (input !== source) input.value = value
+    })
+}
+
+function restoreStoredState(fallback: MemoryAtlasState): MemoryAtlasState {
+  try {
+    const raw = window.sessionStorage.getItem(STATE_STORAGE_KEY)
+    if (!raw) return fallback
+    const stored = JSON.parse(raw) as Partial<MemoryAtlasState>
+    return {
+      ...fallback,
+      ...stored,
+      namespaces: Array.isArray(stored.namespaces) ? stored.namespaces : fallback.namespaces,
+      types: Array.isArray(stored.types) ? stored.types : fallback.types,
+      freshness: Array.isArray(stored.freshness) ? stored.freshness : fallback.freshness,
+      tags: Array.isArray(stored.tags) ? stored.tags : fallback.tags,
+    }
+  } catch {
+    return fallback
+  }
+}
+
+function storeState(state: MemoryAtlasState) {
+  try {
+    window.sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state))
+  } catch {
+    // Navigation remains functional when storage is unavailable.
+  }
 }
 
 function updateDetail(root: HTMLElement, data: MemoryAtlasData, slug?: FullSlug) {
@@ -157,10 +195,15 @@ function updateDetail(root: HTMLElement, data: MemoryAtlasData, slug?: FullSlug)
 function updateResults(
   root: HTMLElement,
   data: MemoryAtlasData,
+  state: MemoryAtlasState,
   onSelect: (slug: FullSlug) => void,
 ) {
   const list = root.querySelector<HTMLOListElement>('[data-testid="memory-atlas-results"]')
   if (!list) return
+  root.classList.toggle(
+    "memory-atlas--results-open",
+    Boolean(state.query.trim() || state.tags?.length || state.selectedSlug),
+  )
 
   list.replaceChildren(
     ...data.nodes.map((node) => {
@@ -213,10 +256,14 @@ function readState(root: HTMLElement, current: MemoryAtlasState): MemoryAtlasSta
   const namespaces = selectedValues(root, "memory-atlas-namespace")
   const types = selectedValues(root, "memory-atlas-type")
   const freshness = selectedValues(root, "memory-atlas-freshness")
+  const query =
+    root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-search"]')?.value ??
+    root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-mobile-search"]')?.value ??
+    ""
 
   return {
     ...current,
-    query: root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-search"]')?.value ?? "",
+    query,
     namespaces: allSelectedAsUnrestricted(namespaces, availableNamespaces(root)),
     types: allSelectedAsUnrestricted(types, TYPE_OPTIONS),
     freshness: allSelectedAsUnrestricted(freshness, FRESHNESS_OPTIONS),
@@ -239,6 +286,7 @@ function readState(root: HTMLElement, current: MemoryAtlasState): MemoryAtlasSta
 }
 
 function syncControls(root: HTMLElement, state: MemoryAtlasState) {
+  syncSearchInputs(root, state.query)
   root
     .querySelectorAll<HTMLInputElement>('input[name="memory-atlas-namespace"]')
     .forEach((input) => {
@@ -276,8 +324,7 @@ function syncControls(root: HTMLElement, state: MemoryAtlasState) {
 }
 
 function resetMemoryAtlasState(root: HTMLElement, data: MemoryAtlasData): MemoryAtlasState {
-  const input = root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-search"]')
-  if (input) input.value = ""
+  syncSearchInputs(root, "")
   const nextState = {
     ...createDefaultMemoryAtlasState(data),
     tags: [],
@@ -293,7 +340,10 @@ async function initMemoryAtlas() {
   memoryAtlasState.cleanup = undefined
 
   const root = document.querySelector<HTMLElement>('[data-testid="memory-atlas"]')
-  if (!root) return
+  if (!root) {
+    document.body.classList.remove(BODY_CLASS)
+    return
+  }
 
   document.body.classList.add(BODY_CLASS)
   const canvas = root.querySelector<HTMLElement>('[data-testid="memory-atlas-canvas"]')
@@ -334,15 +384,19 @@ async function initMemoryAtlas() {
 
   const selectNode = (slug?: FullSlug) => {
     state = { ...state, selectedSlug: slug }
+    storeState(state)
     renderHandle?.select(slug)
     updateDetail(root, visibleData, slug)
+    updateResults(root, visibleData, state, selectNode)
   }
 
-  const refresh = () => {
+  const refresh = (source?: HTMLInputElement | null) => {
+    if (source) syncSearchInputs(root, source.value, source)
     state = readState(root, state)
+    storeState(state)
     visibleData = filterMemoryAtlas(fullData, state)
     updateStats(root, visibleData)
-    updateResults(root, visibleData, selectNode)
+    updateResults(root, visibleData, state, selectNode)
     renderHandle?.update(visibleData, state)
     if (state.selectedSlug && !visibleData.nodes.some((node) => node.slug === state.selectedSlug)) {
       selectNode(undefined)
@@ -354,12 +408,23 @@ async function initMemoryAtlas() {
     setStatus("콘텐츠 색인을 읽는 중입니다.")
     fullData = buildMemoryAtlasData(await fetchData)
     if (destroyed) return
-    state = createDefaultMemoryAtlasState(fullData)
+    state = restoreStoredState(createDefaultMemoryAtlasState(fullData))
+    const urlSelectedSlug = new URL(window.location.toString()).searchParams.get(
+      "node",
+    ) as FullSlug | null
+    const storedSelectedSlug = window.sessionStorage.getItem(
+      "memoryAtlasSelectedSlug",
+    ) as FullSlug | null
+    const selectedSlug = urlSelectedSlug ?? storedSelectedSlug ?? undefined
+    if (selectedSlug && fullData.nodes.some((node) => node.slug === selectedSlug)) {
+      state = { ...state, selectedSlug }
+    }
+    storeState(state)
     syncControls(root, state)
     visibleData = filterMemoryAtlas(fullData, state)
     updateTagOptions(root, fullData)
     updateStats(root, visibleData)
-    updateResults(root, visibleData, selectNode)
+    updateResults(root, visibleData, state, selectNode)
 
     setStatus("3D 탐색 엔진을 불러오는 중입니다.")
     const runtimeUrl = runtimeSrc
@@ -374,6 +439,7 @@ async function initMemoryAtlas() {
     })
     setRuntimeState(root, "ready")
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
+    if (state.selectedSlug) selectNode(state.selectedSlug)
   } catch (error) {
     if (destroyed) return
     console.error(error)
@@ -393,8 +459,12 @@ async function initMemoryAtlas() {
     cleanups.push(() => element.removeEventListener(event, handler as EventListener))
   }
 
-  bind(root.querySelector('[data-testid="memory-atlas-search"]'), "input", refresh)
-  bind(root.querySelector('[data-testid="memory-atlas-tag-filter"]'), "change", refresh)
+  root
+    .querySelectorAll<HTMLInputElement>(
+      '[data-testid="memory-atlas-search"], [data-testid="memory-atlas-mobile-search"]',
+    )
+    .forEach((input) => bind(input, "input", () => refresh(input)))
+  bind(root.querySelector('[data-testid="memory-atlas-tag-filter"]'), "change", () => refresh())
   for (const selector of [
     'input[name="memory-atlas-type"]',
     'input[name="memory-atlas-freshness"]',
@@ -404,7 +474,7 @@ async function initMemoryAtlas() {
     '[data-testid="memory-atlas-spacing"]',
     '[data-testid="memory-atlas-labels"]',
   ]) {
-    root.querySelectorAll(selector).forEach((element) => bind(element, "change", refresh))
+    root.querySelectorAll(selector).forEach((element) => bind(element, "change", () => refresh()))
   }
 
   bind(root.querySelector('[data-testid="memory-atlas-recenter"]'), "click", () =>

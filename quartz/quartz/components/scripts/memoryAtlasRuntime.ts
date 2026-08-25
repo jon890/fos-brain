@@ -42,14 +42,22 @@ type GraphInstance = {
   height(value: number): GraphInstance
   onNodeClick(fn: (node: GraphNode) => void): GraphInstance
   onEngineStop(fn: () => void): GraphInstance
+  cameraPosition(): { x: number; y: number; z: number }
   cameraPosition(
     position: { x: number; y: number; z: number },
     lookAt?: GraphNode,
     ms?: number,
   ): void
+  controls(): { target: { x: number; y: number; z: number } }
   zoomToFit(ms?: number, padding?: number): void
   pauseAnimation(): void
   _destructor?: () => void
+}
+
+type StoredView = {
+  camera: { x: number; y: number; z: number }
+  target: { x: number; y: number; z: number }
+  viewport: { width: number; height: number }
 }
 
 type DisposableObject = {
@@ -68,18 +76,60 @@ type DisposableObject = {
 }
 
 const COLORS = {
-  concept: "#9ac9ba",
-  topic: "#d4875e",
-  entity: "#ece3cf",
-  unknown: "#7f9693",
-  current: "#9ac9ba",
-  stale: "#d4875e",
-  invalid: "#e8bf68",
-  public: "#9ac9ba",
-  private: "#b0a2d8",
+  concept: "#b6eee0",
+  topic: "#ff9866",
+  entity: "#fff4d6",
+  unknown: "#86b8c6",
+  current: "#b6eee0",
+  stale: "#ff9866",
+  invalid: "#f1c97a",
+  public: "#b6eee0",
+  private: "#c8a6ff",
   dim: "rgba(120, 153, 149, 0.22)",
   link: "rgba(154, 201, 186, 0.34)",
   active: "#ece3cf",
+}
+const VIEW_STORAGE_KEY = "memoryAtlasView"
+
+function restoreStoredView(): StoredView | undefined {
+  try {
+    const raw = window.sessionStorage.getItem(VIEW_STORAGE_KEY)
+    if (!raw) return undefined
+    const stored = JSON.parse(raw) as StoredView
+    const values = [
+      stored.camera?.x,
+      stored.camera?.y,
+      stored.camera?.z,
+      stored.target?.x,
+      stored.target?.y,
+      stored.target?.z,
+      stored.viewport?.width,
+      stored.viewport?.height,
+    ]
+    if (!values.every((value) => Number.isFinite(value))) return undefined
+    const storedAspect = stored.viewport.width / stored.viewport.height
+    const currentAspect = window.innerWidth / window.innerHeight
+    return Math.abs(storedAspect - currentAspect) <= 0.18 ? stored : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function storeView(graph: GraphInstance) {
+  try {
+    const camera = graph.cameraPosition()
+    const target = graph.controls().target
+    window.sessionStorage.setItem(
+      VIEW_STORAGE_KEY,
+      JSON.stringify({
+        camera: { x: camera.x, y: camera.y, z: camera.z },
+        target: { x: target.x, y: target.y, z: target.z },
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+      } satisfies StoredView),
+    )
+  } catch {
+    // The atlas still works when session storage or controls are unavailable.
+  }
 }
 
 function colorFor(node: MemoryAtlasNode, colorBy: MemoryAtlasColorBy): string {
@@ -110,24 +160,35 @@ function activeSlugSet(links: GraphLink[], selected?: FullSlug): Set<FullSlug> |
 }
 
 function spacingRadius(spacing: MemoryAtlasSpacing): number {
-  if (spacing === "compact") return 72
-  if (spacing === "wide") return 190
-  return 125
+  if (spacing === "compact") return 145
+  if (spacing === "wide") return 360
+  return 245
+}
+
+function stableUnit(value: string, salt: number): number {
+  let hash = 2166136261 ^ salt
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0) / 0xffffffff
 }
 
 function layoutNodes(nodes: GraphNode[], layout: MemoryAtlasLayout, spacing: MemoryAtlasSpacing) {
   const radius = spacingRadius(spacing)
   const tagBuckets = new Map<string, GraphNode[]>()
   const typeBuckets = new Map<string, GraphNode[]>()
-  nodes.forEach((node, index) => {
+  nodes.forEach((node) => {
     node.fx = undefined
     node.fy = undefined
     node.fz = undefined
-    const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2
+    const angle = stableUnit(node.slug, 17) * Math.PI * 2
     if (layout === "constellation") {
-      node.x = Math.cos(angle) * radius * (0.7 + (index % 5) * 0.11)
-      node.y = Math.sin(angle) * radius * (0.7 + (index % 3) * 0.13)
-      node.z = ((index % 9) - 4) * 18
+      const distance = Math.pow(stableUnit(node.slug, 73), 1.55)
+      const drift = (stableUnit(node.slug, 131) - 0.5) * radius * 0.38
+      node.fx = Math.cos(angle) * radius * distance * 1.46 + drift
+      node.fy = Math.sin(angle) * radius * distance * 1.18 - drift * 0.34
+      node.fz = (stableUnit(node.slug, 211) - 0.5) * radius * 0.56
     }
     const tag = node.tags[0] ?? "untagged"
     tagBuckets.set(tag, [...(tagBuckets.get(tag) ?? []), node])
@@ -171,16 +232,36 @@ function createLabel(text: string, color: string) {
   const size = 256
   canvas.width = size
   canvas.height = 64
-  context.font = "600 24px IBM Plex Sans KR, sans-serif"
-  context.fillStyle = "rgba(7, 25, 27, 0.72)"
+  context.font = "500 18px IBM Plex Sans KR, sans-serif"
+  context.fillStyle = "rgba(3, 11, 17, 0.38)"
   context.fillRect(0, 0, size, 64)
   context.fillStyle = color
-  context.fillText(text.slice(0, 18), 14, 40)
+  context.fillText(text.slice(0, 18), 12, 38)
   const texture = new THREE.CanvasTexture(canvas)
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
   const sprite = new THREE.Sprite(material)
-  sprite.scale.set(56, 14, 1)
-  sprite.position.set(0, 12, 0)
+  sprite.scale.set(42, 10.5, 1)
+  sprite.position.set(0, 9, 0)
+  return sprite
+}
+
+function createGlow(color: string, scale: number, opacity: number) {
+  const canvas = document.createElement("canvas")
+  canvas.width = 64
+  canvas.height = 64
+  const context = canvas.getContext("2d")!
+  const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 31)
+  gradient.addColorStop(0, "rgba(255, 255, 255, 0.98)")
+  gradient.addColorStop(0.13, color)
+  gradient.addColorStop(0.42, `${color}55`)
+  gradient.addColorStop(1, `${color}00`)
+  context.fillStyle = gradient
+  context.fillRect(0, 0, 64, 64)
+  const texture = new THREE.CanvasTexture(canvas)
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: texture, transparent: true, opacity, depthWrite: false }),
+  )
+  sprite.scale.set(scale, scale, 1)
   return sprite
 }
 
@@ -190,21 +271,26 @@ function createNodeObject(
   activeSlugs: Set<FullSlug> | undefined,
 ) {
   const group = new THREE.Group()
-  const radius = Math.max(4, Math.min(11, 4 + node.degree * 1.4 + node.sourceCount * 0.45))
+  const radius = Math.max(
+    0.52,
+    Math.min(2.2, 0.52 + Math.sqrt(Math.max(node.degree, 0)) * 0.23 + node.sourceCount * 0.035),
+  )
   const isDimmed = Boolean(activeSlugs && !activeSlugs.has(node.slug))
   const material = new THREE.MeshBasicMaterial({
     color: colorFor(node, state.colorBy),
     transparent: true,
     opacity: isDimmed ? 0.16 : 0.96,
   })
+  const color = colorFor(node, state.colorBy)
+  group.add(createGlow(color, Math.max(5.4, radius * 7.8), isDimmed ? 0.04 : 0.48))
   group.add(new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 18), material))
   if (state.selectedSlug === node.slug) {
     const innerRing = new THREE.Mesh(
-      new THREE.TorusGeometry(radius + 3, 0.45, 8, 64),
+      new THREE.TorusGeometry(radius + 2.4, 0.32, 8, 64),
       new THREE.MeshBasicMaterial({ color: COLORS.active, transparent: true, opacity: 0.72 }),
     )
     const outerRing = new THREE.Mesh(
-      new THREE.TorusGeometry(radius + 7, 0.32, 8, 72),
+      new THREE.TorusGeometry(radius + 5.2, 0.24, 8, 72),
       new THREE.MeshBasicMaterial({
         color: COLORS.topic,
         transparent: true,
@@ -217,7 +303,11 @@ function createNodeObject(
     outerRing.userData = { orbitRing: true, orbitSpeed: -0.008 }
     group.add(innerRing, outerRing)
   }
-  if (state.labels) group.add(createLabel(node.title, colorFor(node, state.colorBy)))
+  const shouldLabel =
+    state.labels &&
+    !isDimmed &&
+    (state.selectedSlug === node.slug || node.degree >= 28 || node.sourceCount >= 10)
+  if (shouldLabel) group.add(createLabel(node.title, colorFor(node, state.colorBy)))
   return group
 }
 
@@ -261,6 +351,7 @@ export function mountMemoryAtlas({
   let initialRecenterDone = false
   let initialRecenterTimer: number | undefined
   let initialRecenterFrame: number | undefined
+  const storedView = restoreStoredView()
   const createGraph = ForceGraph3D as unknown as () => GraphInstance
   const cancelInitialRecenter = () => {
     if (initialRecenterTimer !== undefined) {
@@ -272,11 +363,31 @@ export function mountMemoryAtlas({
       initialRecenterFrame = undefined
     }
   }
+  const zoomToImmersiveFit = (ms: number) => {
+    graph.zoomToFit(ms, window.innerWidth <= 800 ? 22 : 0)
+    const tighten = () => {
+      if (destroyed) return
+      const camera = graph.cameraPosition()
+      const target = graph.controls().target
+      const factor = window.innerWidth <= 800 ? 1 : 0.64
+      graph.cameraPosition(
+        {
+          x: target.x + (camera.x - target.x) * factor,
+          y: target.y + (camera.y - target.y) * factor,
+          z: target.z + (camera.z - target.z) * factor,
+        },
+        target as GraphNode,
+        motionQuery.matches ? 0 : 180,
+      )
+    }
+    if (ms > 0) window.setTimeout(tighten, ms + 24)
+    else requestAnimationFrame(tighten)
+  }
   const runInitialRecenter = () => {
     if (destroyed || initialRecenterDone || currentState.selectedSlug) return
     initialRecenterDone = true
     cancelInitialRecenter()
-    graph.zoomToFit(motionQuery.matches ? 0 : 500, 48)
+    zoomToImmersiveFit(motionQuery.matches ? 0 : 420)
   }
   const graph = createGraph()(container)
     .backgroundColor("#07191b")
@@ -293,8 +404,8 @@ export function mountMemoryAtlas({
       nodeObjects.set(node.slug, object)
       return object
     })
-    .linkOpacity(0.55)
-    .linkWidth((link) => (linkIsActive(link, currentState.selectedSlug) ? 2.2 : 0.8))
+    .linkOpacity(0.3)
+    .linkWidth((link) => (linkIsActive(link, currentState.selectedSlug) ? 0.36 : 0.07))
     .linkColor((link) =>
       linkIsActive(link, currentState.selectedSlug) ? COLORS.active : COLORS.link,
     )
@@ -317,7 +428,17 @@ export function mountMemoryAtlas({
   }
   renderGraphData(currentData)
   const initialFrame = requestAnimationFrame(() => {
-    if (!destroyed) graph.zoomToFit(motionQuery.matches ? 0 : 500, 42)
+    if (destroyed) return
+    if (storedView) {
+      initialRecenterDone = true
+      graph.cameraPosition(
+        storedView.camera,
+        storedView.target as GraphNode,
+        motionQuery.matches ? 0 : 320,
+      )
+      return
+    }
+    zoomToImmersiveFit(motionQuery.matches ? 0 : 420)
   })
   initialRecenterTimer = window.setTimeout(() => {
     initialRecenterFrame = requestAnimationFrame(runInitialRecenter)
@@ -356,13 +477,16 @@ export function mountMemoryAtlas({
       renderGraphData(currentData)
       const selected = currentData.nodes.find((node) => node.slug === slug)
       if (selected) {
-        const distance = 145
-        const ratio = 1 + distance / Math.hypot(selected.x ?? 1, selected.y ?? 1, selected.z ?? 1)
+        const distance = 95
+        const selectedX = selected.x ?? selected.fx ?? 0
+        const selectedY = selected.y ?? selected.fy ?? 0
+        const selectedZ = selected.z ?? selected.fz ?? 0
+        const ratio = 1 + distance / Math.hypot(selectedX || 1, selectedY || 1, selectedZ || 1)
         graph.cameraPosition(
           {
-            x: (selected.x ?? 0) * ratio,
-            y: (selected.y ?? 0) * ratio,
-            z: (selected.z ?? 0) * ratio + distance,
+            x: selectedX * ratio,
+            y: selectedY * ratio,
+            z: selectedZ * ratio + distance,
           },
           selected,
           motionQuery.matches ? 0 : 650,
@@ -371,10 +495,11 @@ export function mountMemoryAtlas({
     },
     recenter() {
       if (destroyed) return
-      graph.zoomToFit(motionQuery.matches ? 0 : 500, 48)
+      zoomToImmersiveFit(motionQuery.matches ? 0 : 420)
     },
     destroy() {
       if (destroyed) return
+      storeView(graph)
       destroyed = true
       cancelAnimationFrame(initialFrame)
       cancelInitialRecenter()
