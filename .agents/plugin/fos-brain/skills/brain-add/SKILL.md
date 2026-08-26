@@ -147,8 +147,8 @@ wiki에 쓰기 전에 채팅 인라인(기록용)과 HTML 미리보기(렌더링
 페이지가 실제로 어떻게 렌더되는지, `[[wikilink]]` 백링크가 맞는지는 텍스트만으로 검토가 어렵다.
 쓸 페이지 `.md`를 임시 파일로 만들어 HTML 미리보기를 띄운다. Dooray·GitHub 미리보기와 같은 관례다.
 
-- 생성기: `scripts/generate_preview.py` (이 스킬 번들 안). 템플릿: `templates/preview.html`.
-- 신규/보강을 배지로 구분하고, `[[wikilink]]` 대상이 이미 brain 에 있는지(빨간 배지 = 신규 생성 예정 또는 오타)를 표시한다.
+- 생성기: `scripts/generate_preview.py` (이 스킬 번들 안). 화면은 `brain-curate`와 같은 Memory Atlas 문서 템플릿을 사용한다.
+- 신규/보강을 배지로 구분하고, `[[wikilink]]` 대상이 기존 brain 또는 이번 작성 페이지에 있는지 표시한다(빨간 배지 = 어느 쪽에도 없는 대상).
 
 ```bash
 python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
@@ -165,7 +165,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 - `--ns` 가 private 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`).
 - `--new` 는 새로 만들 페이지, `--update` 는 기존 보강 페이지. 보강본은 실제 brain 파일을 복사해 보강 내용을 얹은 버전을 넘긴다.
 - 주의: 본문에 `</script>` 가 있으면 생성기가 거부한다. CDN 로드라 오프라인이면 스타일이 빠진다.
-- 빨간 🔗 배지는 아직 없는 백링크 대상이다. 신규 생성 예정이거나 slug 오타이므로 의도와 맞는지 확인한다.
+- 빨간 🔗 배지는 기존 brain 과 이번 작성 페이지 어디에도 없는 백링크 대상이다. slug 오타나 누락 페이지인지 확인한다.
 
 ### 6c. 결정 (다음 턴)
 

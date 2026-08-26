@@ -321,6 +321,36 @@
   }
   .wiki-page__body h3 { font-size: 1.02rem; }
   .wiki-page__body a { color: var(--atlas-mint); }
+  .wiki-page__body .wikilink {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 0.04rem 0.38rem;
+    border: 1px solid rgba(154, 201, 186, 0.28);
+    border-radius: 999px;
+    color: var(--atlas-mint);
+    background: rgba(154, 201, 186, 0.08);
+    font: 500 0.78rem/1.45 "IBM Plex Mono", monospace;
+    overflow-wrap: anywhere;
+  }
+  .wiki-page__body .wikilink::before {
+    width: 0.34rem;
+    height: 0.34rem;
+    margin-right: 0.32rem;
+    border-radius: 999px;
+    background: var(--atlas-current);
+    box-shadow: 0 0 10px rgba(92, 200, 178, 0.52);
+    content: "";
+  }
+  .wiki-page__body .wikilink--missing {
+    border-color: rgba(212, 135, 94, 0.42);
+    color: var(--atlas-clay);
+    background: rgba(212, 135, 94, 0.08);
+  }
+  .wiki-page__body .wikilink--missing::before {
+    background: var(--atlas-clay);
+    box-shadow: 0 0 10px rgba(212, 135, 94, 0.5);
+  }
   .wiki-page__body strong { color: var(--atlas-paper); }
   .wiki-page__body blockquote {
     margin-inline: 0;
@@ -383,12 +413,17 @@
 </head>
 <body data-preview-contract="memory-atlas-doc-v1">
 <nav class="atlas-nav" aria-label="미리보기 내비게이션">
-  <span class="atlas-nav__brand">FOS / MEMORY · CURATION</span>
+  <span class="atlas-nav__brand" id="nav-brand">FOS / MEMORY · CURATION</span>
   <span class="atlas-nav__return">← 기억의 항해도</span>
 </nav>
 <div class="atlas-shell" id="app"></div>
 <script>
 const DATA = __DATA__;
+const COPY = DATA.copy || {};
+const knownSlugs = new Set([
+  ...(DATA.knownSlugs || []),
+  ...(DATA.pages || []).map((page) => page.slug).filter(Boolean),
+]);
 
 const DECISION_LABELS = {
   admit: "신규 저장",
@@ -441,25 +476,39 @@ function renderCandidate(candidate, index) {
   </article>`;
 }
 
+function renderWikilinks(markdown) {
+  return String(markdown || "").replace(/\[\[([^\]]+)\]\]/g, (_, reference) => {
+    const [target, label] = reference.split("|", 2);
+    if (target.startsWith("../") || target.startsWith("./")) {
+      return `<code>${escapeHtml(reference)}</code>`;
+    }
+    const slug = target.split("#", 1)[0].split("/").pop().replace(/\.md$/, "");
+    const missing = knownSlugs.size > 0 && !knownSlugs.has(slug);
+    const className = missing ? "wikilink wikilink--missing" : "wikilink";
+    return `<span class="${className}" title="${escapeHtml(target)}">${escapeHtml(label || slug)}</span>`;
+  });
+}
+
 function renderPage(page) {
-  return `<article class="wiki-page">
+  return `<article class="wiki-page" data-page-status="${escapeHtml(page.status || "preview")}">
     <div class="wiki-page__nav">
       <span class="wiki-page__return">← 기억의 항해도로 돌아가기</span>
       ${page.frontmatter ? `<span class="wiki-page__frontmatter">${escapeHtml(page.frontmatter)}</span>` : ""}
     </div>
-    <div class="wiki-page__body">${marked.parse(page.markdown || "")}</div>
+    <div class="wiki-page__body">${marked.parse(renderWikilinks(page.markdown))}</div>
   </article>`;
 }
 
 const candidates = DATA.candidates || [];
 const pages = DATA.pages || [];
+document.getElementById("nav-brand").textContent = COPY.navBrand || "FOS / MEMORY · CURATION";
 document.getElementById("app").innerHTML = `
   <aside class="atlas-rail" aria-label="판정 요약">
     <div>
       <p class="atlas-rail__eyebrow">FOS / MEMORY</p>
-      <h1>지식 승인 항해도</h1>
+      <h1>${escapeHtml(COPY.railTitle || "지식 승인 항해도")}</h1>
     </div>
-    <p class="atlas-rail__note">저장 전 후보와 문서 모습을 함께 확인합니다.</p>
+    <p class="atlas-rail__note">${escapeHtml(COPY.railNote || "저장 전 후보와 문서 모습을 함께 확인합니다.")}</p>
     ${renderStats(DATA.stats)}
     <ul class="atlas-rail__legend">
       <li><i></i> 새 기억</li>
@@ -469,9 +518,9 @@ document.getElementById("app").innerHTML = `
   </aside>
   <main class="atlas-main">
     <header class="hero">
-      <p class="hero__kicker">CURATION / BEFORE WRITE</p>
+      <p class="hero__kicker">${escapeHtml(COPY.heroKicker || "CURATION / BEFORE WRITE")}</p>
       <h2>${escapeHtml(DATA.title || "지식 큐레이션")}</h2>
-      <p class="hero__summary">현재 Memory Atlas 문서 화면의 색, 글꼴과 읽기 폭을 반영한 승인용 근사 화면입니다. 3D 상호작용은 포함하지 않습니다.</p>
+      <p class="hero__summary">${escapeHtml(COPY.heroSummary || DATA.summary || "현재 Memory Atlas 문서 화면의 색, 글꼴과 읽기 폭을 반영한 승인용 근사 화면입니다. 3D 상호작용은 포함하지 않습니다.")}</p>
     </header>
     ${candidates.length ? `
       <section aria-labelledby="candidate-title">
@@ -482,7 +531,7 @@ document.getElementById("app").innerHTML = `
     ${pages.length ? `
       <section aria-labelledby="page-title">
         <h2 class="section-title" id="page-title">wiki 문서 미리보기</h2>
-        <p class="section-hint">현재 원문 화면과 같은 시각 언어로 본문을 읽습니다. 실제 링크와 3D 상태 복원은 등록 후 Quartz에서 검증합니다.</p>
+        <p class="section-hint">${escapeHtml(COPY.pageHint || "현재 원문 화면과 같은 시각 언어로 본문을 읽습니다. 실제 링크와 3D 상태 복원은 등록 후 Quartz에서 검증합니다.")}</p>
         <div class="wiki-pages">${pages.map(renderPage).join("")}</div>
       </section>` : ""}
   </main>`;

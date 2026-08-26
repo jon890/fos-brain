@@ -95,6 +95,25 @@ export function createDefaultMemoryAtlasState(data?: MemoryAtlasData): MemoryAtl
   }
 }
 
+export function clearMemoryAtlasQuery(state: MemoryAtlasState): MemoryAtlasState {
+  return { ...state, query: "" }
+}
+
+export function selectMemoryAtlasNode(
+  state: MemoryAtlasState,
+  selectedSlug?: FullSlug,
+): MemoryAtlasState {
+  return {
+    ...state,
+    query: selectedSlug ? "" : state.query,
+    selectedSlug,
+  }
+}
+
+export function shouldShowMemoryAtlasResults(state: MemoryAtlasState): boolean {
+  return Boolean(state.query.trim() || state.tags?.length)
+}
+
 export function inferMemoryNamespace(slug: string): MemoryAtlasNamespace {
   return slug.startsWith("_private/") ? "private" : "public"
 }
