@@ -14,6 +14,9 @@ quartz/tsconfig.tsbuildinfo
 quartz-local/content/
 quartz-local/public/
 
+# Cloudflare Access 보호 배포 산출물 — public + private 포함, 절대 commit 하지 않는다
+quartz-protected/
+
 # 로컬 에이전트 상태 (OMC)
 .omc/
 

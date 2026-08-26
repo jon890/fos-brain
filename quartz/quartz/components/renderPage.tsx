@@ -3,7 +3,13 @@ import { QuartzComponent, QuartzComponentProps } from "./types"
 import HeaderConstructor from "./Header"
 import BodyConstructor from "./Body"
 import { JSResourceToScriptElement, StaticResources } from "../util/resources"
-import { FullSlug, RelativeURL, joinSegments, normalizeHastElement } from "../util/path"
+import {
+  FullSlug,
+  RelativeURL,
+  joinSegments,
+  normalizeHastElement,
+  resolveRelative,
+} from "../util/path"
 import { clone } from "../util/clone"
 import { visit } from "unist-util-visit"
 import { Root, Element, ElementContent } from "hast"
@@ -241,29 +247,51 @@ export function renderPage(
   const Header = HeaderConstructor()
   const Body = BodyConstructor()
 
-  const LeftComponent = (
-    <div class="left sidebar">
-      {left.map((BodyComponent) => (
-        <BodyComponent {...componentData} />
-      ))}
-    </div>
-  )
+  const LeftComponent =
+    left.length > 0 ? (
+      <div class="left sidebar">
+        {left.map((BodyComponent) => (
+          <BodyComponent {...componentData} />
+        ))}
+      </div>
+    ) : (
+      <></>
+    )
 
-  const RightComponent = (
-    <div class="right sidebar">
-      {right.map((BodyComponent) => (
-        <BodyComponent {...componentData} />
-      ))}
-    </div>
-  )
+  const RightComponent =
+    right.length > 0 ? (
+      <div class="right sidebar">
+        {right.map((BodyComponent) => (
+          <BodyComponent {...componentData} />
+        ))}
+      </div>
+    ) : (
+      <></>
+    )
 
   const lang = componentData.fileData.frontmatter?.lang ?? cfg.locale?.split("-")[0] ?? "en"
   const direction = i18n(cfg.locale).direction ?? "ltr"
+  const isMemoryAtlasHome = slug.toLowerCase() === "index"
+  const memoryAtlasReturnUrl = `${resolveRelative(slug, "index" as FullSlug)}?node=${encodeURIComponent(
+    slug,
+  )}`
   const doc = (
     <html lang={lang} dir={direction}>
       <Head {...componentData} />
-      <body data-slug={slug}>
+      <body
+        data-slug={slug}
+        class={isMemoryAtlasHome ? "memory-atlas-page" : "memory-atlas-doc-page"}
+      >
         <div id="quartz-root" class="page">
+          {!isMemoryAtlasHome && (
+            <nav class="memory-atlas-doc-nav" aria-label="Memory Atlas 문서 탐색">
+              <a class="memory-atlas-doc-return" href={memoryAtlasReturnUrl}>
+                <span aria-hidden="true">←</span>
+                항해도로 돌아가기
+              </a>
+              <span class="memory-atlas-doc-brand">FOS / MEMORY</span>
+            </nav>
+          )}
           <Body {...componentData}>
             {LeftComponent}
             <div class="center">

@@ -23,8 +23,8 @@ updated: 2026-07-30
 ## 관련 개념
 
 - [[shared-skill-core-overlay]] — 이 원칙이 적용되는 배포 구조(코어·오버레이)
-- [[planning-eight-step-design]] — 실제로 이 원칙을 반복 적용해 슬림화한 대표 스킬
-- [[docs-six-axis-audit]] — 문서 중복(축 D)을 스킬 자신에도 적용한 사례
+- [[script-skill-separation]] — 실행과 문맥의 책임을 분리하는 인접 원칙
+- [[self-improving-harness]] — 반복 지시를 정리하고 단일 원본으로 환원하는 루프
 
 ## Sources
 

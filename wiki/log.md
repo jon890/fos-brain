@@ -258,3 +258,18 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 정리: 백링크 2건 처리(활성 문장 제거 1 / 역사 링크 일반 텍스트 전환 1), INDEX 항목 11개 제거
 - 사유: OpenClaw를 더 이상 사용하지 않아 관련 지식을 검색·탐색 대상에서 제거
 - raw: 보존(1개)
+
+## [2026-08-25] add | 개인 지식의 현재 작업 방식·시스템·취향 갱신
+
+- Source: [[../raw/notes/2026-08-25-personal-knowledge-refresh.md]]
+- 신규 2 페이지: information-interface-preferences, fos-agents
+- 보강·통합 9 페이지: ai-harness-pattern, work-style, ai-dev-harness, operations-troubleshooting, fos-accountbook, tech-stack-preferences, testing-philosophy, ai-era-professionalism, rag-system-architecture-strategies
+- ai-nodes는 현재 이름인 fos-agents로 교체하고 기존 구조 개념의 출처와 책임을 현재화했다.
+
+## [2026-08-25] delete | 절차형·좁은 함정·개인 맥락 없는 페이지 정리
+
+- 대상: public wiki 38페이지 (방식: 완전 삭제)
+- 정리: 실행 절차는 skill·AGENTS.md, 저장소별 함정은 코드·ADR·회고가 단일 원본을 맡도록 활성 백링크와 INDEX를 정리했다.
+- 통합: AI 전문성 7페이지와 RAG 사례 5페이지의 장기 가치가 있는 판단은 각 상위 topic에 흡수했다.
+- 사유: 6개월 뒤 개인 작업 방식과 결정을 이해하는 데 직접 기여하지 않는 세부 절차·외부 사례 잎 페이지를 검색 대상에서 제거했다.
+- raw: 보존(16개)

@@ -41,7 +41,6 @@ updated: 2026-06-01
 - [[ai-harness-pattern]]
 - [[self-improving-harness]]
 - [[tech-stack-preferences]]
-- [[commit-convention-style]]
 - [[work-style]]
 
 ## Sources

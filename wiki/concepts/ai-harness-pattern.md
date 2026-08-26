@@ -1,118 +1,59 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-07-03
+updated: 2026-08-25
+title: "AI 하네스 패턴"
+description: "에이전트 작업을 목표, 권한 경계, 독립 검토와 실측 근거로 닫는 개인 개발 방식"
+tags: [ai-agent, harness, verification, work-style]
+status: stable
 ---
 
 # AI 하네스 패턴
 
-기획부터 릴리스까지 개발 전 주기를 Claude Code 스킬로 자동화한 재사용 워크플로우.
-새 프로젝트를 시작하면 이 하네스를 통째로 포팅한다.
+AI 에이전트가 긴 작업을 안전하게 끝내도록 목표, 권한, 컨텍스트와 검증 경계를 설계하는 개인 작업 방식이다.
+특정 도구의 고정 단계보다 어떤 조건에서 어떤 실행 방식을 고르고, 무엇으로 완료를 증명하는지가 핵심이다.
 
-## 핵심 포인트
+## 핵심 원칙
 
-- **표준 파이프라인** — 5단계 순서로 실행한다.
-  - `planning` — 8단계 설계 ([[planning-eight-step-design]])
-  - `plan-and-build` / `build-with-teams` — 구현 ([[build-with-teams-rules]])
-  - `review-fix` — PR 리뷰 자동 반영 ([[pr-review-fix-workflow]])
-  - `docs-check` — 문서 검증 ([[docs-six-axis-audit]])
-  - `release`
-- **Agent Teams 협업** — `build-with-teams` 가 4역할로 작성과 검증을 분리한다.
-  - 역할: team-lead, critic, executor, docs-verifier
-  - 같은 컨텍스트에서 자기승인 금지
-- **task / phase 분해** — 작업을 번호 task 로 쪼개고, phase 당 항목을 5개 이하로 제한한다(초과 시 후반부 누락 실증).
-- **토큰 라우팅** — 목적별로 모델을 다르게 쓴다.
-  - 계획 — opus
-  - task 실행 — sonnet
-  - 검증·커밋 — haiku
-- **내부/공개 스킬 분리**
-  - `.claude/skills/` — 개발 워크플로우
-  - `skills/` — 공개 사용법
-- **하네스 우선**: nhncloud-cli 는 코드 0줄 상태에서 하네스부터 포팅 — "도구를 만들기 전에 도구 만드는 공정을 표준화".
-- **커스텀 도메인 에이전트 = 도메인 지식 단일 소스** — executor·docs-verifier 를 프로젝트 전용 agent 정의로 만들고, 코딩 규칙·환경 함정·검증 축을 모은다.
-  스킬의 스폰 프롬프트는 "호출 인자와 직전 phase 학습 인계" 만 담아 가벼워지고, 도메인 규칙을 스킬마다 반복하지 않아 drift 가 안 생긴다.
-  - agent 프롬프트 골격:
-    - Role
-    - Domain_Rules
-    - Self_Check(완료 직전 grep)
-    - Verification_Protocol(보고·차단 조건)
-    - Self_Discipline(git 금지·격리·꼭 필요한 변경만)
-  - 검증 전용 agent 는 쓰기 도구를 막아 읽기 전용을 강제하고, 자기-면제 금지를 정의에 직접 박는다.
-  - 거울 구조 — docs-verifier 의 검증 항목은 planning 영향 표의 거울이라 별도 체크리스트를 신설하지 않는다.
-- **운영 단계까지 닫는 루프** — 파이프라인은 구현·릴리스에서 끝나지 않고 운영 신호를 다시 입력으로 환원한다.
-  - 운영 반영 전 격리 인스턴스로 통합 회귀를 검증한다.
-  - 운영 반영은 인스턴스 한 대를 먼저 배포해 검증한 뒤 나머지를 rolling 한다.
-  - 운영 에러를 분류해 다음 planning 입력으로 되돌린다.
+- **결과부터 닫는다.** 목표, 성공 기준, 제약과 중단 조건을 먼저 정한다.
+- **남은 판단으로 실행 방식을 고른다.** 범위가 닫힌 작업은 직접 실행하고, 설계 판단이나 실패 비용이 크면 계획과 독립 검토를 강화한다.
+- **작성과 검토를 분리한다.** 구현자가 만든 결과를 같은 맥락의 자기 확신만으로 승인하지 않는다.
+- **근거로 완료를 증명한다.** 관련 기능 검사부터 타입, 빌드와 실제 사용 경로까지 위험에 비례해 확인한다.
+- **권한 경계를 지킨다.** 로컬의 되돌릴 수 있는 변경은 자율 실행하되 외부 쓰기, 권한 변경과 파괴적 작업은 승인 범위를 넘지 않는다.
+- **실패 시 상태 불변을 확인한다.** 재시도 가능한 작업은 중간 실패가 배포 상태나 사용자 데이터를 바꾸지 않아야 한다.
 
-## 하네스란 + MVP 구축 워크플로우
+## 지식과 실행 절차의 분리
 
-하네스를 한 줄로 정의하면 `실행 계획 + 완료 조건 + 컨텍스트 참조` 다.
+하네스를 이루는 정보는 책임 위치가 다르다.
 
-- **실행 계획** — 무엇을 어떤 순서로 만드나(Phase 분리).
-- **완료 조건** — 각 Phase 가 언제 끝나나(빌드 성공·CLI 실행 등 기계적으로 판단 가능한 조건).
-- **컨텍스트 참조** — 에이전트가 어떤 문서를 읽고 실행하나.
+| 내용 | 단일 원본 |
+| --- | --- |
+| 반복 명령과 실행 순서 | skill과 script |
+| 에이전트 행동 규칙 | AGENTS.md |
+| 저장소 한정 구조와 장애 | 코드, ADR와 회고 |
+| 개인의 선택 기준과 작업 방식 | brain |
 
-AI 에이전트로 MVP 를 처음부터 만들 때의 3단계 워크플로우다(dooray-cli 사례).
+이 분리를 지키면 절차가 바뀌어도 개인 작업 방식의 핵심은 남고, 오래된 명령이 검색 결과에서 현재 규칙처럼 노출되지 않는다.
 
-1. **양질의 컨텍스트** — 대화로 기술적 결정을 깊이 쌓는다.
-2. **하네스 엔지니어링** — 문서를 기반으로 Phase 를 분리하고 에이전트가 자율 구현한다.
-3. **기능 추가·문서화** — 추가 구현마다 문서를 누적·정제해 에이전트의 판단력을 높이는 루프.
+## 운영까지 닫는 검증
 
-각 단계는 이전 산출물에 의존한다 — 1이 부실하면 2에서 에이전트가 방향을 잃는다.
-
-> 핵심 통찰: 에이전트가 잘 동작하는 이유는 코드를 잘 짜서가 아니라 **실행 전에 문서가 충분히 정제돼 있기 때문**이다.
-
-## 추가 (2026-06-25) — GNOSIS 관점에서 본 하네스의 성장 단계
-
-NAVER D2의 GNOSIS 발표는 AI 시스템을 도구형과 성장형 에이전트로 구분한다.
-이 관점에서 기존 AI 하네스는 단순 L2 계획 자동화가 아니라 제한된 L3 세션 간 학습 구조를 가진다.
-
-그 이유는 작업 후 학습이 다음 실행 표면으로 환원되기 때문이다.
-
-- PR 리뷰 학습은 [[self-improving-harness]]로 누적된다.
-- 회피 패턴은 [[pitfalls-file-per-pattern]]로 분리된다.
-- 프로젝트 전용 지식은 [[custom-domain-agent]]에 모인다.
-- 자동 리뷰와 점검은 [[ai-code-review-github-actions]], [[docs-six-axis-audit]]로 닫힌다.
-- AI 생성 코드의 최종 채택은 [[ai-generated-code-acceptance-criteria]]처럼 사람의 설명 가능성과 변경 범위 판단을 남긴다.
-
-다만 GNOSIS식 완전한 성장형 에이전트와는 차이가 있다.
-현재 하네스는 LLM 가중치를 바꾸지 않는다는 점은 같지만, constitution 검증 점검과 fitness auditor가 형식화되어 있지는 않다.
-따라서 다음 개선 방향은 "무엇을 자동 학습해도 되는가"와 "무엇은 사람이 승인해야 하는가"를 [[constitutional-growth-gate]]처럼 별도 검증 점검으로 분리하는 것이다.
-
-## 추가 (2026-07-03) — Codex를 업무 에이전트로 쓰는 하네스 관점
-
-조코딩의 OpenAI 인터뷰는 Codex를 코드 작성뿐 아니라 데이터 분석, 피드백 요약, 리서치, 협업 도구 탐색에 쓰는 사례를 보여준다.
-이 관점에서 [[codex-general-work-agent]]는 하네스의 실행 표면을 IDE 밖 업무 흐름으로 넓힌다.
-
-하네스 쪽 핵심은 변하지 않는다.
-업무 에이전트가 다루는 도구가 늘어날수록 목표, 완료 조건, 검증 방법, 사람 승인 경계가 더 명확해야 한다.
+구현 성공만으로 작업을 끝내지 않는다.
+배포가 포함되면 격리된 빌드, 전환 전후 상태, 사용자 경로와 되돌리기 조건까지 확인한다.
+운영에서 발견한 재발 가능한 문제는 테스트나 스킬로 환원하고, 일회성 사건은 git과 회고에 남긴다.
 
 ## 관련 개념
 
-- [[ai-dev-harness]] — 이 패턴과 단계별 방법론을 묶는 상위 주제
-- [[planning-eight-step-design]] — 1단계 planning 의 8단계 설계 방법론 (seed)
-- [[pr-review-fix-workflow]] — 3단계 review-fix 의 PR 리뷰 사후 반영 방법론 (seed)
-- [[docs-six-axis-audit]] — 4단계 docs-check 의 6축 점검 방법론 (seed)
-- [[self-improving-harness]] — 하네스가 리뷰 학습을 스스로 누적
-- [[build-with-teams-rules]] — build-with-teams 파이프라인의 repo 무관 운영 규칙
-- [[docs-first-adr]] — planning 단계가 의사결정을 docs 로 산출
-- [[commit-convention-style]] — review-fix·release 가 강제하는 커밋 규약
-- [[ai-code-review-github-actions]] — PR 자동 리뷰를 GitHub Actions 로 붙이는 워크플로우 (review-fix 의 입력원)
-- [[ai-generated-code-acceptance-criteria]] — 자동화된 구현 결과를 사람이 채택할지 결정하는 기준
-- [[agent-friendly-cli-design]] — 하네스가 다루는 도구(CLI)를 에이전트가 안정적으로 호출하도록 만드는 설계
-- [[merge-conflict-free-append]] — 하네스가 쌓는 누적 docs(ADR·pitfalls)의 머지 충돌을 파일 per 항목과 INDEX 로 없애는 구조 패턴
-- [[custom-domain-agent]] — 일반 역할 agent 를 레포 도메인 지식으로 특화한 전용 subagent (executor/docs-verifier)
-- [[pitfalls-file-per-pattern]] — 회피 패턴을 파일-per-패턴과 INDEX 라우터로 운영하는 구조
-- [[harness-bootstrap-checklist]] — 이 파이프라인을 새 레포에 까는 조립 순서 체크리스트
-- [[gnosis-agent-autonomous-growth]] — 외부 기억·스킬·가치 레이어를 갱신하는 성장형 에이전트 프레임워크
-- [[codex-general-work-agent]] — Codex를 코드 생성기보다 넓은 업무 에이전트로 쓰는 패턴
-- [[ai-native-startup-strategy]] — 작은 팀이 하네스와 업무 에이전트로 레버리지를 얻는 전략
+- [[work-style]] — 이 패턴을 포함하는 전체 업무 스타일
+- [[self-improving-harness]] — 검증에서 얻은 학습을 올바른 단일 원본으로 환원하는 루프
+- [[testing-philosophy]] — 실제 경로와 실패 불변을 확인하는 검증 철학
+- [[docs-first-adr]] — 되돌리기 어려운 결정의 이유를 먼저 남기는 방식
+- [[agent-friendly-cli-design]] — 사람과 에이전트가 같은 도구를 안정적으로 사용하는 인터페이스
+- [[ai-generated-code-acceptance-criteria]] — 자동 검증 이후 사람이 최종 채택을 설명하는 기준
+- [[ai-verification-layer]] — 비결정적 결과를 통과 기준으로 관리하는 구조
 
 ## Sources
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
-- [[../../raw/repos/2026-06-01-dooray-cli-tool-analysis.md]]
-- [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]] — 커스텀 도메인 에이전트 단일 소스 보강
-- [[../../raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md]] — GNOSIS의 도구형 AI vs 성장형 에이전트 구분을 기존 하네스에 매핑
-- [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]] — AI 생성 코드의 채택 기준 보강
-- [[../../raw/videos/2026-06-27-jocoding-openai-agi-codex.md]] — Codex를 업무 에이전트로 쓰는 OpenAI 내부 활용 사례
+- [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]]
+- [[../../raw/notes/2026-07-30-fos-skills-harness-evolution.md]]
+- [[../../raw/notes/2026-08-25-personal-knowledge-refresh.md]]

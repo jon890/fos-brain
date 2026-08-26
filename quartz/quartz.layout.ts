@@ -19,56 +19,31 @@ export const defaultContentPageLayout: PageLayout = {
   beforeBody: [
     Component.ConditionalRender({
       component: Component.Breadcrumbs(),
-      condition: (page) => page.fileData.slug !== "index",
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
-    Component.ArticleTitle(),
-    Component.KnowledgeMeta(),
-    Component.ContentMeta(),
-    Component.TagList(),
-  ],
-  left: [
-    Component.PageTitle(),
-    Component.MobileOnly(Component.Spacer()),
-    Component.Flex({
-      components: [
-        {
-          Component: Component.Search(),
-          grow: true,
-        },
-        { Component: Component.Darkmode() },
-        { Component: Component.ReaderMode() },
-      ],
+    Component.ConditionalRender({
+      component: Component.MemoryAtlas(),
+      condition: (page) => page.fileData.slug?.toLowerCase() === "index",
     }),
-    Component.Explorer(),
-  ],
-  right: [
-    Component.Graph({
-      localGraph: {
-        depth: 2,
-        scale: 0.95,
-        repelForce: 0.9,
-        centerForce: 0.42,
-        linkDistance: 48,
-        fontSize: 0.72,
-        opacityScale: 1.2,
-        showTags: false,
-        focusOnHover: true,
-      },
-      globalGraph: {
-        scale: 0.72,
-        repelForce: 0.95,
-        centerForce: 0.24,
-        linkDistance: 46,
-        fontSize: 0.62,
-        opacityScale: 1.05,
-        showTags: false,
-        focusOnHover: true,
-        enableRadial: true,
-      },
+    Component.ConditionalRender({
+      component: Component.ArticleTitle(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
-    Component.DesktopOnly(Component.TableOfContents()),
-    Component.Backlinks(),
+    Component.ConditionalRender({
+      component: Component.KnowledgeMeta(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.ContentMeta(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.TagList(),
+      condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
+    }),
   ],
+  left: [],
+  right: [],
 }
 
 // components for pages that display lists of pages  (e.g. tags or folders)

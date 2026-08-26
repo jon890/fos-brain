@@ -1,12 +1,12 @@
 ---
 type: topic
 created: 2026-05-19
-updated: 2026-08-18
-title: "RAG 시스템 아키텍처 전략 비교"
-description: "토스, 우아한형제들, Sionic AI 사례로 RAG의 작업 흐름, 추론, 데이터 품질 전략을 비교한다."
+updated: 2026-08-25
+title: "RAG 시스템 아키텍처 전략"
+description: "워크플로, 추론과 입력 품질을 구분해 RAG 시스템을 설계하는 개인 관점"
 tags: [rag, architecture, retrieval, data-quality]
 status: stable
-stale_after: 2027-08-18
+stale_after: 2027-08-25
 sources:
   - id: rag-architecture-analysis
     resource: ../../raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf
@@ -16,47 +16,37 @@ sources:
     title: 다른 기업의 RAG 시스템 발표자료
 ---
 
-# RAG 시스템 아키텍처 전략 비교
+# RAG 시스템 아키텍처 전략
 
-기업의 RAG 시스템 구축은 단일 LLM 도입이 아니라 **조직의 문제** 에 맞춘 아키텍처 설계의 문제다. 토스·우아한형제들·Sionic AI 세 사례는 각각 **Workflow / Logic / Data Quality** 라는 서로 다른 축에 집중한다.
+RAG 시스템은 하나의 검색 기법이 아니라 사용자 작업 흐름, 추론 구조와 입력 데이터 품질을 함께 설계하는 문제다.
+외부 사례의 제품 이름보다 세 축을 어떤 순서로 진단할지에 장기 가치가 있다.
 
-## 한 줄 요약
+## 세 가지 설계 축
 
-- **토스** — "검색 엔진을 만들지 말고, 사용자가 이미 있는 곳 (Slack·IDE) 에 답이 찾아오게 하라."
-- **우아한형제들** — "단일 거대 프롬프트 대신, 의도를 분류해 특화 체인으로 라우팅하라."
-- **Sionic AI** — "모델을 바꾸지 말고 파서를 바꿔라 — 정확도 20%+ 가 거기서 나온다."
+| 축 | 핵심 질문 | 사례에서 얻은 교훈 |
+| --- | --- | --- |
+| Workflow | 사용자가 이미 일하는 곳에 검색 결과가 도착하는가? | 별도 검색 화면보다 메신저와 IDE 같은 기존 흐름에 통합한다. |
+| Logic | 질문 의도에 따라 검색과 추론 경로가 달라지는가? | 하나의 거대 prompt보다 분류와 특화 경로의 책임을 나눈다. |
+| Data Quality | 원문이 검색과 생성에 적합한 구조로 보존되는가? | 모델 교체 전에 parsing, 표 구조와 읽기 순서를 검증한다. |
 
-## 3대 축
+## 개인 설계 우선순위
 
-| 축 | 핵심 질문 | 대표 사례 |
-|---|---|---|
-| **Workflow / UX** | 사용자의 기존 워크플로우에 검색이 어떻게 스며들 것인가? | [[toss-park-ssi-rag]] |
-| **Logic / Reasoning** | 의도 분류와 추론 로직을 어떻게 설계할 것인가? | [[woowa-mulebose-text-to-sql]] |
-| **Data Quality / Parsing** | 원본 데이터를 어떻게 신뢰 가능하게 파싱할 것인가? | [[sionic-vlm-document-parsing]] |
+1. **입력 완전성과 신선도**: 수집 누락, 삭제 동기화와 갱신 실패를 먼저 측정한다.
+2. **변환 품질**: 문서와 표의 구조가 chunk 이후에도 보존되는지 평가한다. [[document-parsing-quality-evaluation]]
+3. **검색 품질**: Recall@K, MRR과 nDCG 같은 지표로 후보 집합과 순위를 본다.
+4. **최종 답변**: 근거성, 정확성과 사용자 작업 완료 여부를 평가한다.
 
-## 사례별 종합 비교
+현재 직접 경험은 1과 2에 가장 강하다.
+3과 4는 학습·설계 영역과 운영 경험을 구분해 다룬다.
 
-| 구분 | 토스 (Toss) | 우아한형제들 (Woowa) | Sionic AI |
-|---|---|---|---|
-| 핵심 전략 | Workflow & Culture (UX) | Logic & Reasoning (SQL) | Data Quality (Parsing) |
-| 주요 기술 | IDE 통합, 순환형 파이프라인 ([[docflow-code-to-doc]]) | [[multi-chain-rag-architecture]], ReAct Prompt | VLM 2-Stage Parsing |
-| 추천 영역 | 지식 관리 (Knowledge Mgmt) | 데이터 분석 (Data Analytics) | 문서 자산화 (Doc Processing) |
+## 설계 판단
 
-## 3가지 제언 (결론)
-
-1. **UX 통합** — 사용자의 기존 워크플로우 (메신저·IDE) 안으로 검색이 스며들어야 한다.
-2. **엔지니어링** — 단순 프롬프팅을 넘어 의도를 분류하고 추론하는 Logic 설계가 필요하다.
-3. **데이터 품질** — 모델보다 중요한 것은 원본 데이터를 어떻게 Parsing 하느냐다.
-
-## 포함 개념
-
-- [[toss-park-ssi-rag]]
-- [[docflow-code-to-doc]]
-- [[woowa-mulebose-text-to-sql]]
-- [[multi-chain-rag-architecture]]
-- [[sionic-vlm-document-parsing]]
+- 사용 흐름이 나쁘면 검색 정확도가 높아도 채택되지 않는다.
+- 추론 경로가 복잡해질수록 각 단계의 실패 이유와 fallback이 보여야 한다.
+- 입력 품질 결함은 생성 모델을 바꿔도 반복되므로 parser와 평가셋을 먼저 본다.
+- 비결정적 평가 앞에는 스키마, 누락과 구조 같은 결정적 검사를 둔다. [[testing-philosophy]]
 
 ## Sources
 
-- [[../../raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf]] (전체, 특히 1–2, 14–15페이지)
+- [[../../raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf]]
 - [[../../raw/notes/다른 기업의 RAG 시스템 발표자료.md]]

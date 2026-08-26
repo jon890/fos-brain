@@ -45,7 +45,7 @@ updated: 2026-06-12
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 이 구조를 쓰는 하네스 전체
-- [[planning-eight-step-design]] — 분해 plan 을 설계하는 단계 (발견성 검토 포함)
+- [[ai-harness-pattern]] — 분해된 산출물의 발견성과 검증 경계를 설계하는 상위 방식
 - [[docs-first-adr]] — ADR 을 docs 로 남기는 규율 (이 구조의 대표 적용처)
 - [[self-improving-harness]] — 이 구조 위에 축적 점검·prune 운영 규율을 더하는 루프
 

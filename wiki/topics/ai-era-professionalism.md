@@ -1,33 +1,40 @@
 ---
 type: topic
 created: 2026-07-07
-updated: 2026-07-07
+updated: 2026-08-25
+title: "AI 시대 전문성"
+description: "AI가 생산을 맡을수록 검증, 판단과 운영 책임이 중요해진다는 개인 직업 관점"
+tags: [career, ai, verification, professionalism]
+status: stable
 ---
 
 # AI 시대 전문성
 
-AI가 생산을 맡을수록 사람의 전문성은 산출물 작성 능력에서 검증, 판단, 운영 책임으로 이동한다.
+AI가 산출물 생산을 맡을수록 사람의 전문성은 작성 속도보다 검증, 판단과 운영 책임으로 이동한다.
+사용자에게 중요한 것은 AI를 많이 쓰는지가 아니라 어떤 결과를 왜 믿고, 실패하면 어떻게 복구하는지 설명할 수 있는가다.
 
-하용호의 발표는 AX 도입을 단순한 도구 보급이 아니라 조직의 지식 구조와 일의 파이프라인을 다시 설계하는 문제로 본다.
-개인은 AI를 잘 쓰는 사용자를 넘어, 자기 도메인의 AI를 만들고 검증하고 운영하는 책임자가 되어야 한다.
+## 개인적으로 남길 관점
 
-## Concepts
+- AI 산출물의 최종 채택 기준은 사람의 설명 가능성과 문제에 비례한 변경 범위다. [[ai-generated-code-acceptance-criteria]]
+- 자동 검증은 모든 중간 산출물을 읽는 비용을 줄이지만, 검증 기준과 사람 승인 경계는 사람이 설계해야 한다. [[ai-verification-layer]]
+- 전문가는 자기 도메인의 입력 품질, 실패 모드와 운영 지표를 알고 AI가 틀릴 때의 복구 경로를 소유해야 한다.
+- 에이전트에게 더 긴 작업을 맡길수록 목표, 권한과 완료 근거를 명확하게 만드는 하네스가 중요하다. [[ai-harness-pattern]]
+- 도구를 자주 실험하는 태도만으로 충분하지 않다. 실제 시스템 지식과 검증 능력이 함께 있어야 한다.
 
-- [[ax-j-curve-trap]] — AX 도입 뒤 조직이 환호, 정체, 신남, 의구심, 파이프라인 재설계를 거치는 단계 모델
-- [[ai-era-debt-triad]] — AI 시대에 기술부채, 인지부채, 의도부채가 결합해 속도와 신뢰를 갉아먹는 구조
-- [[ai-verification-layer]] — AI 산출물을 모두 이해하려 하기보다 통과 기준을 설계해 신뢰를 만드는 방식
-- [[ai-native-company]] — 회사 지식과 업무 시스템을 AI가 검색하고 참조하고 반복 개선할 수 있게 재편한 조직
-- [[ai-era-professional-operator]] — 전문가가 산출물 숙련자에서 자기 도메인의 AI 운영 책임자로 바뀌는 인재상
+## 커리어에 적용하는 방식
+
+백엔드 경험은 AI 기능의 주변 배관이 아니라 품질과 운영 경계를 만드는 기반으로 본다.
+문서 파싱, RAG 입력, 비결정적 출력 평가와 배포 안정성을 연결하고, 학습 중인 검색·모델 운영 영역은 실제 경험과 구분해 설명한다.
 
 ## 관련 개념
 
-- [[ai-generated-code-acceptance-criteria]] — AI 산출물 채택에서 설명 가능성과 책임을 요구하는 기준
-- [[ai-harness-pattern]] — 에이전트가 자율 실행할 환경을 갖추는 개발 하네스
-- [[gnosis-agent-autonomous-growth]] — 외부 기억과 스킬 레이어로 에이전트를 성장시키는 프레임워크
-- [[ai-era-tinkerer-talent]] — 도구 실험과 기초 체력을 함께 요구하는 인재상
+- [[ai-verification-layer]] — 통과 기준과 자동 검증 구조
+- [[ai-generated-code-acceptance-criteria]] — 사람이 최종 결과를 채택하는 기준
+- [[ai-harness-pattern]] — 긴 작업의 목표와 권한 경계를 설계하는 방식
+- [[document-parsing-quality-evaluation]] — AI 입력 품질을 평가하는 현재 경험
 
 ## Sources
 
 - [[../../raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.md]]
-- [[../../raw/papers/2026-06-11-ha-yongho-ai-era-professionalism-inflearn.pdf]]
-
+- [[../../raw/web/2026-06-20-vinicius-ai-code-rejection.md]]
+- [[../../raw/notes/2026-08-25-personal-knowledge-refresh.md]]

@@ -1,33 +1,40 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-08-25
+title: "실동작 중심 테스트 철학"
+description: "결정적 검사, 실제 실행 경로와 실패 시 상태 불변으로 변경을 검증하는 개인 원칙"
+tags: [testing, verification, integration, work-style]
+status: stable
 ---
 
-# 테스트 철학
+# 실동작 중심 테스트 철학
 
-"실제 동작을 검증한다"는 원칙. 모킹을 최소화하고 통합 동작을 우선한다.
+테스트 도구의 이름보다 실제 사용자 경로와 상태 전이가 의도대로 동작하는지를 우선한다.
 
-## 핵심 포인트
+## 핵심 원칙
 
-- **실제 커밋 검증**: 백엔드는 `@Transactional` 테스트를 금지한다 — 롤백되는 테스트는 실제 커밋 동작을 숨기기 때문이다.
-- **모킹 최소화** — 외부 API 만 모킹하고, Service·Repository 는 모킹하지 않는다. 통합 경로를 실제로 태운다.
-- **실DB 우선** — 환경별로 다른 방식을 사용한다.
-  - 백엔드: testcontainers 대신 H2 in-memory 로 통합 테스트
-  - 프론트: jest.mock 방식 채택(MSW 대신, ADR-F09)
-- **co-located 테스트** — 저장소별로 위치와 구조가 다르다.
-  - TS 레포: 소스 옆 `*.test.ts` (vitest)
-  - 백엔드: `AbstractControllerTest` + `TestFixturesSupport` 상속, fixture 빌더
-- **테스트 격리 directive**: DOM 테스트는 파일 상단에 `// @vitest-environment jsdom` 을 선언한다.
-- **타입 안전성도 테스트의 일부** — 두 가지를 함께 적용한다.
-  - `tsc --noEmit` 점검 운용
-  - `as unknown as` 이중 캐스트를 union 타입으로 제거
+- **결정적 검사를 먼저 둔다.** 스키마, 합계, 링크, 해시와 상태처럼 같은 입력에 같은 답을 내는 검사를 바닥 검증으로 사용한다.
+- **실제 실행 경로를 탄다.** 가능한 범위에서 실제 빌드, 파일 시스템, 데이터 저장과 네트워크 경계를 실행한다.
+- **실패 불변을 확인한다.** 실패한 빌드나 검증이 현재 배포, 기존 데이터와 활성 release를 바꾸지 않아야 한다.
+- **대역은 경계에 한정한다.** 외부 API, 비결정적 모델과 비용이 큰 시스템만 대역화하고 내부 service와 상태 전이는 실제로 검증한다.
+- **작은 검사부터 넓힌다.** 변경 동작을 직접 증명하는 검사, 타입·정적 검사, 빌드와 사용자 경로 순으로 확장한다.
+- **도구는 저장소가 결정한다.** JUnit, Jest, Vitest와 Testcontainers 같은 선택을 모든 프로젝트의 보편 규칙으로 만들지 않는다.
+
+## AI 기능에 적용하는 방식
+
+비결정적 AI 출력이 곧바로 상태를 바꾸게 하지 않는다.
+에이전트나 모델은 후보와 근거를 만들고, 결정적 script가 스키마, 합계, 중복과 권한 경계를 검증한 뒤에만 다음 단계로 넘긴다.
+정답이 하나가 아닌 화면과 문서는 별도 루브릭이나 사람이 검토하되, 구조와 안전 조건은 기계 검사로 고정한다.
 
 ## 관련 개념
 
-- [[tech-stack-preferences]] — vitest / Jest / JUnit5 선택
-- [[ai-harness-pattern]] — build-with-teams 의 검증 단계
+- [[ai-harness-pattern]] — 위험에 비례해 검증 범위를 넓히는 실행 방식
+- [[ai-verification-layer]] — 비결정적 결과를 통과 기준으로 관리하는 구조
+- [[tech-stack-preferences]] — 저장소별 테스트 도구 선택
+- [[fos-accountbook]] — vision 후보와 결정적 안전 검사를 분리한 적용 사례
 
 ## Sources
 
 - [[../../raw/notes/2026-05-28-repo-work-style-analysis.md]]
+- [[../../raw/notes/2026-08-25-personal-knowledge-refresh.md]]

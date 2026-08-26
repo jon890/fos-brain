@@ -24,6 +24,7 @@ import Comments from "./Comments"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
 import KnowledgeMeta from "./KnowledgeMeta"
+import MemoryAtlas from "./MemoryAtlas"
 
 export {
   ArticleTitle,
@@ -52,4 +53,5 @@ export {
   Flex,
   ConditionalRender,
   KnowledgeMeta,
+  MemoryAtlas,
 }

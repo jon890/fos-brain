@@ -139,16 +139,18 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 
 ### HTML 미리보기 (보조)
 
-채팅 인라인 표만으로는 표·페이지 레이아웃이 잘 안 보인다. 등록 전 검토용으로 Quartz 톤 HTML 미리보기를 만들어 브라우저로 띄운다(인라인 표시가 1차, HTML 은 보조).
+채팅 인라인 본문만으로는 후보와 페이지 레이아웃이 잘 안 보인다. 등록 전 검토용으로 현재 Memory Atlas 문서 화면의 시각 언어를 반영한 HTML 미리보기를 브라우저로 띄운다(인라인 표시가 1차, HTML 은 보조).
 
 ```bash
 python3 scripts/generate_preview.py --data <preview.json> --out /tmp/brain-preview.html
-cmux browser open "file:///tmp/brain-preview.html"
+scripts/show_preview.sh /tmp/brain-preview.html
 ```
 
-- 입력 JSON: `{title, stats, candidates[], pages[]}`. candidates(후보 표)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
+- 입력 JSON: `{title, stats, candidates[], pages[]}`. candidates(후보 카드)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
 - 후보는 공용 판정 스키마의 판정, 가치 축, 목적지, 근거, 이유를 렌더한다.
-- 템플릿은 `templates/preview.html`이다. Quartz 실측 색(`#faf8f8`·`#284b63`)과 폰트(Schibsted Grotesk·Source Sans 3)를 사용하며 public과 private 목적지를 구분한다.
+- 템플릿은 `templates/preview.html`이다. 현재 Memory Atlas 문서 화면의 심해 색상, Gowun Batang 제목, IBM Plex Sans KR 본문과 IBM Plex Mono 상태 표기를 사용한다.
+- 미리보기는 3D 그래프를 복제하지 않는다. 후보 승인과 문서 읽기에 필요한 항해도 내비게이션, 정보 위계, 읽기 폭과 모바일 경계만 재현한다.
+- `scripts/show_preview.sh`는 설치된 `content-preview`의 탭 갱신 절차를 우선 사용한다. 해당 스킬이 없는 환경에서만 시스템 브라우저로 연다.
 - 폰트는 Google Fonts CDN을 사용하며 오프라인이면 시스템 폰트로 대체된다.
 - 본문에 `</script>` 가 있으면 생성기가 거부한다.
 
