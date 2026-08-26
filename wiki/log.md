@@ -273,3 +273,9 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 통합: AI 전문성 7페이지와 RAG 사례 5페이지의 장기 가치가 있는 판단은 각 상위 topic에 흡수했다.
 - 사유: 6개월 뒤 개인 작업 방식과 결정을 이해하는 데 직접 기여하지 않는 세부 절차·외부 사례 잎 페이지를 검색 대상에서 제거했다.
 - raw: 보존(16개)
+
+## [2026-08-26] add | Claude Code 세션에서 개인 취향·CLI 결정·하네스 운영 원칙 보강
+
+- Source: [[../raw/notes/2026-08-26-claude-session-curation.md]]
+- 신규 0 페이지, 보강 4 페이지: information-interface-preferences, agent-friendly-cli-design, nhncloud-cli, ai-harness-pattern
+- 회사 업무 5개는 nbrain으로, 평가 절차 1개는 저장소 문서로, 게시 규칙 1개는 AGENTS.md로 보내 개인 brain에 중복 저장하지 않았다.
