@@ -44,14 +44,15 @@ Memory Atlas는 루트 `INDEX` 문서에서만 기존 페이지 그리드를 대
 
 ## 의존성
 
-검색은 설치된 qmd를 사용하고, 내보내기 스크립트는 Node.js 표준 라이브러리만 사용한다.
-Hermes는 Node.js 24.15.0과 qmd 2.8.3을 영구 데이터 영역에 고정하며 컨테이너 기본 Node나 PATH의 qmd에 의존하지 않는다.
+로컬 검색은 설치된 qmd를 사용하고, 홈서버 검색은 qmd 2.8.3의 공식 HTTP transport를 사용한다.
+`brain-qmd` image는 Node.js 24.15.0과 qmd 2.8.3을 고정하며 Hermes의 Node나 PATH에 의존하지 않는다.
 Quartz는 기존 Preact, TypeScript, SCSS, PixiJS를 재사용한다.
 문서별 로컬 그래프는 기존 D3와 PixiJS를 계속 사용한다.
 홈의 실제 3D 회전과 카메라 제어에만 `3d-force-graph`와 `three`를 사용하고, 홈 진입 시 동적으로 불러와 일반 문서의 초기 실행 비용과 브라우저 전역 접근을 격리한다.
 Quartz의 공용 `postscript.js`에는 가벼운 loader만 포함하고 3D 의존성은 `/static/memory-atlas.js`에 별도로 내보낸다.
 3D canvas는 유일한 탐색 수단이 아니며 검색, 필터, 선택 상세, 결과 목록은 실제 HTML 요소로 유지한다.
-qmd 명령은 고정 wrapper만 실행하며, wrapper가 없으면 PATH의 실행 파일을 대신 사용하지 않는다.
+로컬 qmd 명령은 고정 wrapper만 실행하며, wrapper가 없으면 PATH의 실행 파일을 대신 사용하지 않는다.
+홈서버에서는 `BRAIN_QMD_URL`이 있을 때 공식 `/query`를 우선하고 HTTP가 실패하면 로컬 검색 경계로 돌아간다.
 
 내보내기 스크립트는 YAML 객체를 자체 파서로 재구성하지 않는다.
 기존 frontmatter 원문을 보존하고 최상위 키의 존재만 감지한 뒤, 누락된 교환 필드를 JSON 호환 YAML 값으로 삽입한다.
@@ -66,8 +67,12 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/build-public.sh` — private 경로를 마운트하지 않고 고정 Node 컨테이너에서 공개 Quartz를 빌드한다.
 - `deploy/home-server/build-protected.sh` — public과 private wiki를 별도 release로 빌드하고 검증 뒤 `current`를 원자적으로 전환한다.
 - `deploy/home-server/sync-protected.sh` — 두 저장소의 fast-forward 갱신, 중복 실행 잠금, 보호 빌드를 소유한다.
-- `deploy/home-server/install-hermes-qmd.sh` — 고정 Node와 qmd를 Hermes 영구 데이터 영역에 설치하고 wrapper를 만든다.
-- `deploy/home-server/sync-qmd.sh` — 세 컬렉션을 확인하고 qmd 색인과 임베딩을 전용 잠금 안에서 증분 갱신한다.
+- `deploy/home-server/brain-qmd/Dockerfile` — 고정 Node image와 qmd package로 내부 검색 서비스를 만든다.
+- `deploy/home-server/brain-qmd/entrypoint.sh` — 세 컬렉션을 검증하고 HTTP serve와 일회성 sync mode를 분리한다.
+- `deploy/home-server/brain-qmd/compose.yaml` — 읽기 전용 지식 mount, 영구 색인, 전용 network와 healthcheck를 정의한다.
+- `deploy/home-server/hermes-brain-qmd.override.yaml` — Hermes를 전용 network에 연결하고 `BRAIN_QMD_URL`만 주입한다.
+- `deploy/home-server/sync-qmd.sh` — HTTP 서비스를 중단하고 색인을 백업한 뒤 일회성 container에서 증분 갱신한다.
+- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — qmd HTTP 요청과 응답 스키마를 결정적으로 처리한다.
 - `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
 - `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
 - `/home/bifos/apps/fos-brain-deploy` — 검증한 배포 스크립트와 Jenkins 작업 정의를 webhook 활성화 전에 설치하는 운영 경로다.
@@ -87,11 +92,11 @@ public 검증 빌드는 `quartz/public`에 남고 private 경로를 보거나 �
 보호 Nginx는 HTML과 검색 색인에 private cache 정책과 검색 엔진 차단 헤더를 적용한다.
 Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
 Jenkins는 저장소 checkout 안의 실행 중 변경에 의존하지 않고 운영 경로에 설치한 검증본을 호출한다.
-qmd runtime, 설정, 색인, 모델 cache는 `/home/bifos/.hermes/qmd`에 두고 Hermes의 `/opt/data/qmd`와 고정 wrapper 경로로만 노출한다.
-wrapper는 Hermes의 root 프로세스에서 qmd를 실행할 때 UID와 GID를 1000으로 낮추고 CPU 모드와 단일 임베딩 병렬성을 적용한다.
-host의 `sync-qmd.sh`는 갱신 구간의 잠금을 소유하고 컨테이너 안의 wrapper만 호출한다.
-일반 검색은 wrapper가 같은 lock inode를 직접 잡으며, host가 이미 잠근 갱신 호출만 명시적인 내부 신호로 중복 획득을 생략한다.
-qmd는 네트워크 포트를 열지 않으며 private 색인과 cache를 git 및 Quartz 정적 서버에서 분리한다.
+qmd 설정, 색인, 모델 cache는 `/home/bifos/.brain-qmd`에 두고 UID와 GID 1000만 쓴다.
+public wiki와 raw, private wiki는 `brain-qmd`에 읽기 전용으로 마운트하고 private raw는 입력하지 않는다.
+`brain-qmd`와 Hermes만 전용 Docker network에 참여하며 `ports`를 정의하지 않는다.
+공식 qmd HTTP는 인증이 없으므로 `QMD_ALLOWED_HOSTS`를 내부 이름으로 제한하고 Tunnel과 NPM에 연결하지 않는다.
+host의 `sync-qmd.sh`는 갱신 잠금, SQLite 백업·복원, HTTP container 재기동과 health 확인을 소유한다.
 
 NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
 전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
@@ -106,5 +111,5 @@ Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
 - 배포 — Compose 구문, public-only 회귀, 보호 wiki 병합, 원자적 release 전환, 컨테이너 상태와 NPM 내부 연결을 검사한다.
-- Hermes qmd — 고정 버전, wrapper 권한 저하, 컬렉션 상태, 공개·비공개 대표 검색, 증분 갱신, 잠금, 컨테이너 메모리와 OOM 발생 여부를 검사한다.
+- brain-qmd — 고정 image와 package, 비root 실행, host port 부재, 전용 network, 허용 컬렉션, HTTP 계약, SQLite 복구, 공개·비공개 대표 검색, 메모리와 OOM 발생 여부를 검사한다.
 - 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·81·443 차단, SSH 10022 유지, DNSSEC 인증 응답을 확인한다.
