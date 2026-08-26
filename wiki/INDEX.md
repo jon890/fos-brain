@@ -10,7 +10,7 @@
 - [[ai-dev-harness]] — 목표, 권한과 검증 경계 안에서 에이전트 작업을 완료하는 하네스 방식
 - [[observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
 - [[operations-troubleshooting]] — 증상과 실제 상태를 분리하고 최소 변경과 되돌리기 근거로 복구하는 운영 방식
-- [[rag-system-architecture-strategies]] — Workflow, Logic과 Data Quality를 구분하는 RAG 설계 관점
+- [[rag-system-architecture-strategies]] — 입력 품질, 검색 파이프라인과 관계 탐색을 나누는 RAG 설계 관점
 - [[ai-era-professionalism]] — AI 시대 전문성을 검증·판단·운영 책임으로 보는 개인 직업 관점
 
 ## Concepts
@@ -80,6 +80,14 @@
 
 - [[document-parsing-quality-evaluation]] — 문서 파싱 품질 평가 방법론 스펙트럼(회귀→golden→NED→docling-eval→LLM-judge), 비용·깊이로 조합
 
+### RAG와 검색 (학습)
+
+상위 주제: [[rag-system-architecture-strategies]]
+
+- [[rag-retrieval-pipeline]] — 질문 구조화, 하이브리드 검색, 재정렬과 근거 전달을 잇는 공통 검색 흐름
+- [[embedding-versioned-vector-index]] — 임베딩 모델 변경을 벡터 재생성, 재색인과 서빙 전환까지 묶는 운영 원칙
+- [[graph-rag-path-retrieval]] — 질문에 맞는 시작 노드와 제한된 관계 경로로 설명 가능한 서브그래프를 찾는 방식
+
 ### 생활·요리
 
 - [[simple-store-bought-naengmyeon]] — 시판 냉면사리와 시판 육수로 물냉면을 만들 때의 준비·면 삶기·간 맞추기
@@ -108,11 +116,11 @@
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (2개: RAG 아키텍처 분석, AI 시대 전문성)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모와 승인된 세션 요약 중 raw 로 승격된 노트
-- `raw/videos/` — 유튜브 자막 정리본 (5개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰)
+- `raw/videos/` — 유튜브 자막 정리본 (6개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰, 토스증권 추천·검색 테크톡)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-08-26 (Claude Code 세션 큐레이션 — 신규 0, 보강 4)
+- 마지막 brain-add: 2026-08-26 (토스증권 추천·검색 테크톡 — 신규 3, 보강 1)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

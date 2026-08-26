@@ -279,3 +279,11 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: [[../raw/notes/2026-08-26-claude-session-curation.md]]
 - 신규 0 페이지, 보강 4 페이지: information-interface-preferences, agent-friendly-cli-design, nhncloud-cli, ai-harness-pattern
 - 회사 업무 5개는 nbrain으로, 평가 절차 1개는 저장소 문서로, 게시 규칙 1개는 AGENTS.md로 보내 개인 brain에 중복 저장하지 않았다.
+
+## [2026-08-26] add | 토스증권 추천·검색 테크톡에서 RAG 검색 트리 확장
+
+- Source: [[../raw/videos/2026-07-27-toss-securities-recommendation-search-rag-graphrag.md]] / https://www.youtube.com/watch?v=7jINAKEjXXc
+- 원본 URL, 영상 메타데이터와 한국어 전체 자동자막을 raw에 보존했다.
+- 신규 3 페이지: rag-retrieval-pipeline, embedding-versioned-vector-index, graph-rag-path-retrieval
+- 보강 1 페이지: rag-system-architecture-strategies
+- 실시간 개인화 추천은 원본에는 보존하되 현재 RAG 학습 트리와 개인 지식 유입 기준에 맞지 않아 별도 wiki 페이지로 만들지 않았다.
