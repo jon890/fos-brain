@@ -70,8 +70,10 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/brain-qmd/Dockerfile` — 고정 Node image와 qmd package로 내부 검색 서비스를 만든다.
 - `deploy/home-server/brain-qmd/entrypoint.sh` — 세 컬렉션을 검증하고 HTTP serve와 일회성 sync mode를 분리한다.
 - `deploy/home-server/brain-qmd/compose.yaml` — 읽기 전용 지식 mount, 영구 색인, 전용 network와 healthcheck를 정의한다.
-- `deploy/home-server/hermes-brain-qmd.override.yaml` — Hermes를 전용 network에 연결하고 `BRAIN_QMD_URL`만 주입한다.
+- `deploy/home-server/hermes-brain-qmd.override.yaml` — Hermes를 전용 network에 연결하고 `BRAIN_QMD_URL`과 읽기 전용 검색 어댑터를 주입한다.
+- `deploy/home-server/hermes-brain-search/SKILL.md` — Hermes에서 HTTP qmd와 기존 축소 검색 경로를 연결한다.
 - `deploy/home-server/sync-qmd.sh` — HTTP 서비스를 중단하고 색인을 백업한 뒤 일회성 container에서 증분 갱신한다.
+- `deploy/home-server/jenkins/jenkins-deploy.sh` — Jenkins SSH key가 실행할 수 있는 forced-command 허용 목록을 소유한다.
 - `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — qmd HTTP 요청과 응답 스키마를 결정적으로 처리한다.
 - `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
 - `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.

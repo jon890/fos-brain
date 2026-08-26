@@ -48,8 +48,10 @@ HTTP service를 중지한 조건에서 `brain-search`가 로컬 qmd 또는 INDEX
 | --- | --- |
 | `/home/bifos/apps/fos-brain-deploy/brain-qmd/` | image와 compose 설치 |
 | `/home/bifos/apps/hermes-agent/docker-compose.override.yml` | 내부 network와 URL 추가 |
+| `/home/bifos/apps/fos-brain-deploy/hermes-brain-search/` | Hermes HTTP 검색 어댑터와 client 배포 |
 | `/home/bifos/.brain-qmd/` | 설정, 색인, 모델 cache 생성 |
 | `/home/bifos/bin/jenkins-deploy.sh` | `sync-brain-qmd` exact case 추가 |
+| `deploy/home-server/jenkins/jenkins-deploy.sh` | forced-command 관리 원본 추가 |
 | Jenkins `sync-brain` 작업 | 후속 qmd 단계 적용 |
 | `tasks/plan6-hermes-qmd-search/index.json` | 완료 상태 수정 |
 | `docs/retrospectives/RUNS.md` | 실행 결과 추가 |

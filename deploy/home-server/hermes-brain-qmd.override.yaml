@@ -2,6 +2,8 @@ services:
   hermes:
     environment:
       BRAIN_QMD_URL: http://brain-qmd:8181
+    volumes:
+      - /home/bifos/apps/fos-brain-deploy/hermes-brain-search:/opt/data/skills/note-taking/brain-search:ro
     networks:
       - brain-search-net
 

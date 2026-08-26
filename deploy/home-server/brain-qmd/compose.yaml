@@ -1,5 +1,6 @@
 services:
   brain-qmd:
+    container_name: brain-qmd
     build:
       context: .
       dockerfile: Dockerfile

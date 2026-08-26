@@ -173,10 +173,11 @@ Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
 
 | 경로 | 내용 | 규칙 |
 | --- | --- | --- |
-| `/home/bifos/.brain-qmd/config/qmd/` | 컬렉션 설정 | public wiki, public raw, private wiki의 container 경로만 등록한다. |
-| `/home/bifos/.brain-qmd/cache/qmd/` | SQLite 색인, 임베딩, 모델 cache | 권한 700으로 유지하고 git과 Quartz 입력에서 제외한다. |
-| `/home/bifos/.brain-qmd/backup/index.sqlite` | 직전 정상 색인 | 갱신 실패 때 복원하고 성공한 다음 교체한다. |
-| `/home/bifos/.brain-qmd/sync.lock` | 색인 갱신 잠금 | 동시에 하나의 Jenkins 갱신만 실행한다. |
+| `/home/bifos/.brain-qmd/config/qmd/index.yml` | 컬렉션 설정 | public wiki, public raw, private wiki의 container 경로만 등록한다. |
+| `/home/bifos/.brain-qmd/cache/qmd/index.sqlite*` | SQLite 색인과 WAL·SHM | 상위 `/home/bifos/.brain-qmd`를 mode 700으로 유지하고 git과 Quartz 입력에서 제외한다. |
+| `/home/bifos/.brain-qmd/cache/qmd/models/` | 임베딩 모델 cache | 최초 sync에서 내려받고 이후 재사용한다. |
+| `/tmp/brain-qmd-sqlite-backup.*` | 중지된 색인의 임시 복구본 | sync 성공이나 복구 완료 뒤 제거한다. |
+| `/home/bifos/apps/fos-brain-deploy/sync-qmd.lock` | 색인 갱신 잠금 | 동시에 하나의 Jenkins 갱신만 실행한다. |
 
 qmd container는 `XDG_CONFIG_HOME=/data/config`, `XDG_CACHE_HOME=/data/cache`를 사용한다.
 private 문서 본문, 검색어, 검색 결과는 Jenkins 로그에 출력하지 않는다.
@@ -199,7 +200,7 @@ Hermes는 `POST /query`에 다음 값을 보낸다.
 | --- | --- | --- |
 | `searches` | 객체 배열 | 같은 질문의 `lex`, `vec`를 포함한다. |
 | `collections` | 문자열 배열 | `brain-wiki`, `brain-raw`, `brain-private` 중 하나 이상이다. 단수형 `collection`은 쓰지 않는다. |
-| `limit` | 정수 | 기본값 10이며 1에서 20 사이다. |
+| `limit` | 정수 | 기본값 5이며 1에서 20 사이다. |
 | `rerank` | boolean | CPU 실측 전 기본값은 `false`다. |
 
 응답은 `results` 배열이며 각 항목은 `docid`, `file`, `title`, `score`, `line`, `snippet`을 가진다.

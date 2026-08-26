@@ -12,6 +12,8 @@ FLOCK_BIN="${FLOCK_BIN:-flock}"
 HEALTH_TIMEOUT_SECONDS="${HEALTH_TIMEOUT_SECONDS:-120}"
 BRAIN_QMD_UID="${BRAIN_QMD_UID:-1000}"
 BRAIN_QMD_GID="${BRAIN_QMD_GID:-1000}"
+RUN_MODE="${1:-sync}"
+SYNC_CONTAINER_MODE="sync"
 
 BACKUP_DIR=""
 SYNC_FAILED=0
@@ -23,7 +25,11 @@ fail() {
 }
 
 compose() {
-  "$DOCKER_BIN" compose --file "$BRAIN_QMD_COMPOSE" "$@"
+  if [[ -f "$BRAIN_DEPLOY_ROOT/.env" ]]; then
+    "$DOCKER_BIN" compose --env-file "$BRAIN_DEPLOY_ROOT/.env" --file "$BRAIN_QMD_COMPOSE" "$@"
+  else
+    "$DOCKER_BIN" compose --file "$BRAIN_QMD_COMPOSE" "$@"
+  fi
 }
 
 sqlite_files() {
@@ -132,8 +138,20 @@ wait_health() {
 
 command -v "$FLOCK_BIN" >/dev/null 2>&1 || fail "flock is required: $FLOCK_BIN"
 [[ -f "$BRAIN_QMD_COMPOSE" ]] || fail "brain-qmd compose file is missing: $BRAIN_QMD_COMPOSE"
+[[ "$RUN_MODE" == "sync" || "$RUN_MODE" == "status" || "$RUN_MODE" == "--status" ]] \
+  || fail "Usage: sync-qmd.sh [sync|--status]"
+if [[ -n "${BRAIN_QMD_SYNC_MODE:-}" ]]; then
+  [[ "${BRAIN_QMD_RECOVERY_TEST:-0}" == "1" && "$BRAIN_QMD_SYNC_MODE" == "invalid" ]] \
+    || fail "BRAIN_QMD_SYNC_MODE is reserved for the explicit recovery test."
+  SYNC_CONTAINER_MODE="$BRAIN_QMD_SYNC_MODE"
+fi
 ensure_data_directory
 mkdir -p "$(dirname "$BRAIN_QMD_LOCK")"
+
+if [[ "$RUN_MODE" == "status" || "$RUN_MODE" == "--status" ]]; then
+  compose run --rm "$BRAIN_QMD_SERVICE" status
+  exit 0
+fi
 
 exec 9>"$BRAIN_QMD_LOCK"
 "$FLOCK_BIN" 9
@@ -142,7 +160,7 @@ trap cleanup EXIT
 
 compose stop "$BRAIN_QMD_SERVICE" >/dev/null
 backup_sqlite
-if ! compose run --rm "$BRAIN_QMD_SERVICE" sync; then
+if ! compose run --rm "$BRAIN_QMD_SERVICE" "$SYNC_CONTAINER_MODE"; then
   SYNC_FAILED=1
   exit 1
 fi

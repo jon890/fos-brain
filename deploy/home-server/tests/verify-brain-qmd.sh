@@ -4,6 +4,7 @@ set -euo pipefail
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_DIR="$(cd "$TEST_DIR/.." && pwd)"
 QMD_DIR="$DEPLOY_DIR/brain-qmd"
+JENKINS_FORCED_COMMAND="$DEPLOY_DIR/jenkins/jenkins-deploy.sh"
 TEST_ROOT="$TEST_DIR/.tmp-brain-qmd.$$"
 COMPOSE_CONFIG="$TEST_ROOT/compose-config.yaml"
 FAKE_BIN="$TEST_ROOT/bin"
@@ -50,6 +51,7 @@ if grep -Eq '^[[:space:]]+ports:' "$COMPOSE_CONFIG"; then
 fi
 
 grep -Fq 'brain-search-net' "$COMPOSE_CONFIG"
+grep -Fq 'container_name: brain-qmd' "$COMPOSE_CONFIG"
 grep -Fq 'QMD_ALLOWED_HOSTS: brain-qmd,brain-qmd:8181,localhost,localhost:8181,127.0.0.1,127.0.0.1:8181' "$COMPOSE_CONFIG"
 grep -Fq 'XDG_CONFIG_HOME: /data/config' "$COMPOSE_CONFIG"
 grep -Fq 'XDG_CACHE_HOME: /data/cache' "$COMPOSE_CONFIG"
@@ -78,7 +80,35 @@ grep -Fq 'Unexpected collection is registered' "$QMD_DIR/entrypoint.sh"
 grep -Fq "Pattern:  **/*.md" "$QMD_DIR/entrypoint.sh"
 grep -Fq 'Include:  yes (default)' "$QMD_DIR/entrypoint.sh"
 grep -Fq -- "--mask '**/*.md'" "$QMD_DIR/entrypoint.sh"
+grep -Fq 'SYNC_CONTAINER_MODE="sync"' "$DEPLOY_DIR/sync-qmd.sh"
+grep -Fq 'BRAIN_QMD_SYNC_MODE is reserved for the explicit recovery test.' "$DEPLOY_DIR/sync-qmd.sh"
 grep -Fq "catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')" "$DEPLOY_DIR/jenkins/sync-brain-job.xml"
+[[ -x "$JENKINS_FORCED_COMMAND" ]]
+bash -n "$JENKINS_FORCED_COMMAND"
+grep -Fq 'sync-brain-qmd)' "$JENKINS_FORCED_COMMAND"
+# forced-command의 런타임 변수를 문자열로 검증한다.
+# shellcheck disable=SC2016
+grep -Fq '"$APPS/fos-brain-deploy/sync-qmd.sh"' "$JENKINS_FORCED_COMMAND"
+if grep -Eq '^[[:space:]]*eval([[:space:]]|$)' "$JENKINS_FORCED_COMMAND"; then
+  echo "Jenkins forced-command must not use eval." >&2
+  exit 1
+fi
+if SSH_ORIGINAL_COMMAND='sync-brain-qmd extra' "$JENKINS_FORCED_COMMAND" >/dev/null 2>&1; then
+  echo "Jenkins forced-command accepted an extra argument." >&2
+  exit 1
+fi
+if SSH_ORIGINAL_COMMAND='whoami' "$JENKINS_FORCED_COMMAND" >/dev/null 2>&1; then
+  echo "Jenkins forced-command accepted an arbitrary command." >&2
+  exit 1
+fi
+test -f "$DEPLOY_DIR/hermes-brain-search/brain-search-http.cjs"
+node --check "$DEPLOY_DIR/hermes-brain-search/brain-search-http.cjs"
+cmp -s \
+  "$DEPLOY_DIR/../../.agents/plugin/fos-brain/scripts/brain-search-http.cjs" \
+  "$DEPLOY_DIR/hermes-brain-search/brain-search-http.cjs" || {
+  echo "Hermes HTTP client must match the canonical plugin client." >&2
+  exit 1
+}
 
 cat > "$FAKE_BIN/docker" <<'FAKE_DOCKER'
 #!/usr/bin/env bash
@@ -97,6 +127,9 @@ if [[ "$1" == "compose" ]]; then
       exit 0
       ;;
     run)
+      if [[ "${*: -1}" == "status" ]]; then
+        exit 0
+      fi
       if [[ "${FAKE_DOCKER_SYNC_FAIL:-0}" == "1" ]]; then
         printf 'sync failed without private body\n' >&2
         exit 42
@@ -144,6 +177,25 @@ set -euo pipefail
 [[ "${1:-}" == "9" ]]
 FAKE_FLOCK
 chmod +x "$FAKE_BIN/flock"
+
+PATH="$FAKE_BIN:$PATH" \
+DOCKER_BIN="$FAKE_BIN/docker" \
+FLOCK_BIN="$FAKE_BIN/flock" \
+FAKE_DOCKER_LOG="$FAKE_LOG" \
+FAKE_QMD_DATA="$DATA_ROOT" \
+BRAIN_QMD_COMPOSE="$QMD_DIR/compose.yaml" \
+BRAIN_QMD_DATA="$DATA_ROOT" \
+BRAIN_QMD_LOCK="$TEST_ROOT/sync.lock" \
+BRAIN_QMD_UID="$(id -u)" \
+BRAIN_QMD_GID="$(id -g)" \
+  "$DEPLOY_DIR/sync-qmd.sh" --status
+
+grep -Fq 'run --rm brain-qmd status' "$FAKE_LOG"
+if grep -Fq 'stop brain-qmd' "$FAKE_LOG"; then
+  echo "status mode must not stop brain-qmd." >&2
+  exit 1
+fi
+: > "$FAKE_LOG"
 
 PATH="$FAKE_BIN:$PATH" \
 DOCKER_BIN="$FAKE_BIN/docker" \
