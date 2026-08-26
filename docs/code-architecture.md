@@ -45,6 +45,7 @@ Memory Atlas는 루트 `INDEX` 문서에서만 기존 페이지 그리드를 대
 ## 의존성
 
 검색은 설치된 qmd를 사용하고, 내보내기 스크립트는 Node.js 표준 라이브러리만 사용한다.
+Hermes는 Node.js 24.15.0과 qmd 2.8.3을 영구 데이터 영역에 고정하며 컨테이너 기본 Node나 PATH의 qmd에 의존하지 않는다.
 Quartz는 기존 Preact, TypeScript, SCSS, PixiJS를 재사용한다.
 문서별 로컬 그래프는 기존 D3와 PixiJS를 계속 사용한다.
 홈의 실제 3D 회전과 카메라 제어에만 `3d-force-graph`와 `three`를 사용하고, 홈 진입 시 동적으로 불러와 일반 문서의 초기 실행 비용과 브라우저 전역 접근을 격리한다.
@@ -65,12 +66,14 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/build-public.sh` — private 경로를 마운트하지 않고 고정 Node 컨테이너에서 공개 Quartz를 빌드한다.
 - `deploy/home-server/build-protected.sh` — public과 private wiki를 별도 release로 빌드하고 검증 뒤 `current`를 원자적으로 전환한다.
 - `deploy/home-server/sync-protected.sh` — 두 저장소의 fast-forward 갱신, 중복 실행 잠금, 보호 빌드를 소유한다.
+- `deploy/home-server/install-hermes-qmd.sh` — 고정 Node와 qmd를 Hermes 영구 데이터 영역에 설치하고 wrapper를 만든다.
+- `deploy/home-server/sync-qmd.sh` — 세 컬렉션을 확인하고 qmd 색인과 임베딩을 전용 잠금 안에서 증분 갱신한다.
 - `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
 - `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
 - `/home/bifos/apps/fos-brain-deploy` — 검증한 배포 스크립트와 Jenkins 작업 정의를 webhook 활성화 전에 설치하는 운영 경로다.
 - Cloudflare — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책, DNSSEC를 소유한다.
 - Nginx Proxy Manager — 호스트 기반 내부 라우팅과 `brain` 정적 서버 프록시를 소유한다.
-- Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증, 허용 저장소와 `main` branch 선택, `sync-brain` 실행을 소유한다.
+- Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증, 허용 저장소와 `main` branch 선택, `sync-brain`과 후속 `sync-brain-qmd` 실행을 소유한다.
 
 Tunnel은 기존 `public-net`에만 참여하고 공개 호스트 이름 8개를 NPM의 `https://fos-npm:443` 원본으로 연결한다.
 호스트별 `originServerName`과 `httpHostHeader`를 원래 도메인으로 유지해 NPM 인증서와 가상 호스트를 함께 검증한다.
@@ -84,6 +87,9 @@ public 검증 빌드는 `quartz/public`에 남고 private 경로를 보거나 �
 보호 Nginx는 HTML과 검색 색인에 private cache 정책과 검색 엔진 차단 헤더를 적용한다.
 Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
 Jenkins는 저장소 checkout 안의 실행 중 변경에 의존하지 않고 운영 경로에 설치한 검증본을 호출한다.
+qmd runtime, 설정, 색인, 모델 cache는 `/home/bifos/.hermes/qmd`에 두고 Hermes의 `/opt/data/qmd`와 고정 wrapper 경로로만 노출한다.
+wrapper는 Hermes의 root 프로세스에서 qmd를 실행할 때 UID와 GID를 1000으로 낮추고 CPU 모드와 단일 임베딩 병렬성을 적용한다.
+qmd는 네트워크 포트를 열지 않으며 private 색인과 cache를 git 및 Quartz 정적 서버에서 분리한다.
 
 NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
 전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
@@ -98,4 +104,5 @@ Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
 - 배포 — Compose 구문, public-only 회귀, 보호 wiki 병합, 원자적 release 전환, 컨테이너 상태와 NPM 내부 연결을 검사한다.
+- Hermes qmd — 고정 버전, wrapper 권한 저하, 컬렉션 상태, 공개·비공개 대표 검색, 증분 갱신, 잠금, 컨테이너 메모리와 OOM 발생 여부를 검사한다.
 - 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·81·443 차단, SSH 10022 유지, DNSSEC 인증 응답을 확인한다.

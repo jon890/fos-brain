@@ -9,3 +9,4 @@
 | 2026-08-25 | planning | plan5-knowledge-quality-contract | - | 2 | - | - | - | 없음 | 0 | plan branch |
 | 2026-08-25 | build-with-teams | plan5-knowledge-quality-contract | A→B | 2 | 2 | 1 | 1 | 없음 | 0 | PR 준비 |
 | 2026-08-24 | planning | plan4-memory-constellation | - | 4 | - | - | - | 없음 | 1 | task·브랜치 생성 |
+| 2026-08-26 | planning | plan6-hermes-qmd-search | - | 2 | - | - | - | 없음 | 0 | 계획 완료 |

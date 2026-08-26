@@ -1,0 +1,22 @@
+{
+  "name": "plan6-hermes-qmd-search",
+  "description": "홈서버 Hermes에 고정 qmd 실행 환경을 설치하고 brain push 뒤 검색 색인을 자동 갱신한다.",
+  "status": "pending",
+  "created_at": "2026-08-26",
+  "total_phases": 2,
+  "current_phases": 1,
+  "phases": [
+    {
+      "number": 1,
+      "title": "Hermes qmd 설치·동기화 자동화",
+      "file": "phase-01.md",
+      "execution_profile": "standard"
+    },
+    {
+      "number": 2,
+      "title": "홈서버 적용과 웹훅 검색 검증",
+      "file": "phase-02.md",
+      "execution_profile": "standard"
+    }
+  ]
+}
