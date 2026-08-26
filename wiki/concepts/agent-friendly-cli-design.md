@@ -1,7 +1,11 @@
 ---
 type: concept
 created: 2026-06-01
-updated: 2026-06-01
+updated: 2026-08-26
+title: "에이전트 친화 CLI 설계"
+description: "사람과 AI 에이전트가 함께 안정적으로 호출하고 파싱할 수 있는 CLI 설계 기준"
+tags: [cli, ai-agent, interface, automation]
+status: stable
 ---
 
 # 에이전트 친화 CLI 설계
@@ -24,6 +28,9 @@ dooray-cli 에서 정립해 nhncloud-cli 로 포팅한 재사용 패턴이다.
 - **deeplink 출력** — 참조를 앱 내 이동이 가능한 표준 URI 로 출력한다(예: `dooray://.../tasks/{id}`).
 - **일관된 종료코드** — 단일 에러 타입(예: `DoorayCliError(message, exitCode)`)으로 exit code 를 통일해, 에이전트가 성공·실패를 코드로 판단한다.
 - **resolve 캐시** — 이름→ID 같은 반복 조회를 TTL 캐시로 줄인다.
+- **mutation 캐시 무효화** — 캐시된 엔티티를 바꾸는 service가 성공 직후 관련 캐시를 무효화한다.
+  - API client는 순수 HTTP 래퍼로 유지하고 캐시 정책을 섞지 않는다.
+  - mutation과 무효화를 같은 service 책임으로 묶어 이후 명령에서도 빠뜨리지 않게 한다.
 
 ## 왜 중요한가
 
@@ -40,3 +47,4 @@ dooray-cli 에서 정립해 nhncloud-cli 로 포팅한 재사용 패턴이다.
 ## Sources
 
 - [[../../raw/repos/2026-06-01-dooray-cli-tool-analysis.md]]
+- [[../../raw/notes/2026-08-26-claude-session-curation.md]]

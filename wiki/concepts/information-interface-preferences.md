@@ -1,10 +1,10 @@
 ---
 type: concept
 created: 2026-08-25
-updated: 2026-08-25
+updated: 2026-08-26
 title: "정보 화면과 리포트 디자인 취향"
-description: "정보를 먼저 훑고 비교한 뒤 원문으로 내려가게 하는 개인 화면 설계 취향"
-tags: [taste, ux, information-design, responsive]
+description: "모바일 카드와 확대·이동 가능한 다이어그램에서 원문 탐색까지 이어지는 개인 화면 설계 취향"
+tags: [taste, ux, information-design, responsive, mobile, diagram]
 status: stable
 ---
 
@@ -20,6 +20,7 @@ status: stable
 - ISO 원문보다 사람이 바로 읽을 수 있는 날짜와 시각을 보여준다.
 - 요약 화면과 원문 화면은 같은 색, 글꼴과 탐색 언어를 유지한다.
 - 긴 제목, 링크, 표찰과 표가 박스나 화면 밖으로 나가지 않아야 한다.
+- 복잡한 다이어그램은 작은 화면에 축소해 고정하지 않고 확대·이동하며 읽을 수 있어야 한다.
 - 장식보다 출처, 최신성, 상태와 관계를 먼저 드러낸다.
 
 ## 지식 시각화에 적용하는 방식
@@ -36,3 +37,4 @@ status: stable
 ## Sources
 
 - [[../../raw/notes/2026-08-25-personal-knowledge-refresh.md]]
+- [[../../raw/notes/2026-08-26-claude-session-curation.md]]

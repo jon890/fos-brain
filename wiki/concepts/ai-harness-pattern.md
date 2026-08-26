@@ -1,10 +1,10 @@
 ---
 type: concept
 created: 2026-05-28
-updated: 2026-08-25
+updated: 2026-08-26
 title: "AI 하네스 패턴"
-description: "에이전트 작업을 목표, 권한 경계, 독립 검토와 실측 근거로 닫는 개인 개발 방식"
-tags: [ai-agent, harness, verification, work-style]
+description: "부모 세션의 판단 컨텍스트를 보존하며 목표, 권한 경계, 독립 검토와 실측 근거로 작업을 닫는 개인 개발 방식"
+tags: [ai-agent, harness, verification, work-style, context-management, orchestration]
 status: stable
 ---
 
@@ -21,6 +21,12 @@ AI 에이전트가 긴 작업을 안전하게 끝내도록 목표, 권한, 컨�
 - **근거로 완료를 증명한다.** 관련 기능 검사부터 타입, 빌드와 실제 사용 경로까지 위험에 비례해 확인한다.
 - **권한 경계를 지킨다.** 로컬의 되돌릴 수 있는 변경은 자율 실행하되 외부 쓰기, 권한 변경과 파괴적 작업은 승인 범위를 넘지 않는다.
 - **실패 시 상태 불변을 확인한다.** 재시도 가능한 작업은 중간 실패가 배포 상태나 사용자 데이터를 바꾸지 않아야 한다.
+
+## 부모 판단 문맥 보존
+
+큰 구현과 검증은 별도 실행 세션에 맡기고 부모 세션은 목표, 사용자 결정과 통합 검증 문맥을 유지한다.
+부모 세션이 긴 도구 출력과 구현 세부를 모두 떠안으면 앞서 정한 경계와 판단 근거가 밀려날 수 있다.
+반복 실행 순서는 orchestration과 build-with-teams 스킬이 맡고, 부모는 결과를 통합해 성공 기준을 닫는다.
 
 ## 지식과 실행 절차의 분리
 
@@ -57,3 +63,4 @@ AI 에이전트가 긴 작업을 안전하게 끝내도록 목표, 권한, 컨�
 - [[../../raw/notes/2026-06-12-docu-parser-harness-evolution.md]]
 - [[../../raw/notes/2026-07-30-fos-skills-harness-evolution.md]]
 - [[../../raw/notes/2026-08-25-personal-knowledge-refresh.md]]
+- [[../../raw/notes/2026-08-26-claude-session-curation.md]]

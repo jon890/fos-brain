@@ -48,7 +48,7 @@
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
-- [[information-interface-preferences]] — 훑기, 비교와 원문 탐색을 연결하는 반응형 정보 화면 취향
+- [[information-interface-preferences]] — 훑기와 비교, 모바일 다이어그램의 확대·이동, 원문 탐색을 연결하는 정보 화면 취향
 
 ### 학습 방법
 
@@ -113,6 +113,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-08-25 (개인 지식 최신화 — 신규 2, 보강·통합 9)
+- 마지막 brain-add: 2026-08-26 (Claude Code 세션 큐레이션 — 신규 0, 보강 4)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.
