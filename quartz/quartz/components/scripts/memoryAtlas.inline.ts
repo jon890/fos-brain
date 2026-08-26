@@ -1,8 +1,11 @@
 import {
   buildMemoryAtlasData,
+  clearMemoryAtlasQuery,
   createDefaultMemoryAtlasState,
   deriveMemoryAtlasFacets,
   filterMemoryAtlas,
+  selectMemoryAtlasNode,
+  shouldShowMemoryAtlasResults,
   type MemoryAtlasData,
   type MemoryAtlasState,
 } from "../memoryAtlasData"
@@ -117,6 +120,9 @@ function syncSearchInputs(root: HTMLElement, value: string, source?: HTMLInputEl
     .forEach((input) => {
       if (input !== source) input.value = value
     })
+  root.querySelectorAll<HTMLButtonElement>("[data-memory-atlas-search-clear]").forEach((button) => {
+    button.hidden = value.trim().length === 0
+  })
 }
 
 function restoreStoredState(fallback: MemoryAtlasState): MemoryAtlasState {
@@ -199,10 +205,7 @@ function updateResults(
 ) {
   const list = root.querySelector<HTMLOListElement>('[data-testid="memory-atlas-results"]')
   if (!list) return
-  root.classList.toggle(
-    "memory-atlas--results-open",
-    Boolean(state.query.trim() || state.tags?.length || state.selectedSlug),
-  )
+  root.classList.toggle("memory-atlas--results-open", shouldShowMemoryAtlasResults(state))
 
   list.replaceChildren(
     ...data.nodes.map((node) => {
@@ -382,7 +385,15 @@ async function initMemoryAtlas() {
   window.addCleanup(cleanup)
 
   const selectNode = (slug?: FullSlug) => {
-    state = { ...state, selectedSlug: slug }
+    const hadQuery = Boolean(state.query.trim())
+    state = selectMemoryAtlasNode(state, slug)
+    if (slug && hadQuery) {
+      syncSearchInputs(root, "")
+      visibleData = filterMemoryAtlas(fullData, state)
+      updateStats(root, visibleData)
+      renderHandle?.update(visibleData, state)
+      setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
+    }
     storeState(state)
     renderHandle?.select(slug)
     updateDetail(root, visibleData, slug)
@@ -462,6 +473,15 @@ async function initMemoryAtlas() {
       '[data-testid="memory-atlas-search"], [data-testid="memory-atlas-mobile-search"]',
     )
     .forEach((input) => bind(input, "input", () => refresh(input)))
+  root.querySelectorAll<HTMLButtonElement>("[data-memory-atlas-search-clear]").forEach((button) =>
+    bind(button, "click", () => {
+      state = clearMemoryAtlasQuery(readState(root, state))
+      syncSearchInputs(root, "")
+      refresh()
+      const target = button.dataset.searchTarget
+      if (target) root.querySelector<HTMLInputElement>(`[data-testid="${target}"]`)?.focus()
+    }),
+  )
   bind(root.querySelector('[data-testid="memory-atlas-tag-filter"]'), "change", () => refresh())
   for (const selector of [
     'input[name="memory-atlas-type"]',
@@ -497,6 +517,12 @@ async function initMemoryAtlas() {
   )
   bind(document as unknown as EventTarget, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return
+    if (state.query.trim()) {
+      state = clearMemoryAtlasQuery(readState(root, state))
+      syncSearchInputs(root, "")
+      refresh()
+      return
+    }
     setFiltersOpen(root, false)
     selectNode(undefined)
   })

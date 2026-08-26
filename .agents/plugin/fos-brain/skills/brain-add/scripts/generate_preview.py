@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""brain(fos-brain) wiki 페이지 미리보기 HTML 생성기.
+"""brain-add 문서를 공용 Memory Atlas 문서 미리보기로 생성한다.
 
-brain 페이지는 마크다운 본문 + frontmatter(type/created/updated) + [[wikilink]] 백링크
-그래프가 핵심이다. 등록(brain-add) 전에 그 페이지들이 실제로 어떻게 보일지, 어떤 백링크를
-거는지, 그 백링크 대상이 이미 brain 에 있는지(없으면 신규 생성 예정)를 한눈에 검토하려고
-github-markdown-css + marked.js 템플릿에 여러 페이지를 카드 스택으로 흘려 넣는다.
-
-Dooray·GitHub 미리보기(~/.claude/templates/{dooray,github}-preview/) 와 같은 구조 —
-viewer 는 같고 brain 도메인(frontmatter 배지·wikilink 강조·신규/보강 표시)만 더했다.
+brain-curate와 같은 템플릿을 사용해 실제 Quartz 문서 화면의 색, 글꼴과 읽기 폭을
+한 곳에서 관리한다. 이 생성기는 신규·보강 Markdown을 공용 데이터 계약으로 바꾸는
+brain-add 전용 변환기만 소유한다.
 
 사용 예:
     python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
@@ -20,20 +16,16 @@ viewer 는 같고 brain 도메인(frontmatter 배지·wikilink 강조·신규/�
         --out /tmp/brain-preview.html
     cmux browser open "file:///tmp/brain-preview.html"
 
-주의:
-- 페이지 본문에 '</script>' 문자열이 있으면 안 된다 (marked 소스 블록이 깨진다).
-- CDN 로드라 오프라인에서는 스타일이 빠진 채 보인다.
-- 🔗 배지는 [[wikilink]] 다. 빨간 배지는 --known-from 디렉터리에 해당 slug 파일이 없는
-  대상 — 이번에 새로 만들 페이지이거나 오타다. 등록 후 실제 백링크는 brain 에서 확인.
+주의: 페이지 본문에 '</script>' 문자열이 있으면 공용 템플릿 주입이 깨지므로 거부한다.
 """
 
 import argparse
-import html
 import json
 import sys
 from pathlib import Path
 
-TEMPLATE = Path(__file__).parent.parent / "templates" / "preview.html"
+PLUGIN_ROOT = Path(__file__).parents[3]
+TEMPLATE = PLUGIN_ROOT / "skills" / "brain-curate" / "templates" / "preview.html"
 
 TYPE_DIR = {"concept": "concepts", "entity": "entities", "topic": "topics"}
 
@@ -64,33 +56,24 @@ def brain_path(stem: str, ptype: str) -> str:
     return f"wiki/{TYPE_DIR.get(ptype, 'concepts')}/{stem}.md"
 
 
-def card(idx: int, ns: str, status: str, path: Path) -> tuple[str, str]:
-    """페이지 1개 → (헤더+본문 카드 HTML, marked 소스 script)."""
+def preview_page(ns: str, status: str, path: Path) -> dict[str, str]:
+    """페이지 1개를 공용 Memory Atlas preview page 계약으로 바꾼다."""
     text = path.read_text(encoding="utf-8")
-    if "</script>" in text:
+    if "</script>" in text.lower():
         raise SystemExit(f"오류: {path} 에 '</script>' 가 있어 미리보기가 깨진다.")
     fm, body = split_frontmatter(text)
-    title = first_h1(body)
     ptype = fm.get("type", "concept")
     status_label = {"new": "신규", "update": "보강"}.get(status, status)
-    dates = " · ".join(
-        f"{k} {fm[k]}" for k in ("created", "updated") if k in fm
-    )
-    head = f"""  <article class="page">
-    <div class="page-head">
-      <div class="badges">
-        <span class="badge ns-{ns}">{html.escape(ns)}</span>
-        <span class="badge status-{status}">{status_label}</span>
-        <span class="badge type">{html.escape(ptype)}</span>
-        <span class="dates">{html.escape(dates)}</span>
-      </div>
-      <div class="path">{html.escape(brain_path(path.stem, ptype))}</div>
-      <h2>{html.escape(title)}</h2>
-    </div>
-    <div class="markdown-body" id="md-{idx}">렌더링 중…</div>
-  </article>"""
-    src = f'<script type="text/markdown" data-target="md-{idx}">{body}</script>'
-    return head, src
+    metadata = [ns, status_label, ptype]
+    metadata.extend(f"{key} {fm[key]}" for key in ("created", "updated") if key in fm)
+    metadata.append(brain_path(path.stem, ptype))
+    return {
+        "frontmatter": " · ".join(metadata),
+        "markdown": body,
+        "slug": path.stem,
+        "title": first_h1(body),
+        "status": status,
+    }
 
 
 def known_slugs(roots: list[str]) -> list[str]:
@@ -121,24 +104,33 @@ def main() -> int:
         print("오류: --new 또는 --update 로 페이지를 최소 1개 지정하라.", file=sys.stderr)
         return 1
 
-    heads, srcs = [], []
-    idx = 0
+    pages = []
     for status, paths in (("new", args.new), ("update", args.update)):
         for raw in paths:
-            head, src = card(idx, args.ns, status, Path(raw).expanduser())
-            heads.append(head)
-            srcs.append(src)
-            idx += 1
+            pages.append(preview_page(args.ns, status, Path(raw).expanduser()))
 
-    out = (
-        TEMPLATE.read_text(encoding="utf-8")
-        .replace("{{TITLE}}", html.escape(args.title))
-        .replace("{{SUMMARY}}", html.escape(args.summary))
-        .replace("{{KNOWN_SLUGS}}", json.dumps(known_slugs(args.known_from)))
-        .replace("{{CARDS}}", "\n".join(heads) + "\n" + "\n".join(srcs))
-    )
+    data = {
+        "title": args.title,
+        "summary": args.summary,
+        "stats": {
+            "신규": {"n": len(args.new), "kind": "new"},
+            "보강": {"n": len(args.update), "kind": "augment"},
+        },
+        "pages": pages,
+        "knownSlugs": known_slugs(args.known_from),
+        "copy": {
+            "navBrand": "FOS / MEMORY · BRAIN ADD",
+            "railTitle": "지식 통합 미리보기",
+            "railNote": "원본을 저장하기 전에 신규·보강 문서와 연결을 확인합니다.",
+            "heroKicker": "BRAIN ADD / BEFORE WRITE",
+            "heroSummary": args.summary,
+            "pageHint": "현재 Memory Atlas 문서 화면과 같은 시각 언어로 신규·보강 문서를 읽습니다.",
+        },
+    }
+    raw_data = json.dumps(data, ensure_ascii=False)
+    out = TEMPLATE.read_text(encoding="utf-8").replace("__DATA__", raw_data)
     Path(args.out).expanduser().write_text(out, encoding="utf-8")
-    print(f"생성 완료: {args.out} (페이지 {idx}개)")
+    print(f"생성 완료: {args.out} (페이지 {len(pages)}개)")
     return 0
 
 

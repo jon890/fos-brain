@@ -4,10 +4,13 @@ import type { ContentDetails } from "../plugins/emitters/contentIndex"
 import type { FilePath, FullSlug, SimpleSlug } from "../util/path"
 import {
   buildMemoryAtlasData,
+  clearMemoryAtlasQuery,
   createDefaultMemoryAtlasState,
   deriveMemoryAtlasFacets,
   filterMemoryAtlas,
   inferMemoryNamespace,
+  selectMemoryAtlasNode,
+  shouldShowMemoryAtlasResults,
   type MemoryAtlasState,
 } from "./memoryAtlasData"
 
@@ -36,6 +39,42 @@ function state(overrides: Partial<MemoryAtlasState> = {}): MemoryAtlasState {
 }
 
 describe("memory atlas data", () => {
+  test("clears only the search query when search is dismissed", () => {
+    const current = state({
+      query: "RAG",
+      tags: ["retrieval"],
+      selectedSlug: slug("concepts/current"),
+    })
+
+    assert.deepStrictEqual(clearMemoryAtlasQuery(current), {
+      ...current,
+      query: "",
+    })
+  })
+
+  test("clears the search query when a graph node is selected", () => {
+    const current = state({ query: "RAG", tags: ["retrieval"] })
+
+    assert.deepStrictEqual(selectMemoryAtlasNode(current, slug("concepts/rag")), {
+      ...current,
+      query: "",
+      selectedSlug: slug("concepts/rag"),
+    })
+    assert.deepStrictEqual(selectMemoryAtlasNode(current), {
+      ...current,
+      selectedSlug: undefined,
+    })
+  })
+
+  test("closes search results after selecting a node without active filters", () => {
+    assert.strictEqual(
+      shouldShowMemoryAtlasResults(state({ selectedSlug: slug("concepts/rag") })),
+      false,
+    )
+    assert.strictEqual(shouldShowMemoryAtlasResults(state({ query: "RAG" })), true)
+    assert.strictEqual(shouldShowMemoryAtlasResults(state({ tags: ["retrieval"] })), true)
+  })
+
   test("keeps sparse metadata renderable", () => {
     const data = buildMemoryAtlasData({
       "concepts/sparse": content("concepts/sparse"),

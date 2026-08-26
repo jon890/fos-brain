@@ -91,12 +91,23 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
 
         <label class="memory-atlas__field">
           <span>검색</span>
-          <input
-            data-testid="memory-atlas-search"
-            type="search"
-            placeholder="제목 또는 태그"
-            autocomplete="off"
-          />
+          <div class="memory-atlas__search-control">
+            <input
+              data-testid="memory-atlas-search"
+              type="search"
+              placeholder="제목 또는 태그"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              data-memory-atlas-search-clear
+              data-search-target="memory-atlas-search"
+              aria-label="검색어 지우기"
+              hidden
+            >
+              ×
+            </button>
+          </div>
         </label>
 
         <details class="memory-atlas__section" open>
@@ -214,12 +225,23 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           </button>
           <label class="memory-atlas__field">
             <span>검색</span>
-            <input
-              data-testid="memory-atlas-mobile-search"
-              type="search"
-              placeholder="기억 검색"
-              autocomplete="off"
-            />
+            <div class="memory-atlas__search-control">
+              <input
+                data-testid="memory-atlas-mobile-search"
+                type="search"
+                placeholder="기억 검색"
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                data-memory-atlas-search-clear
+                data-search-target="memory-atlas-mobile-search"
+                aria-label="검색어 지우기"
+                hidden
+              >
+                ×
+              </button>
+            </div>
           </label>
         </div>
 
