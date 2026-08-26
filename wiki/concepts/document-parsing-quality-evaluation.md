@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-08-26
 ---
 
 # 문서 파싱 품질 평가 방법론
@@ -37,6 +37,7 @@ updated: 2026-06-17
 
 ## 관련 개념
 
+- [[rag-retrieval-pipeline]] — 검색 이전에 원문 구조 보존 품질이 필요한 이유
 - [[two-tier-reward-static-llm-judge]] — 정적 메트릭과 LLM judge 를 쌓은 2계층 reward 설계
 - [[red-use-metrics]] — 운영 관측 지표(USE)와 대비되는 산출물 품질 평가
 
