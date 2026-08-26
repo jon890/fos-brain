@@ -183,6 +183,15 @@ Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
 qmd 실행 환경은 `XDG_CONFIG_HOME`과 `XDG_CACHE_HOME`을 위 경로로 고정한다.
 private 문서 본문, 검색어, 검색 결과는 Jenkins 로그에 출력하지 않는다.
 
+| host 경로 | Hermes 경로 | 접근 |
+| --- | --- | --- |
+| `/home/bifos/.hermes/qmd` | `/opt/data/qmd` | UID와 GID 1000 쓰기 |
+| `/home/bifos/.hermes/qmd/bin-pinned` | `/root/.local/bin-pinned` | 읽기 전용 |
+| `/home/bifos/personal/fos-brain` | `/home/bifos/personal/fos-brain` | 기존 brain mount 재사용 |
+
+`sync-qmd.sh`가 host의 `sync.lock`을 잡으면 container wrapper에 `QMD_LOCK_HELD=1`을 전달한다.
+이 값은 같은 inode의 중복 잠금만 건너뛰며 일반 `brain-search` 실행에는 설정하지 않는다.
+
 ## Memory Atlas 콘텐츠 색인
 
 정적 `/static/contentIndex.json`의 문서 항목은 기존 검색 필드에 다음 선택 필드를 더한다.

@@ -19,17 +19,21 @@ Phase 01의 검증된 스크립트를 홈서버와 Hermes, Jenkins에 적용하�
 SSH `bifos@61.80.30.85:10022`에서 Hermes compose, Jenkins 강제 명령 스크립트, Jenkins 작업 XML을 timestamp 경로에 복사한다.
 현재 Hermes 이미지, mount, 메모리·CPU 제한, 활성 Quartz release, qmd 부재 상태를 기록한다.
 복구는 저장한 compose와 Jenkins 파일을 되돌린 뒤 Hermes만 재생성하는 범위로 제한한다.
+SSH 읽기, 세 파일의 백업, 현재 compose와 forced-command 내용 확인 중 하나라도 실패하면 운영 파일을 변경하지 않고 `PHASE_BLOCKED`로 끝낸다.
 
 ### 2. qmd 설치와 Hermes 연결
 
 검증된 배포 파일을 `/home/bifos/apps/fos-brain-deploy`에 설치한다.
 `install-hermes-qmd.sh`로 영구 데이터 경계에 runtime을 설치하고 기존 Hermes compose에 override의 읽기 전용 wrapper mount를 적용한다.
+기존 `docker-compose.yml`은 직접 고치지 않고 검증한 override를 `/home/bifos/apps/hermes-agent/docker-compose.override.yml`로 설치해 이후의 일반 `docker compose`에도 자동 적용되게 한다.
 Hermes를 재생성한 뒤 `/root/.local/bin-pinned/qmd --version`이 2.8.3이고 프로세스가 UID와 GID 1000으로 실행되는지 확인한다.
 
 ### 3. 초기 색인과 Jenkins 연동
 
 `sync-qmd.sh`로 세 컬렉션을 등록하고 초기 `update`, `embed`를 완료한다.
 홈서버의 Jenkins 강제 명령 허용 목록에 정확한 `sync-brain-qmd` 명령을 추가하고 저장소의 Jenkins 작업 XML을 설치한다.
+forced-command는 `SSH_ORIGINAL_COMMAND`의 고정 문자열만 case로 분기하고 `eval`, stdin 명령 해석, 전달된 추가 인자를 사용하지 않는다.
+실제 Jenkins SSH 경로로 `sync-brain-qmd`가 성공하고 `sync-brain-qmd extra`, 빈 명령, 임의 명령이 모두 거부되는지 검사한다.
 Cloudflare webhook secret과 Access 정책은 바꾸지 않는다.
 
 ### 4. 검색·증분 갱신·자원 검증과 완료 기록
@@ -45,7 +49,7 @@ Jenkins의 고정 명령을 직접 호출해 보호 release가 유지되는 동�
 | 파일 | 변경 |
 | --- | --- |
 | `/home/bifos/apps/fos-brain-deploy/` | 검증된 배포 파일 설치 |
-| `/home/bifos/apps/hermes-agent/docker-compose.yml` | wrapper mount 추가 |
+| `/home/bifos/apps/hermes-agent/docker-compose.override.yml` | wrapper 읽기 전용 mount 추가 |
 | `/home/bifos/.hermes/qmd/` | runtime, 설정, 색인 생성 |
 | `/home/bifos/bin/jenkins-deploy.sh` | `sync-brain-qmd` 허용 명령 추가 |
 | Jenkins `sync-brain` 작업 | 후속 qmd 단계 적용 |
@@ -58,7 +62,8 @@ Jenkins의 고정 명령을 직접 호출해 보호 release가 유지되는 동�
 ssh -p 10022 bifos@61.80.30.85 '/home/bifos/apps/fos-brain-deploy/install-hermes-qmd.sh --verify'
 ssh -p 10022 bifos@61.80.30.85 'docker exec hermes /root/.local/bin-pinned/qmd --version'
 ssh -p 10022 bifos@61.80.30.85 '/home/bifos/apps/fos-brain-deploy/sync-qmd.sh --status'
-ssh -p 10022 bifos@61.80.30.85 'printf %s sync-brain-qmd | /home/bifos/bin/jenkins-deploy.sh'
+ssh -p 10022 bifos@61.80.30.85 sync-brain-qmd
+if ssh -p 10022 bifos@61.80.30.85 'sync-brain-qmd extra'; then exit 1; fi
 deploy/home-server/tests/verify-hermes-qmd.sh
 deploy/home-server/tests/verify-protected-deploy.sh
 git diff --check
@@ -67,6 +72,11 @@ git diff --check
 세 컬렉션이 각 허용 경로만 가리키고 public과 private 대표 검색이 기대 slug를 반환해야 한다.
 `docker inspect hermes`의 OOM kill 수가 늘지 않고 container가 healthy 상태를 유지해야 한다.
 Cloudflare 보호 URL과 활성 Quartz release 식별자는 적용 전후에 같거나 정상적인 새 release여야 한다.
+
+## Blocked 조건
+
+- SSH 읽기 또는 운영 파일 백업 실패 → `PHASE_BLOCKED: 홈서버 사전 확인 또는 복구본 확보 실패`를 출력하고 변경 없이 종료한다.
+- 기존 `/home/bifos/.hermes:/opt/data` 또는 brain 동일 경로 mount가 없으면 경로를 추측하지 않고 종료한다.
 
 ## 의도 메모 (왜)
 

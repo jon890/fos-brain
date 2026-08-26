@@ -89,6 +89,8 @@ Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
 Jenkins는 저장소 checkout 안의 실행 중 변경에 의존하지 않고 운영 경로에 설치한 검증본을 호출한다.
 qmd runtime, 설정, 색인, 모델 cache는 `/home/bifos/.hermes/qmd`에 두고 Hermes의 `/opt/data/qmd`와 고정 wrapper 경로로만 노출한다.
 wrapper는 Hermes의 root 프로세스에서 qmd를 실행할 때 UID와 GID를 1000으로 낮추고 CPU 모드와 단일 임베딩 병렬성을 적용한다.
+host의 `sync-qmd.sh`는 갱신 구간의 잠금을 소유하고 컨테이너 안의 wrapper만 호출한다.
+일반 검색은 wrapper가 같은 lock inode를 직접 잡으며, host가 이미 잠근 갱신 호출만 명시적인 내부 신호로 중복 획득을 생략한다.
 qmd는 네트워크 포트를 열지 않으며 private 색인과 cache를 git 및 Quartz 정적 서버에서 분리한다.
 
 NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.

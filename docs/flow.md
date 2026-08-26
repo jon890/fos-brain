@@ -31,7 +31,8 @@
 qmd가 없거나 실패하면 INDEX로 후보를 좁힌 뒤 `rg`로 본문을 찾는다.
 후보가 없으면 지식이 없다고 명시하고 일반 지식과 혼합하지 않는다.
 검색은 읽기 전용이므로 잠금이나 중복 쓰기 충돌을 만들지 않는다.
-Hermes에서는 `/root/.local/bin-pinned/qmd`가 영구 데이터 영역의 고정 Node와 qmd를 실행한다.
+Hermes에서는 `/root/.local/bin-pinned/qmd`가 `/opt/data/qmd`의 고정 Node와 qmd를 실행한다.
+일반 검색은 wrapper가 잠금을 잡고, host의 색인 동기화는 같은 inode의 잠금을 갱신 전체 구간에서 한 번 잡은 뒤 내부 qmd 호출의 중복 잠금만 생략한다.
 색인 갱신 중인 검색은 같은 잠금을 기다리며, 제한 시간 안에 잠금을 얻지 못하면 기존 INDEX와 `rg` 폴백을 사용한다.
 
 ## 사람의 탐색 흐름
