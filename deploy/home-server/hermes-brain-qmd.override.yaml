@@ -1,0 +1,11 @@
+services:
+  hermes:
+    environment:
+      BRAIN_QMD_URL: http://brain-qmd:8181
+    networks:
+      - brain-search-net
+
+networks:
+  brain-search-net:
+    name: brain-search-net
+    external: true

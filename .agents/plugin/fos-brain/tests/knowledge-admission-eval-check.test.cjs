@@ -59,7 +59,7 @@ test("keeps plugin and marketplace versions aligned", () => {
   const claudeManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8"));
   const marketplace = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "marketplace.json"), "utf8"));
 
-  assert.equal(codexManifest.version, "0.2.0");
+  assert.equal(codexManifest.version, "0.2.1");
   assert.equal(claudeManifest.version, codexManifest.version);
   assert.equal(marketplace.version, codexManifest.version);
   assert.equal(marketplace.plugins[0].version, codexManifest.version);

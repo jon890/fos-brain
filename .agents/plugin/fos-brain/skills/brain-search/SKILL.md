@@ -23,8 +23,8 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 
 1. **대상 결정** — public·private를 각각 검색한다. 회사 지식이면 여기서 멈추고 `nbrain`을 사용한다.
 2. **wiki 후보 검색** — 네임스페이스별로 먼저 wiki만 검색한다.
-   - public: `~/.local/bin-pinned/qmd query -c brain-wiki "<질문>" -n 5`를 우선한다.
-   - private: `~/.local/bin-pinned/qmd query -c brain-private "<질문>" -n 5`를 우선한다.
+   - `BRAIN_QMD_URL`이 있으면 `../../scripts/brain-search-http.cjs "<질문>" '["brain-wiki"]' 5` 또는 `../../scripts/brain-search-http.cjs "<질문>" '["brain-private"]' 5`를 먼저 실행한다.
+   - HTTP client가 실패하면 public은 `~/.local/bin-pinned/qmd query -c brain-wiki "<질문>" -n 5`, private은 `~/.local/bin-pinned/qmd query -c brain-private "<질문>" -n 5`를 사용한다.
    - 고정 실행 파일이나 해당 collection을 쓸 수 없으면, 같은 네임스페이스의 `wiki/INDEX.md`로 후보를 좁힌 뒤 `rg`로 wiki 본문만 검색한다.
 3. **후보와 관계 정독** — 각 네임스페이스 후보 페이지를 최대 5개 읽고, 관련 `[[bare-slug]]` wikilink를 한 단계만 따라 읽는다. public에서는 private 링크를 따라가지 않는다.
 4. **부족할 때만 raw로 하강** — wiki와 한 단계 관계 문서만으로 근거가 부족할 때, 같은 네임스페이스의 후보 문서 `Sources`를 따라 raw를 읽거나 해당 raw를 검색한다. raw를 1차 검색으로 사용하지 않는다.
@@ -46,11 +46,19 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 
 ## 검색 전략
 
+- HTTP 우선: `BRAIN_QMD_URL=http://brain-qmd:8181 ../../scripts/brain-search-http.cjs "<question>" '["brain-wiki","brain-private"]' 5`
 - 정확 키워드: `~/.local/bin-pinned/qmd search "<term>" -c brain-wiki`(public) 또는 `-c brain-private`(private)
 - 의미 검색: `~/.local/bin-pinned/qmd vsearch "<text>" -c <collection>`
 - 하이브리드: `~/.local/bin-pinned/qmd query "<question>" -c <collection>` — 일반 Q&A 기본값
 - 후보 5개 이상이면 INDEX 요약·qmd 점수로 좁힌다.
 - brain 외부 정보가 명백히 필요하면 사용자에게 알린 후 WebSearch.
+
+### HTTP qmd 축소 경로
+
+`brain-search-http.cjs`는 qmd 2.8.3의 공식 `POST /query`만 사용한다.
+요청은 같은 질문의 `lex`와 `vec`, 복수형 `collections`, `rerank: false`를 보낸다.
+응답에 허용하지 않은 collection의 `qmd://` URI가 섞이면 실패로 처리한다.
+실패 메시지는 검색 품질을 낮추는 신호일 뿐이며, private 본문이나 검색 결과를 사용자에게 노출하지 않는다.
 
 ### 하이픈 식별자 함정 (qmd vec/hyde)
 
