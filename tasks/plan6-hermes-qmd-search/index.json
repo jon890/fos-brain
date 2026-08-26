@@ -1,0 +1,22 @@
+{
+  "name": "plan6-hermes-qmd-search",
+  "description": "내부 전용 brain-qmd HTTP 컨테이너를 만들고 Hermes 검색과 Git push 색인 갱신을 연결한다.",
+  "status": "completed",
+  "created_at": "2026-08-26",
+  "total_phases": 2,
+  "current_phases": 2,
+  "phases": [
+    {
+      "number": 1,
+      "title": "brain-qmd HTTP 서비스와 검색 client",
+      "file": "phase-01.md",
+      "execution_profile": "deep"
+    },
+    {
+      "number": 2,
+      "title": "홈서버 배포와 webhook 색인 검증",
+      "file": "phase-02.md",
+      "execution_profile": "deep"
+    }
+  ]
+}

@@ -100,6 +100,12 @@ worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하
 | `PROTECTED_OUTPUT_ROOT` | 절대 경로 | 보호 산출물의 `releases/`와 `current`를 담으며 기본값은 `${BRAIN_REPO}/quartz-protected`다. |
 | `BRAIN_SYNC_LOCK` | checkout 밖 절대 경로 | public·private push의 중복 빌드를 직렬화하며 `BRAIN_DEPLOY_ROOT` 아래에 둔다. |
 | `BRAIN_DEPLOY_ROOT` | 절대 경로 | 검증한 동기화·빌드 스크립트와 Jenkins 작업 정의를 설치하는 운영 경로다. |
+| `BRAIN_QMD_CONTAINER` | 컨테이너 이름 | 검색 HTTP 서비스이며 기본값은 `brain-qmd`다. |
+| `BRAIN_QMD_DATA_DIR` | 절대 경로 | qmd 설정, SQLite 색인, 모델 cache를 담으며 기본값은 `/home/bifos/.brain-qmd`다. |
+| `BRAIN_QMD_URL` | 내부 URL | Hermes가 호출하는 주소이며 `http://brain-qmd:8181`이다. |
+| `BRAIN_QMD_COMPOSE` | 절대 경로 | 검증된 `brain-qmd` compose 파일을 가리킨다. |
+| `QMD_VERSION` | 고정 버전 | image에 설치하는 qmd 버전이며 `2.8.3`이다. |
+| `QMD_SYNC_LOCK` | checkout 밖 절대 경로 | 색인 갱신을 직렬화하며 `BRAIN_QMD_DATA_DIR` 아래에 둔다. |
 
 ### 비밀값
 
@@ -161,6 +167,45 @@ private INDEX가 없거나 private Markdown 수가 0이면 새 release를 활성
 
 Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
 작업은 두 checkout이 clean이고 원격 `main`으로 fast-forward할 수 있을 때만 빌드를 시작한다.
+성공한 보호 배포 뒤 `sync-brain-qmd`를 실행하며, 이 후속 단계만 실패하면 활성 release를 되돌리지 않는다.
+
+## brain-qmd 영구 데이터와 mount
+
+| 경로 | 내용 | 규칙 |
+| --- | --- | --- |
+| `/home/bifos/.brain-qmd/config/qmd/index.yml` | 컬렉션 설정 | public wiki, public raw, private wiki의 container 경로만 등록한다. |
+| `/home/bifos/.brain-qmd/cache/qmd/index.sqlite*` | SQLite 색인과 WAL·SHM | 상위 `/home/bifos/.brain-qmd`를 mode 700으로 유지하고 git과 Quartz 입력에서 제외한다. |
+| `/home/bifos/.brain-qmd/cache/qmd/models/` | 임베딩 모델 cache | 최초 sync에서 내려받고 이후 재사용한다. |
+| `/tmp/brain-qmd-sqlite-backup.*` | 중지된 색인의 임시 복구본 | sync 성공이나 복구 완료 뒤 제거한다. |
+| `/home/bifos/apps/fos-brain-deploy/sync-qmd.lock` | 색인 갱신 잠금 | 동시에 하나의 Jenkins 갱신만 실행한다. |
+
+qmd container는 `XDG_CONFIG_HOME=/data/config`, `XDG_CACHE_HOME=/data/cache`를 사용한다.
+private 문서 본문, 검색어, 검색 결과는 Jenkins 로그에 출력하지 않는다.
+
+| host 경로 | brain-qmd 경로 | 접근 |
+| --- | --- | --- |
+| `/home/bifos/.brain-qmd` | `/data` | UID와 GID 1000 쓰기 |
+| `/home/bifos/personal/fos-brain/wiki` | `/brain/public/wiki` | 읽기 전용 |
+| `/home/bifos/personal/fos-brain/raw` | `/brain/public/raw` | 읽기 전용 |
+| `/home/bifos/personal/fos-brain/private/wiki` | `/brain/private/wiki` | 읽기 전용 |
+
+private raw는 mount와 컬렉션에서 제외한다.
+HTTP container와 일회성 sync container는 동시에 실행하지 않는다.
+
+## brain-qmd HTTP 입력과 출력
+
+Hermes는 `POST /query`에 다음 값을 보낸다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `searches` | 객체 배열 | 같은 질문의 `lex`, `vec`를 포함한다. |
+| `collections` | 문자열 배열 | `brain-wiki`, `brain-raw`, `brain-private` 중 하나 이상이다. 단수형 `collection`은 쓰지 않는다. |
+| `limit` | 정수 | 기본값 5이며 1에서 20 사이다. |
+| `rerank` | boolean | CPU 실측 전 기본값은 `false`다. |
+
+응답은 `results` 배열이며 각 항목은 `docid`, `file`, `title`, `score`, `line`, `snippet`을 가진다.
+`file`은 `qmd://<collection>/<path>` 형식이어야 하며 허용하지 않은 collection이면 client가 실패한다.
+`GET /health`는 `status: ok`를 반환한다.
 
 ## Memory Atlas 콘텐츠 색인
 

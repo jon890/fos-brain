@@ -204,6 +204,11 @@ Karpathy 가 권장한 qmd(BM25, 벡터, LLM rerank)를 사용한다.
 
 `brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
+홈서버에서는 qmd 2.8.3의 공식 HTTP transport를 `brain-qmd` container로 분리한다.
+Hermes는 `BRAIN_QMD_URL=http://brain-qmd:8181`이 있으면 `/query`를 우선 사용하고, 실패하면 로컬 고정 qmd와 INDEX·`rg` 순서로 축소한다.
+`brain-qmd`는 Hermes와의 전용 Docker network에만 연결하며 host port, Cloudflare Tunnel, NPM에는 노출하지 않는다.
+public wiki와 raw, private wiki만 읽기 전용으로 제공하고 private raw는 mount하지 않는다.
+
 ### wrapper로 node 버전 고정 (ABI 불일치 방지)
 
 qmd 는 `better-sqlite3` 네이티브 모듈을 쓰고, 이 모듈의 ABI 는 **실행 런타임에 종속**된다.

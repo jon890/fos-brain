@@ -23,9 +23,11 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 ### 에이전트 검색
 
 - 공개와 비공개 컬렉션을 분리해 검색하고 결과에 네임스페이스를 유지한다.
+- 홈서버의 Hermes는 내부 전용 `brain-qmd` HTTP 서비스에서 같은 세 컬렉션을 검색한다.
 - 컴파일된 wiki를 먼저 검색하고, 부족할 때만 raw 원문으로 내려간다.
 - 관련 문서의 링크를 한 단계 따라가며 단순 상위 결과보다 관계 맥락을 보강한다.
 - 대표 질문 묶음으로 의도한 문서가 상위 결과에 나오는지 반복 측정한다.
+- public 또는 private `main` push 뒤 보호 Quartz 배포가 성공하면 `brain-qmd` 색인을 증분 갱신한다.
 - qmd를 사용할 수 없거나 결과가 비어도 INDEX와 본문 검색으로 축소 동작한다.
 
 ### 사람의 지식 탐색
@@ -65,6 +67,11 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 회사 지식, 절차, 일회성 기록, 일반 설명을 개인 brain에 넣지 않는 대표 시나리오를 반복 검사한다.
 - 공개 대표 질문의 80% 이상에서 기대 문서가 상위 3개 안에 나온다.
 - 검색 절차가 공개·비공개 결과를 섞지 않고, 답변 근거에 네임스페이스를 표시한다.
+- Hermes 컨테이너의 `brain-search`가 내부 HTTP로 `brain-wiki`, `brain-raw`, `brain-private`를 검색한다.
+- `brain-qmd`는 호스트 포트를 열지 않고 Hermes와의 전용 Docker network에만 연결된다.
+- `brain-search`는 HTTP 실패 시 로컬 고정 qmd, INDEX와 본문 검색 순서로 축소 동작한다.
+- qmd 갱신 실패는 성공한 Quartz release를 되돌리지 않으며 Jenkins에서 별도 실패 단계로 확인할 수 있다.
+- qmd 설정, 색인, 모델 cache와 private 검색 결과는 git 및 공개 Quartz 산출물에 포함되지 않는다.
 - OKF 내보내기 결과의 concept, topic, entity 문서에 `type`, `title`, `description`이 있고 내부 링크가 표준 Markdown 링크다.
 - 묶음의 `index.md`와 `log.md`는 OKF v0.2의 예약 문서 계약을 따른다.
 - 예약 문서를 제외한 모든 Markdown은 비어 있지 않은 `type`을 가진다.
@@ -99,3 +106,6 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - Hermes와 9119 포트를 Cloudflare Tunnel에 연결하지 않는다.
 - 위키 링크에 supports, contradicts 같은 의미 연결 유형을 추정해 저장하지 않는다.
 - 이번 화면에서 에이전트 질의 API나 대화형 답변 서비스를 새로 만들지 않는다.
+- qmd HTTP를 호스트 포트, Cloudflare Tunnel, 공개 Docker network에 노출하지 않는다.
+- 이번 변경에서는 qmd 앞에 별도 Node proxy나 인증 서버를 만들지 않는다.
+- 이번 변경에서는 기존 qmd 임베딩 모델을 교체하지 않는다.

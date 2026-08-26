@@ -9,12 +9,12 @@
     {
       "name": "fos-brain",
       "description": "필요할 때 호출하는 brain-add/brain-search/brain-curate/brain-lint/brain-delete 스킬을 배포하고, 세션 종료 시 brain-curate가 나중에 소화할 세션 포인터를 기록한다.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "jon890"
       },
       "source": "./"
     }
   ],
-  "version": "0.2.0"
+  "version": "0.2.1"
 }

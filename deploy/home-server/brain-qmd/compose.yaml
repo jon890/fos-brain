@@ -1,0 +1,46 @@
+services:
+  brain-qmd:
+    container_name: brain-qmd
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fos-brain/brain-qmd:0.2.1
+    restart: unless-stopped
+    cpus: 2.0
+    mem_limit: 4g
+    environment:
+      QMD_ALLOWED_HOSTS: brain-qmd,brain-qmd:8181,localhost,localhost:8181,127.0.0.1,127.0.0.1:8181
+      XDG_CONFIG_HOME: /data/config
+      XDG_CACHE_HOME: /data/cache
+    volumes:
+      - type: bind
+        source: /home/bifos/.brain-qmd
+        target: /data
+      - type: bind
+        source: ${BRAIN_REPO:?Set BRAIN_REPO in deploy/home-server/.env}/wiki
+        target: /brain/public/wiki
+        read_only: true
+      - type: bind
+        source: ${BRAIN_REPO:?Set BRAIN_REPO in deploy/home-server/.env}/raw
+        target: /brain/public/raw
+        read_only: true
+      - type: bind
+        source: ${PRIVATE_BRAIN_REPO:?Set PRIVATE_BRAIN_REPO in deploy/home-server/.env}/wiki
+        target: /brain/private/wiki
+        read_only: true
+    networks:
+      - brain-search-net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:8181/health').then(r =>
+          process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  brain-search-net:
+    name: brain-search-net

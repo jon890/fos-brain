@@ -61,6 +61,15 @@
     -o BatchMode=yes -p 10022 bifos@hostmachine sync-brain'''
       }
     }
+    stage('Sync brain qmd') {
+      steps {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+          sh '''ssh -i /var/jenkins_home/.ssh/id_jenkins_deploy \
+    -o UserKnownHostsFile=/var/jenkins_home/.ssh/known_hosts \
+    -o BatchMode=yes -p 10022 bifos@hostmachine sync-brain-qmd'''
+        }
+      }
+    }
   }
 }</script>
     <sandbox>true</sandbox>
