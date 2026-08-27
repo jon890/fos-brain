@@ -1,7 +1,7 @@
 ---
 type: topic
 created: 2026-05-19
-updated: 2026-08-26
+updated: 2026-08-27
 title: "RAG 시스템 아키텍처 전략"
 description: "입력 품질, 검색 파이프라인과 관계 탐색을 나눠 RAG 시스템을 설계하는 개인 관점"
 tags: [rag, architecture, retrieval, data-quality, graphrag]
@@ -17,6 +17,9 @@ sources:
   - id: toss-securities-rag-talk
     resource: ../../raw/videos/2026-07-27-toss-securities-recommendation-search-rag-graphrag.md
     title: 토스증권 추천과 검색 테크톡
+  - id: toss-securities-rag-article
+    resource: ../../raw/web/2026-08-26-toss-securities-recommendation-search-rag-graphrag.md
+    title: 토스증권 추천과 검색은 어떻게 진화하고 있을까?
 ---
 
 # RAG 시스템 아키텍처 전략
@@ -55,6 +58,7 @@ RAG 시스템은 하나의 검색 기법이 아니라 사용자 작업 흐름, �
 
 - [[document-parsing-quality-evaluation]] — 입력 문서의 내용과 구조 보존 평가
 - [[rag-retrieval-pipeline]] — 질문 이해부터 재정렬까지의 공통 검색 흐름
+- [[retrieval-backend-selection]] — 검색 계층을 벡터DB 기본값 없이 고르는 기준
 - [[embedding-versioned-vector-index]] — 임베딩 변경과 벡터 색인의 운영 수명주기
 - [[graph-rag-path-retrieval]] — 제한된 경로 탐색으로 서브그래프를 만드는 방식
 - [[testing-philosophy]] — 결정적 검사와 비결정적 평가의 계층
@@ -64,3 +68,4 @@ RAG 시스템은 하나의 검색 기법이 아니라 사용자 작업 흐름, �
 - [[../../raw/papers/RAG_아키텍처_분석_토스_우아한형제들_Sionic_AI_전략_비교.pdf]]
 - [[../../raw/notes/다른 기업의 RAG 시스템 발표자료.md]]
 - [[../../raw/videos/2026-07-27-toss-securities-recommendation-search-rag-graphrag.md]]
+- [[../../raw/web/2026-08-26-toss-securities-recommendation-search-rag-graphrag.md]]
