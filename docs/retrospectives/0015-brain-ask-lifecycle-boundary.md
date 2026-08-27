@@ -37,18 +37,24 @@ qmd slug는 모델 근거 태그의 attribute에 넣기 전에 XML 특수문자�
 Responses 요청에는 `max_output_tokens`를 보낸다.
 모델 응답 본문과 최종 답변 문자열에도 상한을 두고 API 문서에 같은 제한값을 기록했다.
 
+질문 API는 본문을 읽기 전에 `application/json` 미디어 타입인지 확인한다.
+기본 UI 검증 timeout은 실제 브라우저 후처리까지 통과하는 45초로 맞췄다.
+
 ## 검증
 
 - `node --test services/brain-ask/brainAsk.test.mjs`
   - 질문 closure와 별개로 서버 body timeout, 잠금 순서, 특수문자 slug escaping, 모델 요청과 응답 크기 제한을 검사한다.
 - `quartz/scripts/verify-memory-atlas-browser.sh`
   - 질문 패널 닫기 뒤 retry가 이전 질문을 재사용하지 않는지 검사한다.
+- `quartz/scripts/verify-memory-atlas.sh`
+  - 별도 환경 변수 없이 문서에 적힌 기본 명령 그대로 브라우저 회귀 검사를 완료한다.
 
 ## 배운 점
 
 비저장 계약은 storage API뿐 아니라 closure와 요청 수명까지 포함해 검증해야 한다.
 모델 입력은 XML처럼 보이는 문자열을 만들 때에도 외부 입력을 그대로 attribute에 넣지 않아야 한다.
 단일 처리 잠금은 실제 작업 구간만 감싸야 느린 클라이언트가 처리 슬롯을 선점하지 않는다.
+입력 형식 계약과 반복 검증 명령의 기본값도 독립 리뷰에서 실제 명령으로 확인해야 한다.
 
 ## 후속
 

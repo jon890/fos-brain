@@ -18,7 +18,7 @@ async function tempBrain() {
   return { root, publicWiki, privateWiki };
 }
 
-function postJson(port, body) {
+function postJson(port, body, contentType = "application/json") {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
     const req = http.request(
@@ -27,7 +27,7 @@ function postJson(port, body) {
         port,
         path: "/ask",
         headers: {
-          "content-type": "application/json",
+          "content-type": contentType,
           "content-length": Buffer.byteLength(data),
         },
       },
@@ -370,9 +370,11 @@ test("server handles answer, empty search, bad input, busy, upstream errors and 
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 
   try {
-    let response = await postJson(server.address().port, {
-      question: "내 작업 방식?",
-    });
+    let response = await postJson(
+      server.address().port,
+      { question: "내 작업 방식?" },
+      "application/json; charset=utf-8",
+    );
     assert.equal(response.status, 200);
     assert.equal(typeof response.body.requestId, "string");
     assert.equal(response.body.answer, "근거 기반 답변");
@@ -389,6 +391,11 @@ test("server handles answer, empty search, bad input, busy, upstream errors and 
     assert.equal(modelCalls, 0);
 
     response = await postJson(server.address().port, { question: "" });
+    assert.equal(response.status, 400);
+    assert.equal(response.body.error.code, "invalid_question");
+    assert.equal(response.body.error.retryable, false);
+
+    response = await postJson(server.address().port, { question: "잘못된 미디어 타입" }, "text/plain");
     assert.equal(response.status, 400);
     assert.equal(response.body.error.code, "invalid_question");
     assert.equal(response.body.error.retryable, false);

@@ -220,6 +220,10 @@ async function handleAsk(req, res) {
   let lockAcquired = false;
 
   try {
+    const contentType = req.headers["content-type"];
+    if (typeof contentType !== "string" || contentType.split(";", 1)[0].trim().toLowerCase() !== "application/json") {
+      throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
+    }
     const body = await readJsonBody(req);
     const question = validateQuestion(body);
 

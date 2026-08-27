@@ -83,7 +83,7 @@ SERVER_PID=$!
 wait_for_server
 
 echo "[5/5] Browser, state, layout, and privacy regression"
-AB_TIMEOUT_SECONDS="${AB_TIMEOUT_SECONDS:-15}" \
+AB_TIMEOUT_SECONDS="${AB_TIMEOUT_SECONDS:-45}" \
   bash "$SCRIPT_DIR/verify-memory-atlas-browser.sh" "$BASE_URL"
 
 stop_server
