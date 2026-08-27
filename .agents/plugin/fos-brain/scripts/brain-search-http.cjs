@@ -74,8 +74,17 @@ function collectResultUris(value, output = []) {
   return output;
 }
 
-async function queryHttp({ baseUrl, question, collections, limit, timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl = fetch }) {
-  if (typeof question !== "string" || question.trim() === "") {
+async function queryQmd({
+  baseUrl,
+  query,
+  collections,
+  limit,
+  rerank = false,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  fetchImpl = fetch,
+  signal,
+}) {
+  if (typeof query !== "string" || query.trim() === "") {
     throw new Error("question is required");
   }
   const normalizedCollections = Array.isArray(collections) ? collections : parseCollections(collections);
@@ -84,8 +93,9 @@ async function queryHttp({ baseUrl, question, collections, limit, timeoutMs = DE
     throw new Error("limit must be an integer between 1 and 20");
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const controller = signal ? null : new AbortController();
+  const requestSignal = signal || controller.signal;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   let response;
   try {
     response = await fetchImpl(`${normalizeBaseUrl(baseUrl)}/query`, {
@@ -93,14 +103,14 @@ async function queryHttp({ baseUrl, question, collections, limit, timeoutMs = DE
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         searches: [
-          { type: "lex", query: question },
-          { type: "vec", query: question },
+          { type: "lex", query },
+          { type: "vec", query },
         ],
         collections: normalizedCollections,
         limit: normalizedLimit,
-        rerank: false,
+        rerank,
       }),
-      signal: controller.signal,
+      signal: requestSignal,
     });
   } catch (error) {
     if (error && error.name === "AbortError") {
@@ -108,7 +118,7 @@ async function queryHttp({ baseUrl, question, collections, limit, timeoutMs = DE
     }
     throw error;
   } finally {
-    clearTimeout(timer);
+    if (timer) clearTimeout(timer);
   }
 
   if (!response.ok) {
@@ -131,6 +141,14 @@ async function queryHttp({ baseUrl, question, collections, limit, timeoutMs = DE
   }
 
   return payload;
+}
+
+async function queryHttp(options) {
+  return queryQmd({
+    ...options,
+    query: options.query || options.question,
+    rerank: false,
+  });
 }
 
 async function run(argv = process.argv.slice(2), env = process.env, io = process) {
@@ -158,6 +176,7 @@ module.exports = {
   collectResultUris,
   parseCollections,
   parseLimit,
+  queryQmd,
   queryHttp,
   run,
 };

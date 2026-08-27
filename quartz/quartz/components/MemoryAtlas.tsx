@@ -223,6 +223,15 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
           >
             필터
           </button>
+          <button
+            type="button"
+            class="memory-atlas__ask-toggle"
+            data-testid="memory-atlas-ask-toggle"
+            aria-expanded="false"
+            aria-controls="memory-atlas-ask-panel"
+          >
+            Brain에게 묻기
+          </button>
           <label class="memory-atlas__field">
             <span>검색</span>
             <div class="memory-atlas__search-control">
@@ -269,6 +278,55 @@ const MemoryAtlas: QuartzComponent = ({ allFiles, fileData }: QuartzComponentPro
             다시 시도
           </button>
         </div>
+
+        <aside
+          id="memory-atlas-ask-panel"
+          class="memory-atlas__ask"
+          data-testid="memory-atlas-ask-panel"
+          aria-label="Brain에게 묻기"
+          hidden
+        >
+          <div class="memory-atlas__ask-head">
+            <p>public·private wiki 근거만 사용하며 질문과 답변은 저장하지 않습니다.</p>
+            <button type="button" data-testid="memory-atlas-ask-close" aria-label="질문 패널 닫기">
+              ×
+            </button>
+          </div>
+          <form data-testid="memory-atlas-ask-form">
+            <label class="memory-atlas__field" for="memory-atlas-question">
+              <span>질문</span>
+              <textarea
+                id="memory-atlas-question"
+                data-testid="memory-atlas-ask-question"
+                maxlength={500}
+                rows={4}
+                placeholder="이 brain에서 근거를 찾아 답할 질문"
+              ></textarea>
+            </label>
+            <div class="memory-atlas__ask-meta">
+              <span data-testid="memory-atlas-ask-count">0 / 500</span>
+              <span data-testid="memory-atlas-ask-status" aria-live="polite">
+                질문을 입력하세요.
+              </span>
+            </div>
+            <div class="memory-atlas__ask-actions">
+              <button type="submit" data-testid="memory-atlas-ask-submit">
+                질문하기
+              </button>
+              <button type="button" data-testid="memory-atlas-ask-retry" hidden>
+                다시 시도
+              </button>
+            </div>
+          </form>
+          <section class="memory-atlas__ask-answer" data-testid="memory-atlas-ask-answer" hidden>
+            <h2>답변</h2>
+            <p data-testid="memory-atlas-ask-answer-text"></p>
+          </section>
+          <section class="memory-atlas__ask-sources" data-testid="memory-atlas-ask-sources" hidden>
+            <h2>근거</h2>
+            <ol data-testid="memory-atlas-ask-source-list"></ol>
+          </section>
+        </aside>
       </div>
 
       <aside

@@ -8,7 +8,7 @@
 
 Memory Atlas의 실제 3D 동작, 반응형 화면, 정적 빌드, 기존 문서 회귀를 검증한다.
 
-**범위 외**: 홈서버 배포와 Cloudflare 변경은 다음 phase가 담당한다.
+**범위 외**: 실제 게시와 인증 계층 변경은 private 인프라 저장소가 담당한다.
 
 ---
 
@@ -41,6 +41,7 @@ browser error가 0개이며 홈에서는 `/static/memory-atlas.js`가 정확히 
 
 모든 검사가 성공하면 team-lead가 이 phase 변경을 독립 커밋으로 만들고 원격 작업 브랜치에 push한다.
 어느 검사라도 실패하면 커밋하지 않고 실패 원인을 담당 phase로 돌린다.
+마지막 검증이 통과하면 `index.json`의 `status`를 `completed`로 기록한다.
 
 ## Critical Files
 
