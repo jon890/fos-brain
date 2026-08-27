@@ -46,7 +46,7 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
 
 ## 검색 전략
 
-- HTTP 우선: `BRAIN_QMD_URL=http://brain-qmd:8181 ../../scripts/brain-search-http.cjs "<question>" '["brain-wiki","brain-private"]' 5`
+- HTTP 우선: `BRAIN_QMD_URL=http://qmd.internal.test ../../scripts/brain-search-http.cjs "<question>" '["brain-wiki","brain-private"]' 5`
 - 정확 키워드: `~/.local/bin-pinned/qmd search "<term>" -c brain-wiki`(public) 또는 `-c brain-private`(private)
 - 의미 검색: `~/.local/bin-pinned/qmd vsearch "<text>" -c <collection>`
 - 하이브리드: `~/.local/bin-pinned/qmd query "<question>" -c <collection>` — 일반 Q&A 기본값

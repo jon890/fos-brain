@@ -4,7 +4,9 @@ const test = require("node:test");
 const {
   parseCollections,
   parseLimit,
+  queryQmd,
   queryHttp,
+  run,
 } = require("../scripts/brain-search-http.cjs");
 
 function response({ status = 200, body = {}, jsonError = null } = {}) {
@@ -21,7 +23,7 @@ function response({ status = 200, body = {}, jsonError = null } = {}) {
 test("posts official qmd query shape and returns JSON", async () => {
   const calls = [];
   const result = await queryHttp({
-    baseUrl: "http://brain-qmd:8181/",
+    baseUrl: "http://qmd.internal.test/",
     question: 'agent "workflow"',
     collections: ["brain-wiki", "brain-private"],
     limit: 7,
@@ -39,7 +41,7 @@ test("posts official qmd query shape and returns JSON", async () => {
   });
 
   assert.deepEqual(result.results.map((item) => item.text), ["public", "private"]);
-  assert.equal(calls[0].url, "http://brain-qmd:8181/query");
+  assert.equal(calls[0].url, "http://qmd.internal.test/query");
   assert.equal(calls[0].options.method, "POST");
   assert.equal(calls[0].options.headers["content-type"], "application/json");
   const payload = JSON.parse(calls[0].options.body);
@@ -53,10 +55,32 @@ test("posts official qmd query shape and returns JSON", async () => {
   assert.equal(payload.rerank, false);
 });
 
+test("queryQmd accepts query, rerank and external abort signal", async () => {
+  const controller = new AbortController();
+  const calls = [];
+  const result = await queryQmd({
+    baseUrl: "http://qmd.internal.test",
+    query: "agent workflow",
+    collections: ["brain-wiki"],
+    limit: 3,
+    rerank: true,
+    signal: controller.signal,
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ body: { results: [{ uri: "qmd://brain-wiki/INDEX.md" }] } });
+    },
+  });
+
+  assert.equal(result.results[0].uri, "qmd://brain-wiki/INDEX.md");
+  const payload = JSON.parse(calls[0].options.body);
+  assert.equal(payload.rerank, true);
+  assert.equal(calls[0].options.signal, controller.signal);
+});
+
 test("rejects timeout", async () => {
   await assert.rejects(
     queryHttp({
-      baseUrl: "http://brain-qmd:8181",
+      baseUrl: "http://qmd.internal.test",
       question: "slow",
       collections: ["brain-wiki"],
       limit: 5,
@@ -77,7 +101,7 @@ test("rejects timeout", async () => {
 test("rejects non-2xx and invalid JSON", async () => {
   await assert.rejects(
     queryHttp({
-      baseUrl: "http://brain-qmd:8181",
+      baseUrl: "http://qmd.internal.test",
       question: "bad status",
       collections: ["brain-wiki"],
       limit: 5,
@@ -88,7 +112,7 @@ test("rejects non-2xx and invalid JSON", async () => {
 
   await assert.rejects(
     queryHttp({
-      baseUrl: "http://brain-qmd:8181",
+      baseUrl: "http://qmd.internal.test",
       question: "bad json",
       collections: ["brain-wiki"],
       limit: 5,
@@ -101,7 +125,7 @@ test("rejects non-2xx and invalid JSON", async () => {
 test("rejects disallowed response collections", async () => {
   await assert.rejects(
     queryHttp({
-      baseUrl: "http://brain-qmd:8181",
+      baseUrl: "http://qmd.internal.test",
       question: "leak",
       collections: ["brain-wiki"],
       limit: 5,
@@ -119,7 +143,7 @@ test("rejects disallowed response collections", async () => {
 
   await assert.rejects(
     queryHttp({
-      baseUrl: "http://brain-qmd:8181",
+      baseUrl: "http://qmd.internal.test",
       question: "actual qmd response shape",
       collections: ["brain-wiki"],
       limit: 5,
@@ -141,4 +165,24 @@ test("validates collection and limit inputs", () => {
   assert.equal(parseLimit("20"), 20);
   assert.throws(() => parseLimit("0"), /between 1 and 20/);
   assert.throws(() => parseLimit("21"), /between 1 and 20/);
+});
+
+test("run preserves CLI JSON output contract", async () => {
+  const originalFetch = global.fetch;
+  const chunks = [];
+  global.fetch = async () =>
+    response({
+      body: {
+        results: [{ uri: "qmd://brain-wiki/INDEX.md", text: "ok" }],
+      },
+    });
+  try {
+    await run(['agent "workflow"', '["brain-wiki"]', "1"], { BRAIN_QMD_URL: "http://qmd.internal.test" }, {
+      stdout: { write: (chunk) => chunks.push(chunk) },
+    });
+  } finally {
+    global.fetch = originalFetch;
+  }
+
+  assert.deepEqual(JSON.parse(chunks.join("")).results.map((item) => item.text), ["ok"]);
 });

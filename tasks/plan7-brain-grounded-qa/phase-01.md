@@ -9,7 +9,7 @@
 브라우저에 qmd와 모델 API를 노출하지 않고 public·private wiki 근거만으로 단일 답변을 만드는 `brain-ask` 애플리케이션을 구현한다.
 공개 저장소에는 환경에 독립적인 코드와 계약만 남기고 운영 구성은 private 인프라 저장소로 분리한다.
 
-**범위 외**: Memory Atlas 질문 화면은 Phase 02에서 구현한다. 실제 Compose, 프록시, 모델 profile, Jenkins, 호스트 경로와 배포는 private 인프라 계획이 담당한다.
+**범위 외**: Memory Atlas 질문 화면은 Phase 02에서 구현한다. 실제 Compose, 프록시, 모델 profile, 자동화 러너, 호스트 경로와 배포는 private 인프라 계획이 담당한다.
 
 **선행 조건**: private `fos-home-infra`의 `plan1-home-infra-bootstrap` Phase 01이 기존 운영 구성 이관과 정적 검사를 완료해야 한다. 이후 순서는 public Phase 01 → public Phase 02 → private Phase 02 → private Phase 03으로 고정한다.
 
@@ -37,24 +37,24 @@
 `services/brain-ask/Dockerfile`은 build 입력과 runtime 변수 계약만 정의하고 호스트 경로, 실제 주소, network 이름과 secret 경로를 포함하지 않는다.
 애플리케이션 단위 검사는 정상·빈 검색, 입력 오류, 동시 요청, timeout, upstream 오류, 경로 이탈, 크기 제한과 로그 비노출을 다룬다.
 
-현재 worktree의 미커밋 파일은 다음처럼 분류한다.
+현재 worktree의 미커밋 질문 BFF 초안은 다음처럼 분류한다.
 
-| 현재 파일 | 처리 |
+| 현재 범위 | 처리 |
 | --- | --- |
-| `deploy/home-server/brain-ask/Dockerfile` | 환경별 값 제거 후 `services/brain-ask/Dockerfile`로 이동 |
-| `deploy/home-server/brain-ask/brainAsk.mjs` | `services/brain-ask/brainAsk.mjs`로 이동해 재사용 |
-| `deploy/home-server/brain-ask/brainAsk.test.mjs` | `services/brain-ask/brainAsk.test.mjs`로 이동해 재사용 |
-| `deploy/home-server/brain-ask/server.mjs` | `services/brain-ask/server.mjs`로 이동해 재사용 |
+| 질문 BFF Dockerfile 초안 | 환경별 값 제거 후 `services/brain-ask/Dockerfile`로 이동 |
+| 질문 계약 모듈 초안 | `services/brain-ask/brainAsk.mjs`로 이동해 재사용 |
+| 질문 계약 테스트 초안 | `services/brain-ask/brainAsk.test.mjs`로 이동해 재사용 |
+| 질문 HTTP 서버 초안 | `services/brain-ask/server.mjs`로 이동해 재사용 |
 | `.agents/plugin/fos-brain/scripts/brain-search-http.cjs`와 test | public 검색 client 변경으로 유지 |
-| `deploy/home-server/.env.example`, `compose.yaml`, `nginx.conf` | private 인프라 Phase 02 입력으로 넘기고 public에서는 제거 |
-| `deploy/home-server/hermes/`, `tests/verify-brain-ask.sh` | private 인프라 Phase 02 입력으로 넘기고 public에서는 제거 |
+| 운영 환경값, Compose, 프록시와 모델 profile 초안 | private 인프라 Phase 02 입력으로 넘기고 public에서는 제거 |
+| 운영 전용 정적 검사 초안 | private 인프라 Phase 02 입력으로 넘기고 public에서는 제거 |
 
 미커밋 구현을 폐기하거나 새로 작성하지 않고, 위 분류대로 이동·이관한 뒤 기존 unit test를 기준으로 동작을 보존한다.
 
 ### 4. 공개 저장 경계 정리
 
 기존 `deploy/` 전체와 운영 전용 ADR `002-cloudflare-tunnel-access-boundary`, `003-protected-private-quartz-release`를 공개 현재 트리에서 제거한다.
-과거 운영 task `plan2-cloudflare-access-home-server`, `plan3-protected-private-brain`, `plan6-hermes-qmd-search`를 제거한다.
+과거 운영 task 3개를 제거한다.
 `plan4-memory-constellation`에서는 운영 배포만 다룬 Phase 05를 제거하고 index를 4개 phase로 맞춘다.
 운영 회고 `0005`부터 `0013`까지와 해당 INDEX·RUNS 항목을 제거한다.
 제품·앱 설계를 다루는 ADR, `plan1`, `plan4` Phase 01부터 04까지, `plan5`, `plan7`, 회고 `0001`부터 `0004`까지와 `0014`는 보존한다.

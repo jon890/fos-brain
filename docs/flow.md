@@ -55,7 +55,7 @@ SPA 이동이나 필터 재적용이 겹치면 이전 렌더러와 애니메이�
 `Escape`는 상세 시트와 필터 서랍을 닫고, 검색과 모든 토글은 실제 HTML 입력 요소를 사용한다.
 사용자가 움직임 줄이기를 선택했으면 자동 회전과 장식 애니메이션을 사용하지 않는다.
 
-외부 인증 계층은 보호 사이트 진입 전에 인증을 끝낸다.
+외부 인증 계층은 비공개 그래프 진입 전에 인증을 끝낸다.
 Memory Atlas는 별도 권한 API를 호출하지 않으며, 현재 빌드의 콘텐츠 색인에 포함된 네임스페이스만 보여준다.
 public 빌드에는 private 노드가 없고 private 필터도 표시하지 않는다.
 
@@ -82,8 +82,7 @@ qmd 장애, 모델 장애, 모델 시간 초과와 동시 요청은 서로 다�
 ## 운영 구성 경계
 
 public 저장소는 질문 API와 UI의 일반 계약만 검증한다.
-모델 profile, container network, reverse proxy, Jenkins와 실제 배포·rollback 흐름은 private 인프라 저장소가 소유한다.
-private 배포가 검증되기 전에는 public 현재 트리의 기존 운영 파일을 제거하지 않는다.
+모델 profile, container 연결, reverse proxy와 실제 게시·rollback 흐름은 private 인프라 저장소가 소유한다.
 
 ## OKF 내보내기 흐름
 
@@ -101,4 +100,4 @@ private 배포가 검증되기 전에는 public 현재 트리의 기존 운영 �
 ## 배포 검증 책임
 
 public 저장소는 unit test, Quartz build와 브라우저 회귀를 제공한다.
-private 인프라 저장소는 이 결과물을 실제 서비스에 배포하고 접근 제어, rollback과 색인 갱신을 검증한다.
+private 인프라 저장소는 이 결과물을 실제 서비스에 게시하고 접근 제어, rollback과 색인 갱신을 검증한다.

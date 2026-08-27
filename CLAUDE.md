@@ -243,9 +243,8 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
 - 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
 - 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
 - Quartz 렌더링이나 서빙에 영향을 주는 변경은 로컬 검사와 브라우저 회귀가 통과해야 public 구현 완료로 본다.
-  실제 배포, 접근 제어와 rollback 검증은 private 인프라 저장소에서 수행한다.
-  문서만 바꾸거나 `raw/`, `wiki/`만 바꾸는 작업에는 배포 검증을 요구하지 않는다.
-  Access와 private 경계는 유지하고, 실패하면 이전 release로 rollback한다.
+  실제 게시, 접근 제어와 rollback 검증은 private 인프라 저장소에서 수행한다.
+  문서만 바꾸거나 `raw/`, `wiki/`만 바꾸는 작업에는 게시 검증을 요구하지 않는다.
 
 ### 로컬 전체 빌드 (`quartz-local/`)
 

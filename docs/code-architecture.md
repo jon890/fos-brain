@@ -7,7 +7,7 @@
 - `raw/` — public 원본의 변경 불가 저장소다.
 - `wiki/` — 에이전트와 Quartz가 함께 읽는 컴파일된 지식이다.
 - `private/` — 독립 저장소이며 public 산출물에서 제외한다.
-  보호 Quartz 빌드는 컴파일된 `private/wiki/`만 읽고 raw 원본은 원격 산출물에 넣지 않는다.
+  private 포함 Quartz 빌드는 컴파일된 `private/wiki/`만 읽고 raw 원본은 원격 산출물에 넣지 않는다.
 
 ### 에이전트 검색과 교환
 
@@ -82,8 +82,8 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 ## 운영 구성 저장 경계
 
 - `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
-- public 저장소는 Compose, reverse proxy, Jenkins, Hermes profile과 호스트 경로를 소유하지 않는다.
-- private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 배포를 수행한다.
+- public 저장소는 Compose, reverse proxy, 모델 profile과 호스트 경로를 소유하지 않는다.
+- private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 게시를 수행한다.
 - `.agents/plugin/fos-brain/scripts/brain-search-http.cjs`는 public qmd HTTP client 계약을 계속 소유한다.
 
 ## 검증 경계
