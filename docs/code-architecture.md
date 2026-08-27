@@ -42,6 +42,21 @@
 OKF 내보내기 로직을 Quartz에 넣지 않고 교환 경계를 별도 스크립트로 유지한다.
 Memory Atlas는 루트 `INDEX` 문서에서만 기존 페이지 그리드를 대체하며, 일반 문서 레이아웃과 로컬 PixiJS 그래프를 변경하지 않는다.
 
+### Brain 근거 질문
+
+- `deploy/home-server/brain-ask/server.mjs` — 질문 검증, 동시 실행 제한, qmd 검색, wiki 본문 읽기, Hermes 호출과 응답 변환을 소유한다.
+- `deploy/home-server/brain-ask/Dockerfile` — Node.js 24 실행 환경과 공용 qmd HTTP client를 묶는다.
+- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — 기존 qmd 요청·응답 계약을 서버에서도 재사용한다.
+- `deploy/home-server/nginx.conf` — `/api/brain/ask`만 내부 `brain-ask`로 전달하고 나머지 경로는 기존 정적 파일로 처리한다.
+- `quartz/quartz/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
+- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 단일 요청 상태와 닫기·취소·출처 이동을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasRuntime.ts` — 질문 출처 노드의 일시 강조를 적용하고 제거한다.
+- `quartz/quartz/components/styles/memoryAtlas.scss` — 데스크톱 하단 패널과 모바일 아래 시트의 경계를 소유한다.
+
+`brain-ask`는 공개 인터넷에 직접 연결하지 않는 같은 출처 중계 계층이다.
+브라우저 인증은 기존 Cloudflare Access에 맡기고, 이 계층은 Hermes key 은닉, 입력 제한, 근거 경로 검증과 응답 형태 고정을 담당한다.
+질문 한 건은 `brain-ask` 안의 메모리 잠금 하나를 사용하며 서버 재시작 뒤 복원할 상태는 없다.
+
 ## 의존성
 
 로컬 검색은 설치된 qmd를 사용하고, 홈서버 검색은 qmd 2.8.3의 공식 HTTP transport를 사용한다.
@@ -53,6 +68,11 @@ Quartz의 공용 `postscript.js`에는 가벼운 loader만 포함하고 3D 의�
 3D canvas는 유일한 탐색 수단이 아니며 검색, 필터, 선택 상세, 결과 목록은 실제 HTML 요소로 유지한다.
 로컬 qmd 명령은 고정 wrapper만 실행하며, wrapper가 없으면 PATH의 실행 파일을 대신 사용하지 않는다.
 홈서버에서는 `BRAIN_QMD_URL`이 있을 때 공식 `/query`를 우선하고 HTTP가 실패하면 로컬 검색 경계로 돌아간다.
+
+질문 API는 Node.js 24의 `http`, `fetch`, `fs`만 사용한다.
+별도 웹 프레임워크, 데이터베이스, 큐와 외부 벡터 저장소를 추가하지 않는다.
+`brain-ask`는 qmd 결과의 URI를 직접 신뢰하지 않고 허용 collection과 mount 경계를 검사한 뒤 wiki 본문을 읽는다.
+Hermes에는 `store: false`와 `brain` 모델 별칭을 전달하며 이전 응답 식별자나 대화 식별자를 보내지 않는다.
 
 내보내기 스크립트는 YAML 객체를 자체 파서로 재구성하지 않는다.
 기존 frontmatter 원문을 보존하고 최상위 키의 존재만 감지한 뒤, 누락된 교환 필드를 JSON 호환 YAML 값으로 삽입한다.
@@ -70,6 +90,10 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `deploy/home-server/brain-qmd/Dockerfile` — 고정 Node image와 qmd package로 내부 검색 서비스를 만든다.
 - `deploy/home-server/brain-qmd/entrypoint.sh` — 세 컬렉션을 검증하고 HTTP serve와 일회성 sync mode를 분리한다.
 - `deploy/home-server/brain-qmd/compose.yaml` — 읽기 전용 지식 mount, 영구 색인, 전용 network와 healthcheck를 정의한다.
+- `deploy/home-server/brain-ask/` — qmd와 Hermes 사이에서 읽기 전용 단일 질문을 처리하는 내부 HTTP 서비스를 정의한다.
+- `deploy/home-server/hermes/configure-brain-api.sh` — 전용 `brain-api` 프로필을 만들고 도구 비활성화와 smoke 검사를 반복 가능하게 수행한다.
+- `deploy/home-server/hermes/brain-api-config.yaml` — 비밀값을 제외한 전용 모델·도구 설정의 기준이다.
+- `deploy/home-server/hermes/brain-api-SOUL.md` — 근거 안에서만 답하고 모르면 모른다고 말하는 생성 규칙이다.
 - `deploy/home-server/hermes-brain-qmd.override.yaml` — Hermes를 전용 network에 연결하고 `BRAIN_QMD_URL`과 읽기 전용 검색 어댑터를 주입한다.
 - `deploy/home-server/hermes-brain-search/SKILL.md` — Hermes에서 HTTP qmd와 기존 축소 검색 경로를 연결한다.
 - `deploy/home-server/sync-qmd.sh` — HTTP 서비스를 중단하고 색인을 백업한 뒤 일회성 container에서 증분 갱신한다.
@@ -100,6 +124,11 @@ public wiki와 raw, private wiki는 `brain-qmd`에 읽기 전용으로 마운트
 공식 qmd HTTP는 인증이 없으므로 `QMD_ALLOWED_HOSTS`를 내부 이름으로 제한하고 Tunnel과 NPM에 연결하지 않는다.
 host의 `sync-qmd.sh`는 갱신 잠금, SQLite 백업·복원, HTTP container 재기동과 health 확인을 소유한다.
 
+`brain-ask`는 `public-net`, `brain-search-net`, `hermes-agent_hermes-net`에 참여한다.
+호스트 포트는 열지 않으며 `brain-web`은 `public-net`, qmd는 `brain-search-net`, Hermes는 `hermes-agent_hermes-net`에서만 접근한다.
+Hermes API key는 mode 600인 호스트 파일을 `brain-ask`에 읽기 전용으로 마운트하고 저장소, 브라우저 응답과 container 환경 변수에 넣지 않는다.
+전용 `brain-api`는 외부 skill 경로를 주입하지 않고 모든 toolset을 비활성화한다.
+
 NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
 전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
 Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 만들 수 있는 하나의 검증 사슬로 관리한다.
@@ -111,6 +140,9 @@ Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 
 - OKF 내보내기 — 임시 fixture를 내보내고 메타데이터, raw Reference, 예약 문서, 링크, private 제외를 검사한다.
 - Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
+- Brain 질문 — 입력 제한, 동시 요청, qmd URI 경계, 근거 크기, 빈 결과의 Hermes 미호출, Hermes 오류 변환과 로그 비노출을 단위·통합 검사한다.
+- Brain 질문 UI — 질문 상태, 답변 평문 렌더, 출처 이동, 그래프 강조 해제, 1440px와 390px의 넘침을 브라우저에서 검사한다.
+- Hermes 프로필 — `brain` 모델, 무도구 `/v1/toolsets`, 비저장 `/v1/responses`, `career-api`와 8643 제거를 홈서버에서 검사한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
 - 배포 — Compose 구문, public-only 회귀, 보호 wiki 병합, 원자적 release 전환, 컨테이너 상태와 NPM 내부 연결을 검사한다.
 - brain-qmd — 고정 image와 package, 비root 실행, host port 부재, 전용 network, 허용 컬렉션, HTTP 계약, SQLite 복구, 공개·비공개 대표 검색, 메모리와 OOM 발생 여부를 검사한다.

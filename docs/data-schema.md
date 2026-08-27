@@ -246,3 +246,88 @@ supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 
 
 검색은 제목과 태그의 대소문자를 구분하지 않는 부분 일치다.
 필터 묶음 사이는 AND, 같은 필터 묶음의 선택값 사이는 OR로 결합한다.
+
+## Brain 근거 질문 API
+
+같은 출처의 `POST /api/brain/ask`는 `application/json`만 받는다.
+
+요청은 다음 필드 하나를 가진다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `question` | 문자열 | 앞뒤 공백을 제거한 뒤 1자 이상 500자 이하다. |
+
+성공 응답은 다음 형태다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `requestId` | 문자열 | 로그와 사용자 오류를 연결하는 임시 식별자다. |
+| `answer` | 문자열 | 근거가 없으면 빈 문자열이며 HTML로 해석하지 않는다. |
+| `sources` | 객체 배열 | qmd 순서를 유지한 최대 6개 근거다. |
+| `sources[].title` | 문자열 | wiki 문서 제목이다. |
+| `sources[].slug` | 문자열 | 콘텐츠 색인과 그래프 노드를 연결하는 slug다. |
+| `sources[].namespace` | `public`, `private` | 출처 네임스페이스다. |
+| `sources[].score` | 숫자 | qmd가 반환한 관련도다. |
+| `sources[].excerpt` | 문자열 | qmd 발췌문을 정규화한 짧은 평문이다. |
+| `sources[].href` | 문자열 | 같은 보호 사이트 안의 wiki 문서 경로다. |
+
+오류 응답은 `requestId`, `error.code`, `error.message`, `error.retryable`을 가진다.
+
+| HTTP | `error.code` | 의미 |
+| --- | --- | --- |
+| 400 | `invalid_question` | 요청 형식이나 질문 길이가 잘못되었다. |
+| 429 | `busy` | 다른 질문 한 건을 처리하고 있다. |
+| 502 | `retrieval_unavailable` | qmd에서 근거를 가져오지 못했다. |
+| 502 | `model_unavailable` | Hermes가 응답을 만들지 못했다. |
+| 504 | `model_timeout` | Hermes가 90초 안에 끝나지 않았다. |
+
+빈 근거는 오류가 아니다.
+`answer`가 빈 문자열이고 `sources`가 빈 배열인 200 응답으로 반환한다.
+
+## Brain 근거 구성
+
+`brain-ask`는 qmd에 `brain-wiki`, `brain-private` 두 collection의 키워드·벡터 검색을 요청한다.
+`limit`는 6이고 `rerank`는 `false`다.
+`brain-raw`와 private raw는 이 API에서 사용할 수 없다.
+
+| 제한 | 값 | 처리 |
+| --- | --- | --- |
+| qmd 호출 시간 | 10초 | 넘으면 `retrieval_unavailable`이다. |
+| Hermes 호출 시간 | 90초 | 넘으면 `model_timeout`이다. |
+| 문서 수 | 최대 6개 | 초과 결과는 읽지 않는다. |
+| 문서별 본문 | 최대 8 KiB | UTF-8 경계에서 잘라 근거에 넣는다. |
+| 전체 본문 | 최대 32 KiB | qmd 순서대로 채우고 이후 문서는 제외한다. |
+| 동시 요청 | 1개 | 처리 중 새 요청은 `busy`다. |
+
+qmd의 `qmd://brain-wiki/<path>`는 public wiki 읽기 전용 mount로, `qmd://brain-private/<path>`는 private wiki 읽기 전용 mount로 바꾼다.
+다른 collection, 절대 경로, `..`, mount 밖으로 나가는 심볼릭 링크는 거부한다.
+출처 `href`는 public이면 기존 slug 경로, private이면 `/_private/` 아래 경로로 만든다.
+
+Hermes 요청은 `/v1/responses`에 `model: brain`, `store: false`를 보낸다.
+이전 응답이나 conversation 식별자는 보내지 않으며 도구 호출 결과를 받을 수 없다.
+
+## Brain 질문 실행 설정
+
+| 이름 | 형식 | 규칙 |
+| --- | --- | --- |
+| `BRAIN_QMD_URL` | 내부 URL | 기본값은 `http://brain-qmd:8181`이다. |
+| `HERMES_BRAIN_URL` | 내부 URL | 기본값은 `http://hermes:8644/v1`이다. |
+| `HERMES_BRAIN_API_KEY_FILE` | container 절대 경로 | mode 600인 읽기 전용 key 파일이다. |
+| `PUBLIC_WIKI_ROOT` | container 절대 경로 | public wiki 읽기 전용 mount다. |
+| `PRIVATE_WIKI_ROOT` | container 절대 경로 | private wiki 읽기 전용 mount다. |
+
+질문, 답변과 출처 본문은 영구 데이터가 아니다.
+서버는 현재 처리 중인지 여부만 메모리에 가지며 재시작하면 초기화한다.
+
+## Hermes `brain-api` 프로필
+
+프로필 경로는 `/home/bifos/.hermes/profiles/brain-api`다.
+모델 별칭은 `brain`이며 API는 container 내부 8644 포트에서만 수신한다.
+모든 toolset은 비활성화하고 외부 skill 경로를 추가하지 않는다.
+
+Hermes API key의 원본은 프로필의 권한 600 환경 파일에 둔다.
+`brain-ask`가 읽는 별도 key 파일도 mode 600으로 유지하며 두 값은 한 번의 회전 절차에서 함께 바꾼다.
+저장소에는 key 값, 질문, 답변, 사용자 이메일을 기록하지 않는다.
+
+`career-api`는 새 질문 경로가 통과할 때까지만 유지하는 전환 입력이다.
+전환 뒤 프로필 디렉터리, 127.0.0.1:8643 포트 연결과 운영 문서 참조를 제거한다.
