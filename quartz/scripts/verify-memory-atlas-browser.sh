@@ -660,6 +660,245 @@ return ({
 JS
 }
 
+assert_brain_ask_ui_contract() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const waitFor = async (predicate, label) => {
+  for (let i = 0; i < 80; i++) {
+    const value = predicate()
+    if (value) return value
+    await sleep(50)
+  }
+  throw new Error(`timed out waiting for ${label}`)
+}
+const byTestId = (id) => {
+  const element = document.querySelector(`[data-testid="${id}"]`)
+  if (!element) throw new Error(`${id} not found`)
+  return element
+}
+const root = byTestId("memory-atlas")
+if (root.dataset.runtimeState !== "ready") throw new Error(`runtime state is ${root.dataset.runtimeState}`)
+const firstSlug = document.querySelector('[data-testid="memory-atlas-results"] li')?.dataset.slug
+if (!firstSlug) throw new Error("no content slug is available for ask source validation")
+const originalFetch = window.fetch.bind(window)
+const storageEvents = []
+const originalSetItem = Storage.prototype.setItem
+Storage.prototype.setItem = function patchedSetItem(key, value) {
+  storageEvents.push({ key: String(key), value: String(value) })
+  return originalSetItem.call(this, key, value)
+}
+let mode = "success"
+let calls = 0
+window.fetch = async (input, init) => {
+  const url = String(input)
+  if (!url.endsWith("/api/brain/ask")) return originalFetch(input, init)
+  calls += 1
+  const request = JSON.parse(String(init?.body ?? "{}"))
+  if (request.question !== "근거 질문") throw new Error(`unexpected question body: ${init?.body}`)
+  await sleep(120)
+  if (init?.signal?.aborted) throw Object.assign(new Error("aborted"), { name: "AbortError" })
+  if (mode === "empty") {
+    return new Response(JSON.stringify({ requestId: "empty", answer: "", sources: [] }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    })
+  }
+  if (mode === "error") {
+    return new Response(
+      JSON.stringify({
+        requestId: "err",
+        error: { code: "model_timeout", message: "timeout", retryable: true },
+      }),
+      { status: 504, headers: { "content-type": "application/json" } },
+    )
+  }
+  return new Response(
+    JSON.stringify({
+      requestId: "ok",
+      answer: "<strong>HTML이 아닌 평문</strong>",
+      sources: [
+        {
+          title: "공개 근거",
+          slug: firstSlug,
+          namespace: "public",
+          score: 0.91,
+          excerpt: "공개 발췌",
+          href: `/${firstSlug}`,
+        },
+        {
+          title: "외부 링크",
+          slug: "outside",
+          namespace: "public",
+          score: 0.1,
+          excerpt: "거부",
+          href: "https://example.invalid/outside",
+        },
+        {
+          title: "없는 private",
+          slug: "entities/private",
+          namespace: "private",
+          score: 0.2,
+          excerpt: "현재 색인에 없음",
+          href: "/_private/entities/private",
+        },
+      ],
+    }),
+    { status: 200, headers: { "content-type": "application/json" } },
+  )
+}
+try {
+  byTestId("memory-atlas-ask-toggle").click()
+  const panel = byTestId("memory-atlas-ask-panel")
+  if (panel.hidden) throw new Error("ask panel did not open")
+  if (document.activeElement !== byTestId("memory-atlas-ask-question")) {
+    throw new Error("question textarea did not receive focus")
+  }
+  const question = byTestId("memory-atlas-ask-question")
+  question.value = "근거 질문"
+  question.dispatchEvent(new Event("input", { bubbles: true }))
+  if (!byTestId("memory-atlas-ask-count").textContent.includes("5 / 500")) {
+    throw new Error("question counter did not update")
+  }
+  byTestId("memory-atlas-ask-submit").click()
+  await waitFor(() => root.dataset.askState === "retrieving", "retrieving state")
+  await waitFor(() => root.dataset.askState === "generating", "generating state")
+  byTestId("memory-atlas-ask-submit").click()
+  await waitFor(() => root.dataset.askState === "success", "success state")
+  if (calls !== 1) throw new Error(`duplicate submit was not blocked: calls=${calls}`)
+  const answerText = byTestId("memory-atlas-ask-answer-text")
+  if (answerText.textContent !== "<strong>HTML이 아닌 평문</strong>") {
+    throw new Error(`answer was not rendered as textContent: ${answerText.textContent}`)
+  }
+  if (answerText.querySelector("strong")) throw new Error("answer HTML was interpreted")
+  const sources = [...document.querySelectorAll('[data-testid="memory-atlas-ask-source-list"] li')]
+  if (sources.length !== 1) throw new Error(`expected only one valid same-origin source, got ${sources.length}`)
+  if (byTestId("memory-atlas-canvas").dataset.evidenceCount !== "1") {
+    throw new Error("evidence highlight was not created")
+  }
+  const storageLeak = storageEvents.find((event) =>
+    event.value.includes("근거 질문") || event.value.includes("HTML이 아닌 평문") || event.value.includes("공개 발췌"),
+  )
+  if (storageLeak) throw new Error(`question data reached storage: ${JSON.stringify(storageLeak)}`)
+  if (location.href.includes("근거")) throw new Error("question leaked into URL")
+
+  document.querySelector('[data-testid="memory-atlas-results"] button')?.click()
+  await waitFor(() => byTestId("memory-atlas-canvas").dataset.evidenceCount === "0", "evidence clear on node selection")
+
+  mode = "empty"
+  question.value = "근거 질문"
+  question.dispatchEvent(new Event("input", { bubbles: true }))
+  byTestId("memory-atlas-ask-submit").click()
+  await waitFor(() => root.dataset.askState === "empty", "empty state")
+  if (byTestId("memory-atlas-canvas").dataset.evidenceCount !== "0") {
+    throw new Error("empty result did not clear evidence highlight")
+  }
+
+  mode = "error"
+  question.value = "근거 질문"
+  question.dispatchEvent(new Event("input", { bubbles: true }))
+  byTestId("memory-atlas-ask-submit").click()
+  await waitFor(() => root.dataset.askState === "error", "error state")
+  if (byTestId("memory-atlas-ask-retry").hidden) throw new Error("retry button was not shown")
+  if (byTestId("memory-atlas-canvas").dataset.evidenceCount !== "0") {
+    throw new Error("error result did not clear evidence highlight")
+  }
+
+  byTestId("memory-atlas-ask-close").click()
+  await waitFor(() => panel.hidden, "ask panel close")
+  if (byTestId("memory-atlas-ask-answer-text").textContent) throw new Error("answer text remained after close")
+  if (byTestId("memory-atlas-ask-source-list").children.length) throw new Error("sources remained after close")
+  if (byTestId("memory-atlas-canvas").dataset.evidenceCount !== "0") {
+    throw new Error("close did not clear evidence highlight")
+  }
+  return ({ ok: true, calls, storageEvents: storageEvents.length, sourceSlug: firstSlug })
+} finally {
+  window.fetch = originalFetch
+  Storage.prototype.setItem = originalSetItem
+}
+JS
+}
+
+assert_brain_ask_abort_and_escape() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const waitFor = async (predicate, label) => {
+  for (let i = 0; i < 80; i++) {
+    const value = predicate()
+    if (value) return value
+    await sleep(50)
+  }
+  throw new Error(`timed out waiting for ${label}`)
+}
+const byTestId = (id) => {
+  const element = document.querySelector(`[data-testid="${id}"]`)
+  if (!element) throw new Error(`${id} not found`)
+  return element
+}
+const originalFetch = window.fetch.bind(window)
+let aborted = false
+window.fetch = async (input, init) => {
+  if (!String(input).endsWith("/api/brain/ask")) return originalFetch(input, init)
+  return new Promise((_resolve, reject) => {
+    init?.signal?.addEventListener("abort", () => {
+      aborted = true
+      reject(Object.assign(new Error("aborted"), { name: "AbortError" }))
+    })
+  })
+}
+try {
+  byTestId("memory-atlas-ask-toggle").click()
+  const panel = byTestId("memory-atlas-ask-panel")
+  const question = byTestId("memory-atlas-ask-question")
+  question.value = "근거 질문"
+  question.dispatchEvent(new Event("input", { bubbles: true }))
+  byTestId("memory-atlas-ask-submit").click()
+  await waitFor(() => byTestId("memory-atlas").dataset.askState === "retrieving", "pending ask")
+  document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+  await waitFor(() => panel.hidden && aborted, "escape abort and close")
+  if (byTestId("memory-atlas-canvas").dataset.evidenceCount === "1") {
+    throw new Error("aborted request left evidence highlight")
+  }
+  return ({ ok: true, aborted })
+} finally {
+  window.fetch = originalFetch
+}
+JS
+}
+
+assert_mobile_ask_sheet_focus() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const byTestId = (id) => {
+  const element = document.querySelector(`[data-testid="${id}"]`)
+  if (!element) throw new Error(`${id} not found`)
+  return element
+}
+byTestId("memory-atlas-ask-toggle").click()
+const panel = byTestId("memory-atlas-ask-panel")
+if (panel.hidden) throw new Error("mobile ask panel did not open")
+const rect = panel.getBoundingClientRect()
+if (rect.left < -1 || rect.right > window.innerWidth + 1) {
+  throw new Error(`mobile ask panel exceeds viewport: ${rect.left}..${rect.right}`)
+}
+if (rect.height > window.innerHeight * 0.68) {
+  throw new Error(`mobile ask panel is too tall: ${rect.height}`)
+}
+const textarea = byTestId("memory-atlas-ask-question")
+textarea.focus()
+const close = byTestId("memory-atlas-ask-close")
+const submit = byTestId("memory-atlas-ask-submit")
+close.focus()
+close.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", shiftKey: true, bubbles: true }))
+if (document.activeElement !== submit) throw new Error("focus trap did not wrap backward to submit")
+submit.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }))
+if (document.activeElement !== close) throw new Error("focus trap did not wrap forward to close")
+byTestId("memory-atlas-ask-close").click()
+return ({ ok: true, panel: { left: rect.left, right: rect.right, height: rect.height } })
+JS
+}
+
 assert_home_network_once() {
   local name="$1"
   local stdout_file="$EVIDENCE_DIR/assert-${name}.stdout"
@@ -1014,6 +1253,14 @@ rotate_namespace "desktop-detail"
 open_desktop_home
 assert_desktop_detail_selection "desktop-detail-selection"
 
+rotate_namespace "desktop-ask"
+open_desktop_home
+assert_brain_ask_ui_contract "desktop-brain-ask-ui-contract"
+
+rotate_namespace "desktop-ask-abort"
+open_desktop_home
+assert_brain_ask_abort_and_escape "desktop-brain-ask-abort-escape"
+
 rotate_namespace "home-network"
 open_desktop_home
 capture_network "home"
@@ -1050,6 +1297,10 @@ assert_mobile_keyboard_focus "mobile-keyboard-focus"
 rotate_namespace "mobile-detail"
 open_mobile_home
 assert_mobile_detail_sheet "mobile-detail-sheet"
+
+rotate_namespace "mobile-ask"
+open_mobile_home
+assert_mobile_ask_sheet_focus "mobile-ask-sheet-focus"
 
 rotate_namespace "fallback"
 ab network requests --clear >/dev/null

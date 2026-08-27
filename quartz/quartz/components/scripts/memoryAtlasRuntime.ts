@@ -88,6 +88,7 @@ const COLORS = {
   dim: "rgba(120, 153, 149, 0.22)",
   link: "rgba(154, 201, 186, 0.34)",
   active: "#ece3cf",
+  evidence: "#5cc8b2",
 }
 const VIEW_STORAGE_KEY = "memoryAtlasView"
 
@@ -145,6 +146,13 @@ function linkEndpointSlug(endpoint: GraphLink["source"]): FullSlug {
 function linkIsActive(link: GraphLink, selected?: FullSlug): boolean {
   if (!selected) return true
   return linkEndpointSlug(link.source) === selected || linkEndpointSlug(link.target) === selected
+}
+
+function linkIsEvidence(link: GraphLink, evidenceSlugs: ReadonlySet<FullSlug>): boolean {
+  return (
+    evidenceSlugs.has(linkEndpointSlug(link.source)) ||
+    evidenceSlugs.has(linkEndpointSlug(link.target))
+  )
 }
 
 function activeSlugSet(links: GraphLink[], selected?: FullSlug): Set<FullSlug> | undefined {
@@ -304,6 +312,7 @@ function createNodeObject(
   node: GraphNode,
   state: MemoryAtlasState,
   activeSlugs: Set<FullSlug> | undefined,
+  evidenceSlugs: ReadonlySet<FullSlug>,
 ) {
   const group = new THREE.Group()
   const radius = Math.max(
@@ -338,6 +347,15 @@ function createNodeObject(
     innerRing.userData = { orbitRing: true, orbitSpeed: 0.012 }
     outerRing.userData = { orbitRing: true, orbitSpeed: -0.008 }
     group.add(innerRing, outerRing)
+  }
+  if (evidenceSlugs.has(node.slug)) {
+    const evidenceRing = new THREE.Mesh(
+      new THREE.TorusGeometry(radius + 3.7, 0.22, 8, 72),
+      new THREE.MeshBasicMaterial({ color: COLORS.evidence, transparent: true, opacity: 0.82 }),
+    )
+    evidenceRing.rotation.x = Math.PI / 2
+    group.add(evidenceRing)
+    group.add(createGlow(COLORS.evidence, Math.max(7.2, radius * 9.2), isDimmed ? 0.12 : 0.62))
   }
   const shouldLabel =
     state.labels &&
@@ -381,6 +399,7 @@ export function mountMemoryAtlas({
   container.replaceChildren()
   let currentState = state
   let currentData = cloneData(data, currentState)
+  let evidenceSlugs = new Set<FullSlug>()
   let destroyed = false
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
   let nodeObjects = new Map<FullSlug, DisposableObject>()
@@ -438,14 +457,25 @@ export function mountMemoryAtlas({
         node,
         currentState,
         activeSlugSet(currentData.links, currentState.selectedSlug),
+        evidenceSlugs,
       )
       nodeObjects.set(node.slug, object)
       return object
     })
     .linkOpacity(0.3)
-    .linkWidth((link) => (linkIsActive(link, currentState.selectedSlug) ? 0.36 : 0.07))
+    .linkWidth((link) =>
+      linkIsEvidence(link, evidenceSlugs)
+        ? 0.62
+        : linkIsActive(link, currentState.selectedSlug)
+          ? 0.36
+          : 0.07,
+    )
     .linkColor((link) =>
-      linkIsActive(link, currentState.selectedSlug) ? COLORS.active : COLORS.link,
+      linkIsEvidence(link, evidenceSlugs)
+        ? COLORS.evidence
+        : linkIsActive(link, currentState.selectedSlug)
+          ? COLORS.active
+          : COLORS.link,
     )
     .onNodeClick((node) => onSelect(node.slug))
     .onEngineStop(runInitialRecenter)
@@ -541,6 +571,12 @@ export function mountMemoryAtlas({
       if (destroyed) return
       zoomToImmersiveFit(motionQuery.matches ? 0 : 420)
     },
+    setEvidenceSlugs(slugs: ReadonlySet<FullSlug>) {
+      if (destroyed) return
+      evidenceSlugs = new Set(slugs)
+      container.dataset.evidenceCount = String(evidenceSlugs.size)
+      renderGraphData(currentData)
+    },
     destroy() {
       if (destroyed) return
       storeView(graph)
@@ -550,6 +586,7 @@ export function mountMemoryAtlas({
       cancelAnimationFrame(orbitAnimation)
       if (resizeTimer !== undefined) window.clearTimeout(resizeTimer)
       observer.disconnect()
+      delete container.dataset.evidenceCount
       graph.pauseAnimation()
       graph._destructor?.()
       for (const object of nodeObjects.values()) disposeObject(object)

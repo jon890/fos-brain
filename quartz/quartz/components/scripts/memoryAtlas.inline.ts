@@ -21,11 +21,33 @@ type RuntimeModule = {
     update: (data: MemoryAtlasData, state: MemoryAtlasState) => void
     select: (slug?: FullSlug) => void
     recenter: () => void
+    setEvidenceSlugs: (slugs: ReadonlySet<FullSlug>) => void
     destroy: () => void
   }
 }
 
 type RuntimeHandle = ReturnType<RuntimeModule["mountMemoryAtlas"]>
+type AskState = "idle" | "retrieving" | "generating" | "success" | "empty" | "error"
+type BrainSource = {
+  title: string
+  slug: string
+  namespace: "public" | "private"
+  score: number | null
+  excerpt: string
+  href: string
+}
+type BrainAnswer = {
+  requestId: string
+  answer: string
+  sources: BrainSource[]
+}
+type BrainError = {
+  error?: {
+    code?: string
+    message?: string
+    retryable?: boolean
+  }
+}
 
 const memoryAtlasState = {
   cleanup: undefined as (() => void) | undefined,
@@ -110,6 +132,48 @@ function slugUrl(slug: FullSlug): URL {
 function navigateToSlug(slug: FullSlug) {
   const url = slugUrl(slug)
   window.spaNavigate(url, false)
+}
+
+function normalizeSourceSlug(source: BrainSource): FullSlug {
+  const slug = source.slug.replace(/^\/+/, "")
+  return (
+    source.namespace === "private" && !slug.startsWith("_private/") ? `_private/${slug}` : slug
+  ) as FullSlug
+}
+
+function sourceHref(source: BrainSource): string | undefined {
+  try {
+    const url = new URL(source.href, window.location.origin)
+    if (url.origin !== window.location.origin) return undefined
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return undefined
+  }
+}
+
+export async function askBrain(question: string, signal: AbortSignal): Promise<BrainAnswer> {
+  const response = await fetch("/api/brain/ask", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ question }),
+    signal,
+  })
+  const payload = (await response.json().catch(() => ({}))) as BrainAnswer & BrainError
+  if (!response.ok) {
+    const error = new Error(
+      payload.error?.message || `Brain question failed with HTTP ${response.status}`,
+    )
+    Object.assign(error, {
+      code: payload.error?.code || "request_failed",
+      retryable: payload.error?.retryable ?? response.status !== 400,
+    })
+    throw error
+  }
+  return {
+    requestId: typeof payload.requestId === "string" ? payload.requestId : "",
+    answer: typeof payload.answer === "string" ? payload.answer : "",
+    sources: Array.isArray(payload.sources) ? payload.sources : [],
+  }
 }
 
 function syncSearchInputs(root: HTMLElement, value: string, source?: HTMLInputElement | null) {
@@ -224,6 +288,22 @@ function updateResults(
       return item
     }),
   )
+}
+
+function setAskHidden(root: HTMLElement, hidden: boolean) {
+  const panel = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-panel"]')
+  const toggle = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-toggle"]')
+  if (panel) panel.hidden = hidden
+  toggle?.setAttribute("aria-expanded", String(!hidden))
+  root.classList.toggle("memory-atlas--ask-open", !hidden)
+}
+
+function focusFirstInAskPanel(root: HTMLElement) {
+  root.querySelector<HTMLTextAreaElement>('[data-testid="memory-atlas-ask-question"]')?.focus()
+}
+
+function nextFrame() {
+  return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 }
 
 function updateStats(root: HTMLElement, data: MemoryAtlasData) {
@@ -360,9 +440,12 @@ async function initMemoryAtlas() {
   let destroyed = false
   let renderHandle: RuntimeHandle | undefined
   let state = createDefaultMemoryAtlasState()
+  let askState: AskState = "idle"
   let fullData: MemoryAtlasData = { nodes: [], links: [] }
   let visibleData: MemoryAtlasData = fullData
   const cleanups: (() => void)[] = []
+  let askController: AbortController | undefined
+  let lastQuestion = ""
   const setStatus = (message: string) => {
     if (status) status.textContent = message
   }
@@ -379,12 +462,15 @@ async function initMemoryAtlas() {
     document.body.classList.remove(BODY_CLASS)
     renderHandle?.destroy()
     renderHandle = undefined
+    askController?.abort()
+    askController = undefined
     for (const fn of cleanups.splice(0)) fn()
   }
   memoryAtlasState.cleanup = cleanup
   window.addCleanup(cleanup)
 
   const selectNode = (slug?: FullSlug) => {
+    renderHandle?.setEvidenceSlugs(new Set())
     const hadQuery = Boolean(state.query.trim())
     state = selectMemoryAtlasNode(state, slug)
     if (slug && hadQuery) {
@@ -400,6 +486,134 @@ async function initMemoryAtlas() {
     updateResults(root, visibleData, state, selectNode)
   }
 
+  const setAskState = (nextState: AskState, message: string, retryable = false) => {
+    askState = nextState
+    root.dataset.askState = nextState
+    const statusElement = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-status"]')
+    const submit = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-submit"]')
+    const retry = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-retry"]')
+    if (statusElement) statusElement.textContent = message
+    if (submit) submit.disabled = nextState === "retrieving" || nextState === "generating"
+    if (retry) retry.hidden = !retryable
+  }
+
+  const clearAskResult = () => {
+    renderHandle?.setEvidenceSlugs(new Set())
+    const answer = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-answer"]')
+    const answerText = root.querySelector<HTMLElement>(
+      '[data-testid="memory-atlas-ask-answer-text"]',
+    )
+    const sources = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-sources"]')
+    const sourceList = root.querySelector<HTMLOListElement>(
+      '[data-testid="memory-atlas-ask-source-list"]',
+    )
+    if (answer) answer.hidden = true
+    if (answerText) answerText.textContent = ""
+    if (sources) sources.hidden = true
+    sourceList?.replaceChildren()
+  }
+
+  const closeAskPanel = () => {
+    askController?.abort()
+    askController = undefined
+    clearAskResult()
+    setAskState("idle", "질문을 입력하세요.")
+    setAskHidden(root, true)
+    const textarea = root.querySelector<HTMLTextAreaElement>(
+      '[data-testid="memory-atlas-ask-question"]',
+    )
+    if (textarea) textarea.value = ""
+    const count = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-count"]')
+    if (count) count.textContent = "0 / 500"
+  }
+
+  const validSources = (sources: BrainSource[]) => {
+    const known = new Map(fullData.nodes.map((node) => [node.slug, node]))
+    return sources
+      .map((source) => ({ source, slug: normalizeSourceSlug(source), href: sourceHref(source) }))
+      .filter(({ source, slug, href }) => {
+        const node = known.get(slug)
+        return Boolean(node && href && node.namespace === source.namespace)
+      })
+  }
+
+  const renderAskAnswer = (answer: BrainAnswer) => {
+    clearAskResult()
+    const answerPanel = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-answer"]')
+    const answerText = root.querySelector<HTMLElement>(
+      '[data-testid="memory-atlas-ask-answer-text"]',
+    )
+    const sourcesPanel = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-sources"]')
+    const sourceList = root.querySelector<HTMLOListElement>(
+      '[data-testid="memory-atlas-ask-source-list"]',
+    )
+    if (answerPanel && answerText) {
+      answerPanel.hidden = false
+      answerText.textContent = answer.answer
+    }
+    const sources = validSources(answer.sources)
+    if (sourcesPanel && sourceList) {
+      sourcesPanel.hidden = sources.length === 0
+      sourceList.replaceChildren(
+        ...sources.map(({ source, slug, href }) => {
+          const item = document.createElement("li")
+          const button = document.createElement("button")
+          const meta = document.createElement("span")
+          const excerpt = document.createElement("p")
+          button.type = "button"
+          button.textContent = source.title || slug
+          button.dataset.slug = slug
+          button.addEventListener("click", () => navigateToSlug(slug))
+          meta.textContent = `${source.namespace}${typeof source.score === "number" ? ` · ${source.score.toFixed(3)}` : ""}`
+          excerpt.textContent = source.excerpt || href || ""
+          item.append(button, meta, excerpt)
+          return item
+        }),
+      )
+    }
+    renderHandle?.setEvidenceSlugs(new Set(sources.map(({ slug }) => slug)))
+  }
+
+  const submitQuestion = async () => {
+    const textarea = root.querySelector<HTMLTextAreaElement>(
+      '[data-testid="memory-atlas-ask-question"]',
+    )
+    const question = textarea?.value.trim() ?? ""
+    if (!question || askState === "retrieving" || askState === "generating") return
+    lastQuestion = question
+    askController?.abort()
+    const controller = new AbortController()
+    askController = controller
+    clearAskResult()
+    setAskState("retrieving", "근거를 찾고 있습니다.")
+    try {
+      const request = askBrain(question, controller.signal)
+      await nextFrame()
+      if (controller.signal.aborted) return
+      setAskState("generating", "답변을 만들고 있습니다.")
+      const answer = await request
+      if (controller.signal.aborted) return
+      if (!answer.sources.length) {
+        clearAskResult()
+        setAskState("empty", "관련 brain 근거가 없습니다.", false)
+        return
+      }
+      renderAskAnswer(answer)
+      setAskState("success", `${answer.sources.length}개 근거로 답했습니다.`, false)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      clearAskResult()
+      const retryable = Boolean((error as Error & { retryable?: boolean }).retryable)
+      setAskState(
+        "error",
+        error instanceof Error ? error.message : "질문 처리에 실패했습니다.",
+        retryable,
+      )
+    } finally {
+      if (askController === controller) askController = undefined
+    }
+  }
+
   const refresh = (source?: HTMLInputElement | null) => {
     if (source) syncSearchInputs(root, source.value, source)
     state = readState(root, state)
@@ -411,6 +625,7 @@ async function initMemoryAtlas() {
     if (state.selectedSlug && !visibleData.nodes.some((node) => node.slug === state.selectedSlug)) {
       selectNode(undefined)
     }
+    renderHandle?.setEvidenceSlugs(new Set())
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
   }
 
@@ -498,8 +713,33 @@ async function initMemoryAtlas() {
   bind(root.querySelector('[data-testid="memory-atlas-recenter"]'), "click", () =>
     renderHandle?.recenter(),
   )
+  bind(root.querySelector('[data-testid="memory-atlas-ask-toggle"]'), "click", () => {
+    setAskHidden(root, false)
+    focusFirstInAskPanel(root)
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-ask-close"]'), "click", () => {
+    closeAskPanel()
+    root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-toggle"]')?.focus()
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-ask-form"]'), "submit", (event) => {
+    event.preventDefault()
+    void submitQuestion()
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-ask-retry"]'), "click", () => {
+    const textarea = root.querySelector<HTMLTextAreaElement>(
+      '[data-testid="memory-atlas-ask-question"]',
+    )
+    if (textarea && !textarea.value.trim()) textarea.value = lastQuestion
+    void submitQuestion()
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-ask-question"]'), "input", (event) => {
+    const textarea = event.currentTarget as HTMLTextAreaElement
+    const count = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-count"]')
+    if (count) count.textContent = `${textarea.value.length} / 500`
+  })
   bind(root.querySelector('[data-testid="memory-atlas-reset"]'), "click", () => {
     state = resetMemoryAtlasState(root, fullData)
+    clearAskResult()
     refresh()
   })
   bind(root.querySelector('[data-testid="memory-atlas-retry"]'), "click", () => {
@@ -517,6 +757,12 @@ async function initMemoryAtlas() {
   )
   bind(document as unknown as EventTarget, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return
+    const askPanel = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-panel"]')
+    if (askPanel && !askPanel.hidden) {
+      closeAskPanel()
+      root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-toggle"]')?.focus()
+      return
+    }
     if (state.query.trim()) {
       state = clearMemoryAtlasQuery(readState(root, state))
       syncSearchInputs(root, "")
@@ -525,6 +771,30 @@ async function initMemoryAtlas() {
     }
     setFiltersOpen(root, false)
     selectNode(undefined)
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-ask-panel"]'), "keydown", (event) => {
+    const keyboardEvent = event as KeyboardEvent
+    if (keyboardEvent.key !== "Tab") return
+    const panel = keyboardEvent.currentTarget as HTMLElement
+    if (panel.hidden) return
+    const focusables = [
+      ...panel.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled]):not([hidden]), textarea:not([disabled])",
+      ),
+    ].filter((element) => {
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    })
+    if (!focusables.length) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    if (keyboardEvent.shiftKey && document.activeElement === first) {
+      keyboardEvent.preventDefault()
+      last.focus()
+    } else if (!keyboardEvent.shiftKey && document.activeElement === last) {
+      keyboardEvent.preventDefault()
+      first.focus()
+    }
   })
 }
 

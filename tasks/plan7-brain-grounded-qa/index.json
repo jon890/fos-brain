@@ -1,10 +1,10 @@
 {
   "name": "plan7-brain-grounded-qa",
   "description": "Memory Atlas에 public·private wiki 근거만 사용하는 단일 질문 API를 추가하고 공개 저장소에서 운영 구성을 분리한다.",
-  "status": "pending",
+  "status": "completed",
   "created_at": "2026-08-27",
   "total_phases": 2,
-  "current_phases": 1,
+  "current_phases": 2,
   "phases": [
     {
       "number": 1,
