@@ -464,6 +464,7 @@ async function initMemoryAtlas() {
     renderHandle = undefined
     askController?.abort()
     askController = undefined
+    lastQuestion = ""
     for (const fn of cleanups.splice(0)) fn()
   }
   memoryAtlasState.cleanup = cleanup
@@ -516,6 +517,7 @@ async function initMemoryAtlas() {
   const closeAskPanel = () => {
     askController?.abort()
     askController = undefined
+    lastQuestion = ""
     clearAskResult()
     setAskState("idle", "질문을 입력하세요.")
     setAskHidden(root, true)

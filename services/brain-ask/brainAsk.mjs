@@ -3,23 +3,53 @@ import path from "node:path";
 
 const ALLOWED_COLLECTIONS = new Map([
   ["brain-wiki", { namespace: "public", rootKey: "publicWikiRoot", hrefPrefix: "" }],
-  ["brain-private", { namespace: "private", rootKey: "privateWikiRoot", hrefPrefix: "/_private" }],
+  [
+    "brain-private",
+    {
+      namespace: "private",
+      rootKey: "privateWikiRoot",
+      hrefPrefix: "/_private",
+    },
+  ],
 ]);
 
 const MAX_EVIDENCE_FILES = 6;
 const MAX_FILE_BYTES = 8 * 1024;
 const MAX_TOTAL_BYTES = 32 * 1024;
 
+export function escapeEvidenceAttribute(value) {
+  return String(value).replace(/[&"<>\u0000-\u001F\u007F]/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case '"':
+        return "&quot;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      default:
+        return `&#x${char.codePointAt(0).toString(16).toUpperCase()};`;
+    }
+  });
+}
+
 export function validateQuestion(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
-    throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
+    throw Object.assign(new Error("invalid_question"), {
+      code: "invalid_question",
+    });
   }
   if (typeof body.question !== "string") {
-    throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
+    throw Object.assign(new Error("invalid_question"), {
+      code: "invalid_question",
+    });
   }
   const question = body.question.trim();
   if (question.length < 1 || question.length > 500) {
-    throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
+    throw Object.assign(new Error("invalid_question"), {
+      code: "invalid_question",
+    });
   }
   return question;
 }
@@ -131,7 +161,10 @@ function scoreFromResult(result) {
 function truncateUtf8(value, maxBytes) {
   const buffer = Buffer.from(String(value), "utf8");
   if (buffer.length <= maxBytes) return buffer.toString("utf8");
-  return buffer.subarray(0, maxBytes).toString("utf8").replace(/\uFFFD$/, "");
+  return buffer
+    .subarray(0, maxBytes)
+    .toString("utf8")
+    .replace(/\uFFFD$/, "");
 }
 
 export async function selectEvidence(results, readFile) {
@@ -141,13 +174,14 @@ export async function selectEvidence(results, readFile) {
 
   for (const result of qmdResults(results)) {
     if (sources.length >= MAX_EVIDENCE_FILES || totalBytes >= MAX_TOTAL_BYTES) break;
-    const parsed = result.absolutePath && result.namespace && result.slug && result.href
-      ? result
-      : parseQmdUri(result, result.roots || results.roots || {});
+    const parsed = result.absolutePath && result.namespace && result.slug && result.href ? result : parseQmdUri(result, result.roots || results.roots || {});
     const remainingBytes = Math.min(MAX_FILE_BYTES, MAX_TOTAL_BYTES - totalBytes);
     if (remainingBytes <= 0) break;
 
-    const raw = await readFile(parsed.absolutePath, { encoding: "utf8", maxBytes: remainingBytes });
+    const raw = await readFile(parsed.absolutePath, {
+      encoding: "utf8",
+      maxBytes: remainingBytes,
+    });
     const text = truncateUtf8(raw, remainingBytes);
     const bytes = Buffer.byteLength(text, "utf8");
     totalBytes += bytes;
@@ -161,11 +195,7 @@ export async function selectEvidence(results, readFile) {
       href: parsed.href,
     };
     sources.push(source);
-    contextParts.push([
-      `<evidence index="${sources.length}" namespace="${source.namespace}" slug="${source.slug}">`,
-      text,
-      "</evidence>",
-    ].join("\n"));
+    contextParts.push([`<evidence index="${sources.length}" namespace="${escapeEvidenceAttribute(source.namespace)}" slug="${escapeEvidenceAttribute(source.slug)}">`, text, "</evidence>"].join("\n"));
   }
 
   return { context: contextParts.join("\n\n"), sources };

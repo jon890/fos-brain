@@ -192,16 +192,21 @@ supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 
 | --- | --- | --- |
 | qmd 호출 시간 | 10초 | 넘으면 `retrieval_unavailable`이다. |
 | 모델 API 호출 시간 | 90초 | 넘으면 `model_timeout`이다. |
+| 요청 본문 읽기 시간 | 5초 | 넘으면 `invalid_question`이다. |
+| 요청 본문 크기 | 최대 4 KiB | 초과하면 `invalid_question`이다. |
 | 문서 수 | 최대 6개 | 초과 결과는 읽지 않는다. |
 | 문서별 본문 | 최대 8 KiB | UTF-8 경계에서 잘라 근거에 넣는다. |
 | 전체 본문 | 최대 32 KiB | qmd 순서대로 채우고 이후 문서는 제외한다. |
+| 모델 출력 토큰 | 최대 700 토큰 | Responses API에 `max_output_tokens`로 보낸다. |
+| 모델 응답 본문 | 최대 64 KiB | 초과하면 `model_unavailable`이다. |
+| 답변 문자열 | 최대 4,000자 | 초과분은 잘라 응답한다. |
 | 동시 요청 | 1개 | 처리 중 새 요청은 `busy`다. |
 
 qmd의 `qmd://brain-wiki/<path>`는 public wiki 읽기 전용 mount로, `qmd://brain-private/<path>`는 private wiki 읽기 전용 mount로 바꾼다.
 다른 collection, 절대 경로, `..`, mount 밖으로 나가는 심볼릭 링크는 거부한다.
 출처 `href`는 public이면 기존 slug 경로, private이면 `/_private/` 아래 경로로 만든다.
 
-모델 요청은 `/v1/responses`에 `model: brain`, `store: false`를 보낸다.
+모델 요청은 `/v1/responses`에 `model: brain`, `store: false`, `max_output_tokens: 700`을 보낸다.
 이전 응답이나 conversation 식별자는 보내지 않으며 도구 호출 결과를 받을 수 없다.
 
 ## Brain 질문 실행 설정

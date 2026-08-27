@@ -1,12 +1,7 @@
 import http from "node:http";
 import fs from "node:fs/promises";
 import { createRequire } from "node:module";
-import {
-  extractOutputText,
-  normalizeQmdResults,
-  selectEvidence,
-  validateQuestion,
-} from "./brainAsk.mjs";
+import { extractOutputText, normalizeQmdResults, selectEvidence, validateQuestion } from "./brainAsk.mjs";
 
 const require = createRequire(import.meta.url);
 let queryQmd;
@@ -19,9 +14,13 @@ try {
 const PORT = Number.parseInt(process.env.PORT || "8787", 10);
 const QMD_TIMEOUT_MS = Number.parseInt(process.env.BRAIN_QMD_TIMEOUT_MS || "10000", 10);
 const MODEL_TIMEOUT_MS = Number.parseInt(process.env.MODEL_TIMEOUT_MS || "90000", 10);
+const BODY_TIMEOUT_MS = Number.parseInt(process.env.BRAIN_ASK_BODY_TIMEOUT_MS || "5000", 10);
+const MODEL_MAX_OUTPUT_TOKENS = Number.parseInt(process.env.MODEL_MAX_OUTPUT_TOKENS || "700", 10);
+const MAX_MODEL_RESPONSE_BYTES = Number.parseInt(process.env.MODEL_MAX_RESPONSE_BYTES || String(64 * 1024), 10);
+const MAX_ANSWER_CHARS = Number.parseInt(process.env.BRAIN_ASK_MAX_ANSWER_CHARS || "4000", 10);
 const MAX_BODY_BYTES = 4096;
 
-let inFlight = false;
+let inFlightRequestId;
 
 function json(res, status, body) {
   res.writeHead(status, {
@@ -57,18 +56,57 @@ function errorDetails(code) {
 async function readJsonBody(req) {
   const chunks = [];
   let size = 0;
-  for await (const chunk of req) {
-    size += chunk.length;
-    if (size > MAX_BODY_BYTES) {
-      throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
-    }
-    chunks.push(chunk);
-  }
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    throw Object.assign(new Error("invalid_question"), { code: "invalid_question" });
-  }
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const fail = () => {
+      cleanup();
+      reject(
+        Object.assign(new Error("invalid_question"), {
+          code: "invalid_question",
+        }),
+      );
+    };
+    const cleanup = () => {
+      settled = true;
+      clearTimeout(timer);
+      req.off("data", onData);
+      req.off("end", onEnd);
+      req.off("error", onError);
+    };
+    const onData = (chunk) => {
+      if (settled) return;
+      size += chunk.length;
+      if (size > MAX_BODY_BYTES) {
+        req.resume();
+        fail();
+        return;
+      }
+      chunks.push(chunk);
+    };
+    const onEnd = () => {
+      if (settled) return;
+      cleanup();
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+      } catch {
+        reject(
+          Object.assign(new Error("invalid_question"), {
+            code: "invalid_question",
+          }),
+        );
+      }
+    };
+    const onError = () => {
+      if (!settled) fail();
+    };
+    const timer = setTimeout(() => {
+      req.resume();
+      fail();
+    }, BODY_TIMEOUT_MS);
+    req.on("data", onData);
+    req.on("end", onEnd);
+    req.on("error", onError);
+  });
 }
 
 async function readLimitedFile(file, { encoding, maxBytes }) {
@@ -93,6 +131,7 @@ async function callModel({ question, context, signal }) {
   const body = {
     model: process.env.MODEL_NAME || "brain",
     store: false,
+    max_output_tokens: MODEL_MAX_OUTPUT_TOKENS,
     instructions: "제공된 <evidence> 근거 안에서만 한국어 평문으로 답하세요. 근거가 부족하면 모른다고 답하세요. 도구를 호출하지 마세요.",
     input: [
       {
@@ -116,13 +155,53 @@ async function callModel({ question, context, signal }) {
     signal,
   });
   if (!response.ok) {
-    throw Object.assign(new Error(`Model API HTTP ${response.status}`), { code: "model_unavailable" });
+    throw Object.assign(new Error(`Model API HTTP ${response.status}`), {
+      code: "model_unavailable",
+    });
   }
-  const payload = await response.json();
+  const payloadText = await readResponseText(response, MAX_MODEL_RESPONSE_BYTES);
+  let payload;
+  try {
+    payload = JSON.parse(payloadText);
+  } catch {
+    throw Object.assign(new Error("Model API returned invalid JSON"), {
+      code: "model_unavailable",
+    });
+  }
   if (JSON.stringify(payload).includes('"function_call"')) {
-    throw Object.assign(new Error("Model API returned a function_call"), { code: "model_unavailable" });
+    throw Object.assign(new Error("Model API returned a function_call"), {
+      code: "model_unavailable",
+    });
   }
-  return extractOutputText(payload);
+  return extractOutputText(payload).slice(0, MAX_ANSWER_CHARS);
+}
+
+async function readResponseText(response, maxBytes) {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    const text = await response.text();
+    if (Buffer.byteLength(text) > maxBytes) {
+      throw Object.assign(new Error("Model API response is too large"), {
+        code: "model_unavailable",
+      });
+    }
+    return text;
+  }
+  const chunks = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel();
+      throw Object.assign(new Error("Model API response is too large"), {
+        code: "model_unavailable",
+      });
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString("utf8");
 }
 
 function timeoutSignal(ms) {
@@ -138,18 +217,20 @@ async function handleAsk(req, res) {
   let qmdMs = 0;
   let modelMs = 0;
   let evidenceCount = 0;
-
-  if (inFlight) {
-    status = 429;
-    json(res, status, { requestId: id, error: errorDetails("busy") });
-    logSafe({ requestId: id, status, qmdMs, modelMs, evidenceCount });
-    return;
-  }
-  inFlight = true;
+  let lockAcquired = false;
 
   try {
     const body = await readJsonBody(req);
     const question = validateQuestion(body);
+
+    if (inFlightRequestId) {
+      status = 429;
+      json(res, status, { requestId: id, error: errorDetails("busy") });
+      return;
+    }
+    inFlightRequestId = id;
+    lockAcquired = true;
+
     const qmdTimer = timeoutSignal(QMD_TIMEOUT_MS);
     let qmdPayload;
     const qmdStarted = Date.now();
@@ -158,13 +239,15 @@ async function handleAsk(req, res) {
         baseUrl: requiredEnv("BRAIN_QMD_URL"),
         query: question,
         collections: ["brain-wiki", "brain-private"],
-        limit: 8,
+        limit: 6,
         rerank: false,
         signal: qmdTimer.controller.signal,
       });
     } catch (error) {
       if (error && error.name === "AbortError") {
-        throw Object.assign(new Error("qmd timeout"), { code: "retrieval_unavailable" });
+        throw Object.assign(new Error("qmd timeout"), {
+          code: "retrieval_unavailable",
+        });
       }
       throw Object.assign(error, { code: "retrieval_unavailable" });
     } finally {
@@ -186,11 +269,17 @@ async function handleAsk(req, res) {
     const modelTimer = timeoutSignal(MODEL_TIMEOUT_MS);
     const modelStarted = Date.now();
     try {
-      const answer = await callModel({ question, context, signal: modelTimer.controller.signal });
+      const answer = await callModel({
+        question,
+        context,
+        signal: modelTimer.controller.signal,
+      });
       json(res, status, { requestId: id, answer, sources });
     } catch (error) {
       if (error && error.name === "AbortError") {
-        throw Object.assign(new Error("Model API timeout"), { code: "model_timeout" });
+        throw Object.assign(new Error("Model API timeout"), {
+          code: "model_timeout",
+        });
       }
       throw error;
     } finally {
@@ -199,15 +288,20 @@ async function handleAsk(req, res) {
     }
   } catch (error) {
     const code = error && error.code ? error.code : "model_unavailable";
-    status = code === "invalid_question" ? 400
-      : code === "busy" ? 429
-        : code === "retrieval_unavailable" ? 502
-          : code === "model_timeout" ? 504
-            : 502;
+    status = code === "invalid_question" ? 400 : code === "busy" ? 429 : code === "retrieval_unavailable" ? 502 : code === "model_timeout" ? 504 : 502;
     json(res, status, { requestId: id, error: errorDetails(code) });
   } finally {
-    inFlight = false;
-    logSafe({ requestId: id, status, qmdMs, modelMs, evidenceCount, totalMs: Date.now() - started });
+    if (lockAcquired && inFlightRequestId === id) {
+      inFlightRequestId = undefined;
+    }
+    logSafe({
+      requestId: id,
+      status,
+      qmdMs,
+      modelMs,
+      evidenceCount,
+      totalMs: Date.now() - started,
+    });
   }
 }
 

@@ -811,6 +811,14 @@ try {
   if (byTestId("memory-atlas-canvas").dataset.evidenceCount !== "0") {
     throw new Error("close did not clear evidence highlight")
   }
+  const callsAfterClose = calls
+  byTestId("memory-atlas-ask-toggle").click()
+  await waitFor(() => !panel.hidden, "ask panel reopen")
+  if (question.value) throw new Error("question textarea retained value after close")
+  byTestId("memory-atlas-ask-retry").click()
+  await sleep(180)
+  if (calls !== callsAfterClose) throw new Error("retry reused closed question from closure")
+  if (question.value) throw new Error("last question was restored after close")
   return ({ ok: true, calls, storageEvents: storageEvents.length, sourceSlug: firstSlug })
 } finally {
   window.fetch = originalFetch
