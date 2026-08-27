@@ -27,6 +27,7 @@ done
 [[ "$missing" == "0" ]]
 
 scan_targets=(
+  .gitignore
   CLAUDE.md
   docs
   tasks
@@ -48,7 +49,7 @@ for target in "${scan_targets[@]}"; do
     -e 'quartz-protected' \
     -e 'career-api' \
     -e 'brain-qmd:8181' \
-    -e 'Cloudflare Tunnel|cloudflared|TUNNEL_TOKEN' \
+    -e 'Cloudflare Access|Cloudflare Tunnel|cloudflared|TUNNEL_TOKEN' \
     -e 'Jenkins|jenkins' \
     "$target"; then
     echo "public repository contains private infra identifiers." >&2
