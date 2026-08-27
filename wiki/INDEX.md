@@ -87,6 +87,11 @@
 - [[rag-retrieval-pipeline]] — 질문 구조화, 하이브리드 검색, 재정렬과 근거 전달을 잇는 공통 검색 흐름
 - [[embedding-versioned-vector-index]] — 임베딩 모델 변경을 벡터 재생성, 재색인과 서빙 전환까지 묶는 운영 원칙
 - [[graph-rag-path-retrieval]] — 질문에 맞는 시작 노드와 제한된 관계 경로로 설명 가능한 서브그래프를 찾는 방식
+- [[retrieval-backend-selection]] — 검색 계층을 벡터DB 기본값 없이 문서 성격·규모·운영 역량으로 고르는 기준
+
+### 추천 시스템 (학습)
+
+- [[recommendation-batch-to-realtime-loop]] — 미리 계산한 추천 리스트를 이벤트와 피드백 루프로 옮길 조건과 따라오는 운영 부담
 
 ### 생활·요리
 
@@ -112,7 +117,7 @@
 
 ## Raw 인벤토리 요약
 
-- `raw/web/` — Web Clipper 로 수집한 웹 기사 (2개: 문서 파싱 품질 평가, AI 생성 코드 채택 기준)
+- `raw/web/` — Web Clipper 로 수집한 웹 기사 (4개: 문서 파싱 품질 평가, AI 생성 코드 채택 기준, Ask HN 로컬 RAG, 토스증권 추천·검색 테크톡 글 판본)
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (2개: RAG 아키텍처 분석, AI 시대 전문성)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모와 승인된 세션 요약 중 raw 로 승격된 노트
@@ -121,6 +126,6 @@
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-08-26 (토스증권 추천·검색 테크톡 — 신규 3, 보강 1)
+- 마지막 brain-add: 2026-08-27 (토스증권 추천·검색 테크톡 글 판본 — 신규 1, 보강 2)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

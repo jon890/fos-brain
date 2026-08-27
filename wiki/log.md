@@ -287,3 +287,12 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 3 페이지: rag-retrieval-pipeline, embedding-versioned-vector-index, graph-rag-path-retrieval
 - 보강 1 페이지: rag-system-architecture-strategies
 - 실시간 개인화 추천은 원본에는 보존하되 현재 RAG 학습 트리와 개인 지식 유입 기준에 맞지 않아 별도 wiki 페이지로 만들지 않았다.
+
+## [2026-08-27] add | Ask HN 로컬 RAG 스레드에서 검색 백엔드 선택 기준 정리
+- Source: raw/web/2026-08-27-ask-hn-local-rag.md (https://news.hada.io/topic?id=25854, 원문 https://news.ycombinator.com/item?id=46616529)
+- 신규 1 페이지(retrieval-backend-selection), 보강 1 페이지(rag-retrieval-pipeline)
+
+## [2026-08-27] add | 토스증권 추천·검색 테크톡 글 판본 적재
+- Source: `raw/web/2026-08-26-toss-securities-recommendation-search-rag-graphrag.md` (https://toss.tech/article/tech_talk_talk_3)
+- 이미 있던 유튜브 자동자막 판본의 오인식 수치·파라미터 이름을 글 판본으로 교정
+- 신규 1 페이지(recommendation-batch-to-realtime-loop), 보강 2 페이지(graph-rag-path-retrieval, embedding-versioned-vector-index), 출처 추가 2 페이지
