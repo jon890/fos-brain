@@ -58,6 +58,7 @@
 `plan4-memory-constellation`에서는 운영 배포만 다룬 Phase 05를 제거하고 index를 4개 phase로 맞춘다.
 운영 회고 `0005`부터 `0013`까지와 해당 INDEX·RUNS 항목을 제거한다.
 제품·앱 설계를 다루는 ADR, `plan1`, `plan4` Phase 01부터 04까지, `plan5`, `plan7`, 회고 `0001`부터 `0004`까지와 `0014`는 보존한다.
+ADR 004는 호스트·제품·network 식별자 없는 일반 qmd HTTP 계약으로 이미 재작성했으므로 보존하며, 공개 경계 검사로 운영 정보가 다시 들어오지 않게 한다.
 프로젝트 지침과 제품 문서에는 일반 API·검색 계약과 private 인프라 저장소의 책임 경계만 남긴다.
 금지 경로와 운영 식별자가 다시 들어오지 않도록 `scripts/verify-public-infra-boundary.sh`를 추가한다.
 정리는 private 저장소에서 해당 운영 구성을 먼저 가져와 정적 검사를 통과한 뒤 수행한다.
