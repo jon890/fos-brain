@@ -81,57 +81,12 @@ Hermes에는 `store: false`와 `brain` 모델 별칭을 전달하며 이전 응�
 묶음의 `index.md`와 `log.md`는 예약 문서로 별도 처리한다.
 raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 원본 본문을 유지한다.
 
-## 홈서버 배포 경계
+## 운영 구성 저장 경계
 
-- `deploy/home-server/compose.yaml` — public Quartz 정적 서버와 Cloudflare Tunnel 컨테이너를 정의한다.
-- `deploy/home-server/build-public.sh` — private 경로를 마운트하지 않고 고정 Node 컨테이너에서 공개 Quartz를 빌드한다.
-- `deploy/home-server/build-protected.sh` — public과 private wiki를 별도 release로 빌드하고 검증 뒤 `current`를 원자적으로 전환한다.
-- `deploy/home-server/sync-protected.sh` — 두 저장소의 fast-forward 갱신, 중복 실행 잠금, 보호 빌드를 소유한다.
-- `deploy/home-server/brain-qmd/Dockerfile` — 고정 Node image와 qmd package로 내부 검색 서비스를 만든다.
-- `deploy/home-server/brain-qmd/entrypoint.sh` — 세 컬렉션을 검증하고 HTTP serve와 일회성 sync mode를 분리한다.
-- `deploy/home-server/brain-qmd/compose.yaml` — 읽기 전용 지식 mount, 영구 색인, 전용 network와 healthcheck를 정의한다.
-- `deploy/home-server/brain-ask/` — qmd와 Hermes 사이에서 읽기 전용 단일 질문을 처리하는 내부 HTTP 서비스를 정의한다.
-- `deploy/home-server/hermes/configure-brain-api.sh` — 전용 `brain-api` 프로필을 만들고 도구 비활성화와 smoke 검사를 반복 가능하게 수행한다.
-- `deploy/home-server/hermes/brain-api-config.yaml` — 비밀값을 제외한 전용 모델·도구 설정의 기준이다.
-- `deploy/home-server/hermes/brain-api-SOUL.md` — 근거 안에서만 답하고 모르면 모른다고 말하는 생성 규칙이다.
-- `deploy/home-server/hermes-brain-qmd.override.yaml` — Hermes를 전용 network에 연결하고 `BRAIN_QMD_URL`과 읽기 전용 검색 어댑터를 주입한다.
-- `deploy/home-server/hermes-brain-search/SKILL.md` — Hermes에서 HTTP qmd와 기존 축소 검색 경로를 연결한다.
-- `deploy/home-server/sync-qmd.sh` — HTTP 서비스를 중단하고 색인을 백업한 뒤 일회성 container에서 증분 갱신한다.
-- `deploy/home-server/jenkins/jenkins-deploy.sh` — Jenkins SSH key가 실행할 수 있는 forced-command 허용 목록을 소유한다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — qmd HTTP 요청과 응답 스키마를 결정적으로 처리한다.
-- `deploy/home-server/nginx.conf` — Quartz의 확장자 없는 경로와 정적 자원 응답을 소유한다.
-- `deploy/home-server/.env.example` — 저장소에 넣을 수 있는 변수 이름만 설명하며 Tunnel token은 포함하지 않는다.
-- `/home/bifos/apps/fos-brain-deploy` — 검증한 배포 스크립트와 Jenkins 작업 정의를 webhook 활성화 전에 설치하는 운영 경로다.
-- Cloudflare — DNS 레코드, Tunnel 공개 호스트 이름, Access 애플리케이션과 정책, DNSSEC를 소유한다.
-- Nginx Proxy Manager — 호스트 기반 내부 라우팅과 `brain` 정적 서버 프록시를 소유한다.
-- Jenkins Generic Webhook Trigger — GitHub webhook HMAC 검증, 허용 저장소와 `main` branch 선택, `sync-brain`과 후속 `sync-brain-qmd` 실행을 소유한다.
-
-Tunnel은 기존 `public-net`에만 참여하고 공개 호스트 이름 8개를 NPM의 `https://fos-npm:443` 원본으로 연결한다.
-호스트별 `originServerName`과 `httpHostHeader`를 원래 도메인으로 유지해 NPM 인증서와 가상 호스트를 함께 검증한다.
-`brain`은 NPM에서 관리하는 호스트 이름 일치 인증서를 사용하며 인증서 검증을 끄지 않는다.
-이 경계는 Cloudflare 방문자 요청의 HTTPS 상태를 NPM까지 유지해 Force SSL 리다이렉트 반복을 막는다.
-
-public 검증 빌드는 `quartz/public`에 남고 private 경로를 보거나 복사하지 않는다.
-보호 빌드는 gitignore된 `quartz-protected/releases/`에 public·private wiki만 만들고 `quartz-protected/current`로 활성 release를 가리킨다.
-빌드 컨테이너에는 release 상위 디렉터리를 마운트하고 Quartz output은 그 아래 staging 경로로 지정해 빌더의 초기화 동작을 허용한다.
-정적 서버는 `quartz-protected/` 상위 디렉터리만 읽기 전용으로 마운트해 `current` 전환을 재시작 없이 읽는다.
-보호 Nginx는 HTML과 검색 색인에 private cache 정책과 검색 엔진 차단 헤더를 적용한다.
-Cloudflare와 Jenkins의 비밀값은 git에 기록하지 않는다.
-Jenkins는 저장소 checkout 안의 실행 중 변경에 의존하지 않고 운영 경로에 설치한 검증본을 호출한다.
-qmd 설정, 색인, 모델 cache는 `/home/bifos/.brain-qmd`에 두고 UID와 GID 1000만 쓴다.
-public wiki와 raw, private wiki는 `brain-qmd`에 읽기 전용으로 마운트하고 private raw는 입력하지 않는다.
-`brain-qmd`와 Hermes만 전용 Docker network에 참여하며 `ports`를 정의하지 않는다.
-공식 qmd HTTP는 인증이 없으므로 `QMD_ALLOWED_HOSTS`를 내부 이름으로 제한하고 Tunnel과 NPM에 연결하지 않는다.
-host의 `sync-qmd.sh`는 갱신 잠금, SQLite 백업·복원, HTTP container 재기동과 health 확인을 소유한다.
-
-`brain-ask`는 `public-net`, `brain-search-net`, `hermes-agent_hermes-net`에 참여한다.
-호스트 포트는 열지 않으며 `brain-web`은 `public-net`, qmd는 `brain-search-net`, Hermes는 `hermes-agent_hermes-net`에서만 접근한다.
-Hermes API key는 mode 600인 호스트 파일을 `brain-ask`에 읽기 전용으로 마운트하고 저장소, 브라우저 응답과 container 환경 변수에 넣지 않는다.
-전용 `brain-api`는 외부 skill 경로를 주입하지 않고 모든 toolset을 비활성화한다.
-
-NPM의 공인 80·81·443 포트는 전환 검증 전까지 유지한다.
-전환 뒤에는 세 포트를 모두 loopback 바인딩으로 바꾸되 `public-net`의 컨테이너 포트는 유지해 Tunnel과 SSH 복구 경로를 보존한다.
-Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 만들 수 있는 하나의 검증 사슬로 관리한다.
+- `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
+- public 저장소는 Compose, reverse proxy, Jenkins, Hermes profile과 호스트 경로를 소유하지 않는다.
+- private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 배포를 수행한다.
+- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs`는 public qmd HTTP client 계약을 계속 소유한다.
 
 ## 검증 경계
 
@@ -142,8 +97,4 @@ Cloudflare DNSSEC와 등록기관 DS는 재귀 확인자가 인증된 응답을 
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
 - Brain 질문 — 입력 제한, 동시 요청, qmd URI 경계, 근거 크기, 빈 결과의 Hermes 미호출, Hermes 오류 변환과 로그 비노출을 단위·통합 검사한다.
 - Brain 질문 UI — 질문 상태, 답변 평문 렌더, 출처 이동, 그래프 강조 해제, 1440px와 390px의 넘침을 브라우저에서 검사한다.
-- Hermes 프로필 — `brain` 모델, 무도구 `/v1/toolsets`, 비저장 `/v1/responses`, `career-api`와 8643 제거를 홈서버에서 검사한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.
-- 배포 — Compose 구문, public-only 회귀, 보호 wiki 병합, 원자적 release 전환, 컨테이너 상태와 NPM 내부 연결을 검사한다.
-- brain-qmd — 고정 image와 package, 비root 실행, host port 부재, 전용 network, 허용 컬렉션, HTTP 계약, SQLite 복구, 공개·비공개 대표 검색, 메모리와 OOM 발생 여부를 검사한다.
-- 보안 — 공개·보호·웹훅 요청을 각각 검사하고 공인 80·81·443 차단, SSH 10022 유지, DNSSEC 인증 응답을 확인한다.

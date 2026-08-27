@@ -204,10 +204,10 @@ Karpathy 가 권장한 qmd(BM25, 벡터, LLM rerank)를 사용한다.
 
 `brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
-홈서버에서는 qmd 2.8.3의 공식 HTTP transport를 `brain-qmd` container로 분리한다.
-Hermes는 `BRAIN_QMD_URL=http://brain-qmd:8181`이 있으면 `/query`를 우선 사용하고, 실패하면 로컬 고정 qmd와 INDEX·`rg` 순서로 축소한다.
-`brain-qmd`는 Hermes와의 전용 Docker network에만 연결하며 host port, Cloudflare Tunnel, NPM에는 노출하지 않는다.
-public wiki와 raw, private wiki만 읽기 전용으로 제공하고 private raw는 mount하지 않는다.
+원격 실행 환경에서는 qmd의 HTTP transport를 사용할 수 있다.
+애플리케이션은 transport가 설정되면 `/query`를 우선 사용하고, 실패하면 로컬 고정 qmd와 INDEX·`rg` 순서로 축소한다.
+실제 container, network, service 주소, mount와 갱신 절차는 private 인프라 저장소에서 관리한다.
+공개 저장소는 허용 컬렉션과 요청·응답 계약만 관리한다.
 
 ### wrapper로 node 버전 고정 (ABI 불일치 방지)
 
@@ -242,7 +242,8 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
 - 기능: 그래프 뷰, 전문 검색, 백링크 패널
 - 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
 - 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
-- Quartz 렌더링이나 서빙에 영향을 주는 변경은 로컬 검사, 원자적인 보호 홈서버 배포, 실제 URL 브라우저 검증이 모두 통과해야 완료로 본다.
+- Quartz 렌더링이나 서빙에 영향을 주는 변경은 로컬 검사와 브라우저 회귀가 통과해야 public 구현 완료로 본다.
+  실제 배포, 접근 제어와 rollback 검증은 private 인프라 저장소에서 수행한다.
   문서만 바꾸거나 `raw/`, `wiki/`만 바꾸는 작업에는 배포 검증을 요구하지 않는다.
   Access와 private 경계는 유지하고, 실패하면 이전 release로 rollback한다.
 

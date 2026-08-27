@@ -85,116 +85,14 @@ OKF 규격 변경은 내보내기 계층에서 흡수하고 내부 링크와 네
 fixture는 사용자의 qmd에 이미 등록된 `brain-wiki` 컬렉션을 대상으로 실행하는 검색 smoke다.
 worktree 전용 임시 collection을 만들거나 전역 qmd 설정을 변경하지 않는다.
 
-## 홈서버 배포 구성
+## 운영 구성 저장 경계
 
-### 추적 가능한 변수
-
-| 이름 | 형식 | 규칙 |
-| --- | --- | --- |
-| `BRAIN_REPO` | 절대 경로 | 홈서버의 public fos-brain checkout이며 기본값은 `/home/bifos/personal/fos-brain`이다. |
-| `HOST_UID` | 정수 | Quartz 산출물을 소유할 홈서버 사용자 UID다. |
-| `HOST_GID` | 정수 | Quartz 산출물을 소유할 홈서버 사용자 GID다. |
-| `CLOUDFLARED_IMAGE` | digest가 포함된 이미지 | 검증한 `cloudflare/cloudflared` 다중 아키텍처 digest를 사용한다. |
-| `NGINX_IMAGE` | digest가 포함된 이미지 | 검증한 `nginx` stable-alpine digest를 사용한다. |
-| `PRIVATE_BRAIN_REPO` | 절대 경로 | 독립 private 저장소이며 기본값은 `${BRAIN_REPO}/private`다. |
-| `PROTECTED_OUTPUT_ROOT` | 절대 경로 | 보호 산출물의 `releases/`와 `current`를 담으며 기본값은 `${BRAIN_REPO}/quartz-protected`다. |
-| `BRAIN_SYNC_LOCK` | checkout 밖 절대 경로 | public·private push의 중복 빌드를 직렬화하며 `BRAIN_DEPLOY_ROOT` 아래에 둔다. |
-| `BRAIN_DEPLOY_ROOT` | 절대 경로 | 검증한 동기화·빌드 스크립트와 Jenkins 작업 정의를 설치하는 운영 경로다. |
-| `BRAIN_QMD_CONTAINER` | 컨테이너 이름 | 검색 HTTP 서비스이며 기본값은 `brain-qmd`다. |
-| `BRAIN_QMD_DATA_DIR` | 절대 경로 | qmd 설정, SQLite 색인, 모델 cache를 담으며 기본값은 `/home/bifos/.brain-qmd`다. |
-| `BRAIN_QMD_URL` | 내부 URL | Hermes가 호출하는 주소이며 `http://brain-qmd:8181`이다. |
-| `BRAIN_QMD_COMPOSE` | 절대 경로 | 검증된 `brain-qmd` compose 파일을 가리킨다. |
-| `QMD_VERSION` | 고정 버전 | image에 설치하는 qmd 버전이며 `2.8.3`이다. |
-| `QMD_SYNC_LOCK` | checkout 밖 절대 경로 | 색인 갱신을 직렬화하며 `BRAIN_QMD_DATA_DIR` 아래에 둔다. |
-
-### 비밀값
-
-| 이름 | 저장 위치 | 삭제·회전 규칙 |
-| --- | --- | --- |
-| `TUNNEL_TOKEN` | 홈서버 `deploy/home-server/.env`, 권한 600 | Tunnel을 재생성하거나 노출이 의심되면 Cloudflare에서 교체한다. git과 로그에 출력하지 않는다. |
-| Access 허용 이메일 | Cloudflare Access 정책 | git에 기록하지 않는다. 계정 변경 시 정책에서 교체한다. |
-| GitHub webhook HMAC secret | GitHub webhook 설정과 Jenkins Secret Text credential | 저장소와 URL에 넣지 않는다. 모든 발신 webhook을 갱신한 뒤 Jenkins 검증 값을 교체한다. |
-
-### 호스트 정책
-
-| 호스트·경로 | 공개 범위 | Access | Tunnel 원본 |
-| --- | --- | --- | --- |
-| `fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
-| `blog.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
-| `accountbook.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
-| `accountbook-api.fosworld.co.kr` | 누구나 | 없음 | `https://fos-npm:443` |
-| `brain.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
-| `brain.fosworld.co.kr/.well-known/acme-challenge/*` | 인증서 발급 기관 | Bypass | `https://fos-npm:443` |
-| `grafana.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
-| `jenkins.fosworld.co.kr/*` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
-| `jenkins.fosworld.co.kr/generic-webhook-trigger/*` | GitHub webhook | Bypass와 HMAC-SHA256 | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
-| `npm.fosworld.co.kr` | 허용 계정 | 이메일 일회용 PIN | 평상시 `https://fos-npm:443`, 전환 격리 `http_status:503` |
-
-Tunnel의 각 호스트 항목은 원래 호스트 이름을 `originServerName`과 `httpHostHeader`로 전달한다.
-NPM은 각 이름과 일치하는 인증서를 제공하며 Tunnel은 인증서 검증을 끄지 않는다.
-등록되지 않은 호스트는 404로 끝난다.
-Pending 영역에서는 Access self-hosted 애플리케이션 생성이 오류 12130으로 거부될 수 있다.
-이때 보호 호스트를 503으로 격리한 뒤 영역이 Active가 되어 Access 애플리케이션과 Bypass 저장 상태를 확인할 때까지 NPM 원본을 복구하지 않는다.
-기존 apex·하위 도메인의 A 레코드는 Tunnel CNAME으로 교체하고 TXT 두 개는 값과 TTL을 그대로 유지한다.
-폐기한 `career`와 `nreview` 레코드는 다시 만들지 않는다.
-최종 권한 DNS는 Cloudflare의 CNAME 8개와 TXT 2개를 제공한다.
-Cloudflare DNSSEC 상태와 등록기관 DS를 함께 유지하며 재귀 확인 결과에는 인증된 데이터 표시가 있어야 한다.
-NPM 호스트 포트 80·81·443은 loopback에만 바인딩하고 Tunnel의 `public-net` 연결은 유지한다.
-
-배포 중 생성하는 DNS 스냅샷, Tunnel token, Access 계정, HMAC secret은 git 추적 대상이 아니다.
-정적 산출물 `quartz/public`도 기존대로 gitignore 상태를 유지한다.
-
-## 보호 Quartz 산출물
-
-| 경로 | 내용 | 규칙 |
-| --- | --- | --- |
-| `quartz-protected/releases/<release-id>/` | public·private wiki의 Quartz 정적 파일 | gitignore 대상이며 빌드 성공 뒤에만 활성화한다. |
-| `quartz-protected/current` | 활성 release를 가리키는 상대 심볼릭 링크 | 같은 상위 디렉터리 안에서 원자적으로 교체한다. |
-| `/concepts`, `/topics`, `/entities` | public wiki의 기존 URL | 보호 빌드 전환 전후에 경로를 유지한다. |
-| `/_private/` | private wiki URL prefix | Access Allow 정책 안에서만 제공한다. |
-
-`release-id`는 public과 private commit 식별자와 UTC 빌드 시각으로 만든다.
-release에는 public과 private의 컴파일된 wiki만 들어가며 두 네임스페이스의 raw와 모든 회사 자료를 포함하지 않는다.
-private INDEX가 없거나 private Markdown 수가 0이면 새 release를 활성화하지 않는다.
-
-## 보호 brain 웹훅 입력
-
-| 필드 | 허용값 | 실패 처리 |
-| --- | --- | --- |
-| `repository.full_name` | `jon890/fos-brain`, `jon890/fos-brain-private` | 다른 저장소는 작업 대상에서 제외한다. |
-| `ref` | `refs/heads/main` | 다른 branch push는 작업 대상에서 제외한다. |
-| `X-Hub-Signature-256` | Jenkins HMAC 검증 성공 | 누락하거나 일치하지 않으면 403으로 끝낸다. |
-
-Jenkins는 동시에 하나의 `sync-brain`만 실행한다.
-작업은 두 checkout이 clean이고 원격 `main`으로 fast-forward할 수 있을 때만 빌드를 시작한다.
-성공한 보호 배포 뒤 `sync-brain-qmd`를 실행하며, 이 후속 단계만 실패하면 활성 release를 되돌리지 않는다.
-
-## brain-qmd 영구 데이터와 mount
-
-| 경로 | 내용 | 규칙 |
-| --- | --- | --- |
-| `/home/bifos/.brain-qmd/config/qmd/index.yml` | 컬렉션 설정 | public wiki, public raw, private wiki의 container 경로만 등록한다. |
-| `/home/bifos/.brain-qmd/cache/qmd/index.sqlite*` | SQLite 색인과 WAL·SHM | 상위 `/home/bifos/.brain-qmd`를 mode 700으로 유지하고 git과 Quartz 입력에서 제외한다. |
-| `/home/bifos/.brain-qmd/cache/qmd/models/` | 임베딩 모델 cache | 최초 sync에서 내려받고 이후 재사용한다. |
-| `/tmp/brain-qmd-sqlite-backup.*` | 중지된 색인의 임시 복구본 | sync 성공이나 복구 완료 뒤 제거한다. |
-| `/home/bifos/apps/fos-brain-deploy/sync-qmd.lock` | 색인 갱신 잠금 | 동시에 하나의 Jenkins 갱신만 실행한다. |
-
-qmd container는 `XDG_CONFIG_HOME=/data/config`, `XDG_CACHE_HOME=/data/cache`를 사용한다.
-private 문서 본문, 검색어, 검색 결과는 Jenkins 로그에 출력하지 않는다.
-
-| host 경로 | brain-qmd 경로 | 접근 |
-| --- | --- | --- |
-| `/home/bifos/.brain-qmd` | `/data` | UID와 GID 1000 쓰기 |
-| `/home/bifos/personal/fos-brain/wiki` | `/brain/public/wiki` | 읽기 전용 |
-| `/home/bifos/personal/fos-brain/raw` | `/brain/public/raw` | 읽기 전용 |
-| `/home/bifos/personal/fos-brain/private/wiki` | `/brain/private/wiki` | 읽기 전용 |
-
-private raw는 mount와 컬렉션에서 제외한다.
-HTTP container와 일회성 sync container는 동시에 실행하지 않는다.
+public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 이름과 형식만 정의한다.
+실제 host 경로, service 주소, image, secret 파일, proxy와 webhook 설정은 private 인프라 저장소에서 관리한다.
 
 ## brain-qmd HTTP 입력과 출력
 
-Hermes는 `POST /query`에 다음 값을 보낸다.
+검색 client는 `POST /query`에 다음 값을 보낸다.
 
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
@@ -278,8 +176,8 @@ supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 
 | 400 | `invalid_question` | 요청 형식이나 질문 길이가 잘못되었다. |
 | 429 | `busy` | 다른 질문 한 건을 처리하고 있다. |
 | 502 | `retrieval_unavailable` | qmd에서 근거를 가져오지 못했다. |
-| 502 | `model_unavailable` | Hermes가 응답을 만들지 못했다. |
-| 504 | `model_timeout` | Hermes가 90초 안에 끝나지 않았다. |
+| 502 | `model_unavailable` | 모델 API가 응답을 만들지 못했다. |
+| 504 | `model_timeout` | 모델 API가 90초 안에 끝나지 않았다. |
 
 빈 근거는 오류가 아니다.
 `answer`가 빈 문자열이고 `sources`가 빈 배열인 200 응답으로 반환한다.
@@ -293,7 +191,7 @@ supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 
 | 제한 | 값 | 처리 |
 | --- | --- | --- |
 | qmd 호출 시간 | 10초 | 넘으면 `retrieval_unavailable`이다. |
-| Hermes 호출 시간 | 90초 | 넘으면 `model_timeout`이다. |
+| 모델 API 호출 시간 | 90초 | 넘으면 `model_timeout`이다. |
 | 문서 수 | 최대 6개 | 초과 결과는 읽지 않는다. |
 | 문서별 본문 | 최대 8 KiB | UTF-8 경계에서 잘라 근거에 넣는다. |
 | 전체 본문 | 최대 32 KiB | qmd 순서대로 채우고 이후 문서는 제외한다. |
@@ -303,31 +201,11 @@ qmd의 `qmd://brain-wiki/<path>`는 public wiki 읽기 전용 mount로, `qmd://b
 다른 collection, 절대 경로, `..`, mount 밖으로 나가는 심볼릭 링크는 거부한다.
 출처 `href`는 public이면 기존 slug 경로, private이면 `/_private/` 아래 경로로 만든다.
 
-Hermes 요청은 `/v1/responses`에 `model: brain`, `store: false`를 보낸다.
+모델 요청은 `/v1/responses`에 `model: brain`, `store: false`를 보낸다.
 이전 응답이나 conversation 식별자는 보내지 않으며 도구 호출 결과를 받을 수 없다.
 
 ## Brain 질문 실행 설정
 
-| 이름 | 형식 | 규칙 |
-| --- | --- | --- |
-| `BRAIN_QMD_URL` | 내부 URL | 기본값은 `http://brain-qmd:8181`이다. |
-| `HERMES_BRAIN_URL` | 내부 URL | 기본값은 `http://hermes:8644/v1`이다. |
-| `HERMES_BRAIN_API_KEY_FILE` | container 절대 경로 | mode 600인 읽기 전용 key 파일이다. |
-| `PUBLIC_WIKI_ROOT` | container 절대 경로 | public wiki 읽기 전용 mount다. |
-| `PRIVATE_WIKI_ROOT` | container 절대 경로 | private wiki 읽기 전용 mount다. |
-
-질문, 답변과 출처 본문은 영구 데이터가 아니다.
-서버는 현재 처리 중인지 여부만 메모리에 가지며 재시작하면 초기화한다.
-
-## Hermes `brain-api` 프로필
-
-프로필 경로는 `/home/bifos/.hermes/profiles/brain-api`다.
-모델 별칭은 `brain`이며 API는 container 내부 8644 포트에서만 수신한다.
-모든 toolset은 비활성화하고 외부 skill 경로를 추가하지 않는다.
-
-Hermes API key의 원본은 프로필의 권한 600 환경 파일에 둔다.
-`brain-ask`가 읽는 별도 key 파일도 mode 600으로 유지하며 두 값은 한 번의 회전 절차에서 함께 바꾼다.
-저장소에는 key 값, 질문, 답변, 사용자 이메일을 기록하지 않는다.
-
-`career-api`는 새 질문 경로가 통과할 때까지만 유지하는 전환 입력이다.
-전환 뒤 프로필 디렉터리, 127.0.0.1:8643 포트 연결과 운영 문서 참조를 제거한다.
+`brain-ask`는 qmd URL, 모델 API URL, key 파일과 public·private wiki root를 runtime 설정으로 받는다.
+public 문서는 변수의 역할만 정의하며 실제 주소, port, host 경로와 profile 전환 규칙을 기록하지 않는다.
+질문, 답변과 출처 본문은 영구 데이터가 아니며 서버 재시작 뒤 복원하지 않는다.

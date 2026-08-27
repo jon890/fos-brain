@@ -8,7 +8,7 @@
 
 기존 제목·태그 검색을 유지하면서 단일 자연어 질문, 평문 답변, 근거 이동과 그래프 강조를 Memory Atlas에 추가한다.
 
-**범위 외**: BFF와 Hermes 설정은 Phase 01, 홈서버 배포와 `career-api` 폐기는 Phase 03의 책임이다.
+**범위 외**: BFF는 Phase 01, 실제 운영 배포와 폐기 서비스 전환은 private 인프라 계획의 책임이다.
 
 ---
 
@@ -67,8 +67,8 @@ scripts/verify-memory-atlas.sh
 
 ```bash
 # cwd: <worktree>/
-node --test deploy/home-server/brain-ask/brainAsk.test.mjs
-deploy/home-server/tests/verify-brain-ask.sh
+node --test services/brain-ask/brainAsk.test.mjs
+scripts/verify-public-infra-boundary.sh
 git diff --check
 ```
 
@@ -80,3 +80,7 @@ git diff --check
 - 검색은 현재 그래프를 좁히고 질문은 근거를 합성하므로 입력과 상태를 분리한다.
 - 평문 렌더와 same-origin 링크 검증으로 모델 출력이 실행 가능한 UI가 되는 경로를 막는다.
 - 질문 패널을 그래프 위에 제한적으로 겹쳐 관계 탐색과 근거 읽기를 한 화면에 유지한다.
+
+## 완료 기록
+
+모든 검증이 통과하면 `tasks/plan7-brain-grounded-qa/index.json`의 `status`를 `completed`, `current_phases`를 `2`로 바꾼다.

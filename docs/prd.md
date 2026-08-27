@@ -23,11 +23,11 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 ### 에이전트 검색
 
 - 공개와 비공개 컬렉션을 분리해 검색하고 결과에 네임스페이스를 유지한다.
-- 홈서버의 Hermes는 내부 전용 `brain-qmd` HTTP 서비스에서 같은 세 컬렉션을 검색한다.
+- 원격 에이전트는 인증된 내부 검색 transport를 통해 같은 세 컬렉션을 검색할 수 있다.
 - 컴파일된 wiki를 먼저 검색하고, 부족할 때만 raw 원문으로 내려간다.
 - 관련 문서의 링크를 한 단계 따라가며 단순 상위 결과보다 관계 맥락을 보강한다.
 - 대표 질문 묶음으로 의도한 문서가 상위 결과에 나오는지 반복 측정한다.
-- public 또는 private `main` push 뒤 보호 Quartz 배포가 성공하면 `brain-qmd` 색인을 증분 갱신한다.
+- 문서가 게시된 뒤 검색 색인을 증분 갱신할 수 있는 일반 진입점을 제공한다.
 - qmd를 사용할 수 없거나 결과가 비어도 INDEX와 본문 검색으로 축소 동작한다.
 
 ### 사람의 지식 탐색
@@ -41,12 +41,12 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 
 ### Brain 근거 질문
 
-- Access 인증을 마친 사용자는 Memory Atlas에서 공개·비공개 wiki를 근거로 한 단일 질문을 보낼 수 있다.
+- 인증된 사용자는 Memory Atlas에서 공개·비공개 wiki를 근거로 한 단일 질문을 보낼 수 있다.
 - 답변은 `brain-wiki`와 `brain-private`에서 찾은 문서만 사용하며, 근거가 없으면 일반 지식으로 보완하지 않는다.
 - 답변과 함께 사용한 문서의 제목, 네임스페이스, 발췌문과 원문 링크를 보여준다.
 - 질문과 답변은 브라우저 메모리에서만 유지하고 서버나 Hermes 대화 기록에 저장하지 않는다.
-- 전용 Hermes `brain-api` 프로필은 도구 호출을 모두 끄고 답변 생성만 담당한다.
-- 브라우저는 Hermes API key를 알 수 없으며 같은 출처의 `POST /api/brain/ask`만 호출한다.
+- 전용 모델 실행 환경은 도구 호출을 모두 끄고 답변 생성만 담당한다.
+- 브라우저는 모델 API key를 알 수 없으며 같은 출처의 `POST /api/brain/ask`만 호출한다.
 - 한 번에 하나의 질문만 처리하고, 첫 버전에서는 대화 이력과 후속 질문 문맥을 지원하지 않는다.
 
 ### OKF 호환
@@ -57,18 +57,11 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 내보내기는 public만 대상으로 하며 private 자료를 포함하지 않는다.
 - public raw Markdown은 원본을 바꾸지 않고 내보내기 사본에서 `Reference` 문서로 취급한다.
 
-### 홈서버 게시와 접근 제어
+### 운영 구성 저장 경계
 
-- public 전용 빌드는 private 네임스페이스를 계속 제외한다.
-- Access로 보호하는 `brain.fosworld.co.kr`에는 public과 private의 컴파일된 wiki를 하나의 Quartz 그래프로 게시한다.
-- 보호 산출물은 private raw와 회사 자료를 포함하지 않으며 public 산출물과 다른 경로에 보관한다.
-- Cloudflare Tunnel의 outbound 연결로 홈서버를 공개하며, `brain`, Grafana, Jenkins, Nginx Proxy Manager는 Cloudflare Access 인증 뒤에 둔다.
-- `fosworld.co.kr`, `blog`, `accountbook`, `accountbook-api`는 로그인 없이 계속 공개한다.
-- Jenkins 웹훅 경로만 Access 인증에서 제외하고 Generic Webhook Trigger의 HMAC-SHA256 검증을 필수로 한다.
-- hosting.kr은 등록기관으로 유지하고 권한 DNS만 Cloudflare full setup으로 전환한다.
-- Tunnel의 공개 호스트 이름 8개는 Nginx Proxy Manager의 HTTPS 원본으로 연결하고 호스트별 인증서를 검증한다.
-- Cloudflare DNSSEC와 등록기관 DS를 연결해 재귀 확인자의 인증된 응답을 유지한다.
-- 폐기된 `career`와 `nreview`는 DNS, 프록시, Tunnel, 컨테이너, 예약 작업에서 제외한다.
+- public 저장소는 애플리케이션 소스와 환경에 독립적인 계약만 관리한다.
+- 호스트 경로, 내부 network, reverse proxy, Jenkins, Hermes profile과 배포 script는 외부 private 인프라 저장소에서 관리한다.
+- 비밀값은 public과 private Git 어느 쪽에도 저장하지 않는다.
 
 ## 성공 기준
 
@@ -77,24 +70,15 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 회사 지식, 절차, 일회성 기록, 일반 설명을 개인 brain에 넣지 않는 대표 시나리오를 반복 검사한다.
 - 공개 대표 질문의 80% 이상에서 기대 문서가 상위 3개 안에 나온다.
 - 검색 절차가 공개·비공개 결과를 섞지 않고, 답변 근거에 네임스페이스를 표시한다.
-- Hermes 컨테이너의 `brain-search`가 내부 HTTP로 `brain-wiki`, `brain-raw`, `brain-private`를 검색한다.
-- `brain-qmd`는 호스트 포트를 열지 않고 Hermes와의 전용 Docker network에만 연결된다.
-- `brain-search`는 HTTP 실패 시 로컬 고정 qmd, INDEX와 본문 검색 순서로 축소 동작한다.
-- qmd 갱신 실패는 성공한 Quartz release를 되돌리지 않으며 Jenkins에서 별도 실패 단계로 확인할 수 있다.
+- 검색 client는 허용 collection과 qmd 응답 계약을 검증한다.
 - qmd 설정, 색인, 모델 cache와 private 검색 결과는 git 및 공개 Quartz 산출물에 포함되지 않는다.
 - OKF 내보내기 결과의 concept, topic, entity 문서에 `type`, `title`, `description`이 있고 내부 링크가 표준 Markdown 링크다.
 - 묶음의 `index.md`와 `log.md`는 OKF v0.2의 예약 문서 계약을 따른다.
 - 예약 문서를 제외한 모든 Markdown은 비어 있지 않은 `type`을 가진다.
 - Quartz 형 검사와 공개 빌드가 통과한다.
 - 메타데이터가 적은 기존 페이지와 새 메타데이터 페이지가 모두 렌더된다.
-- 인증하지 않은 사용자는 보호 호스트에서 Cloudflare Access 로그인으로 이동하고, 허용 계정만 접근한다.
-- Jenkins 웹훅은 올바른 `X-Hub-Signature-256` 요청만 통과하며 일반 Jenkins 화면은 계속 Access로 보호된다.
-- Tunnel 전환 뒤 홈서버의 공인 80·81·443 포트는 닫히고 SSH 10022와 기존 SSH 터널 사용은 유지된다.
-- 공개 호스트는 전환 전후의 대표 경로에서 기존 성공·리다이렉트·권한 응답을 유지한다.
-- DNSSEC 검증 응답에는 AD(Authenticated Data) 표시가 있고 Cloudflare 영역은 Active 상태를 유지한다.
-- 보호 brain의 기존 public URL은 유지되고 private 문서는 `/_private/` 아래에서 렌더된다.
-- public 또는 private 저장소의 `main` push 뒤 Jenkins가 보호 산출물을 갱신하며 실패하면 직전 산출물을 유지한다.
-- 보호 산출물과 정적 서버에서 private raw, 회사 네임스페이스, 호스트 공개 포트가 발견되지 않는다.
+- 보호 배포는 public과 private wiki를 분리하고 private raw와 회사 자료를 산출물에 포함하지 않는다.
+- 운영 배포와 접근 제어 검증은 private 인프라 저장소에서 수행한다.
 - 홈에서 3D 그래프를 회전·확대·이동하고 노드를 선택해 상세 정보와 원문 링크를 확인할 수 있다.
 - 제목 검색과 유형, 태그, 최신성, 네임스페이스 필터가 그래프와 집계에 같은 결과를 적용한다.
 - 별자리, 군집, 궤도 배치와 유형, 최신성, 네임스페이스 색상 기준을 전환할 수 있다.
@@ -105,9 +89,8 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - 질문 근거가 있으면 답변과 최대 6개의 출처를 보여주고, 출처를 선택하면 해당 문서로 이동할 수 있다.
 - 질문 패널이 열려 있는 동안 답변 근거 노드만 그래프에서 구분해 강조하고, 패널을 닫으면 강조가 사라진다.
 - 검색 근거가 없을 때는 Hermes를 호출하지 않고 brain에 관련 지식이 없다고 알려준다.
-- `brain-ask`와 `brain-qmd`, `brain-api`는 호스트 포트를 열지 않으며 Cloudflare Access 뒤의 `brain-web`만 질문 API를 전달한다.
-- `brain-api`의 `/v1/toolsets`에는 활성 도구가 없고 `/v1/models`는 `brain` 별칭만 제공한다.
-- 새 질문 경로의 API와 브라우저 검사가 모두 통과한 뒤 폐기한 `career-api` 프로필과 8643 포트 연결이 제거된다.
+- `brain-ask`는 운영 환경과 독립적인 설정으로 qmd와 모델 API를 호출하고 비밀값을 브라우저에 노출하지 않는다.
+- 모델 profile, container network와 폐기 서비스 전환은 private 인프라 저장소에서 검증한다.
 
 ## 범위 밖
 
@@ -118,11 +101,9 @@ fos-brain은 에이전트가 필요한 개인 지식을 빠르게 찾고, 사람
 - private 저장소를 공개 산출물에 포함하지 않는다.
 - private raw 원본을 원격 Quartz에 게시하지 않는다.
 - 검색 결과를 사용자 승인 없이 wiki에 자동 환원하지 않는다.
-- Cloudflare를 도메인 등록기관으로 이전하지 않는다.
-- Hermes와 9119 포트를 Cloudflare Tunnel에 연결하지 않는다.
 - 위키 링크에 supports, contradicts 같은 의미 연결 유형을 추정해 저장하지 않는다.
-- qmd HTTP를 호스트 포트, Cloudflare Tunnel, 공개 Docker network에 노출하지 않는다.
+- qmd HTTP를 공개 네트워크에 노출하지 않는다.
 - 이번 변경에서는 기존 qmd 임베딩 모델을 교체하지 않는다.
 - 여러 질문의 대화 이력, 스트리밍 답변, 질문·답변 저장, 사용자별 기록을 만들지 않는다.
 - raw 컬렉션을 브라우저 질문의 근거로 사용하지 않는다.
-- Hermes가 검색 도구나 파일 도구를 직접 호출하게 하지 않는다.
+- 모델 실행 환경이 검색 도구나 파일 도구를 직접 호출하게 하지 않는다.
