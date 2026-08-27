@@ -2,7 +2,7 @@
 
 Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다.
 
-**순서 규칙**: 항목은 오래된 것이 위, 최신 항목이 파일 맨 아래로 오는 시간순 오름차순이다. 새 항목은 항상 **파일 맨 끝에 추가**한다 — 맨 위나 중간에 끼워 넣지 않는다. 형식: `## [YYYY-MM-DD] {add|delete|move|lint|query|system|maintain} | <한 줄 설명>` 다음 줄에 세부 메모.
+**순서 규칙**: 항목은 오래된 것이 위, 최신 항목이 파일 맨 아래로 오는 시간순 오름차순이다. 새 항목은 항상 **파일 맨 끝에 추가**한다. 맨 위나 중간에 끼워 넣지 않는다. 형식: `## [YYYY-MM-DD] {add|delete|move|lint|query|system|maintain} | <한 줄 설명>` 다음 줄에 세부 메모.
 
 `grep '## \[2026-05' log.md` 같은 검색으로 진화 타임라인을 추적할 수 있다.
 
@@ -17,7 +17,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 ## [2026-05-19] lint | 첫 무결성 점검
 - 7개 항목 검사, 1건 수정 (topic frontmatter `updated` 괄호 코멘트 제거).
 
-## [2026-05-19] system | Karpathy gist 보강 — 우선순위 1–3 (높음) 적용
+## [2026-05-19] system | Karpathy gist 우선순위 1-3 (높음) 보강
 - `wiki/log.md` 신설 (append-only 연대기).
 - lint 검사 항목 #8 모순 감지, #9 누락 교차 참조 추가 (총 9개).
 - 적재 skill cross-reference 적극성 강화, 3개 skill 모두 log.md append 의무화.
@@ -25,7 +25,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 ## [2026-05-19] lint | 9개 항목 재검사 (신규 #8, #9 검증)
 - 발견 0건, 수정 0건. 신규 항목 정상 동작 확인.
 
-## [2026-05-19] system | Karpathy gist 보강 — 우선순위 4–7 (중간·낮음) 적용
+## [2026-05-19] system | Karpathy gist 우선순위 4-7 (중간·낮음) 보강
 - vault CLAUDE.md 에 "검색 도구: qmd", "Obsidian 운영 가이드", "Future Work" 섹션 추가.
 - qmd 2.1.0 설치 (bun install -g @tobilu/qmd). 컬렉션 `obsidian-wiki`, `obsidian-raw` 등록, 임베딩 9 chunks 생성.
 - query skill 의 1차 검색을 `qmd query` 로 전환 (페이지 > 20 또는 의미적 질문).
@@ -58,7 +58,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 1 페이지: concept(ai-code-review-github-actions), 보강 1(ai-harness-pattern 백링크)
 - 범위: 재사용 방법론·함정만(트리거·리뷰어 구성 트레이드오프·게시·gotcha). nhncloud 고유 인증/API 사실 제외.
 
-## [2026-05-28] add | 유튜브 — 달러 패권·미중 패권전쟁 (자산제곱)
+## [2026-05-28] add | 유튜브 달러 패권·미중 패권전쟁 (자산제곱)
 - Source: raw/videos/2026-05-12-dollar-hegemony-jasanjegop.md (YouTube ko 자동자막)
 - 신규 1 페이지: concept(dollar-hegemony-us-china). 거시·지정학 그룹 신설.
 - 자동자막 기반(오인식 가능)·단일 채널 관점 표기. public 객관 요약.
@@ -86,18 +86,18 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 범위: 새 프로젝트에 포팅 가능한 절차·결정 규칙만 (8단계 골격·ADR 자명성 통과 조건·6축·봇 루프 방지·학습 누적). 명령어 시퀀스·docu-parser 특화 세부 제외.
 - release-flow/test-flow 는 NHN 인프라 특화라 work/nhn 으로 분리.
 
-## [2026-06-01] add | 운영 트러블슈팅 topic 신설 — concepts 주제 분리
+## [2026-06-01] add | 운영 트러블슈팅 topic 을 신설해 concepts 주제 분리
 - 신규 1 페이지: topic(operations-troubleshooting)
 - 보강: k8s-run-tmpfs-containerd·docker-compose-config-reload 에 topic 역백링크
 - INDEX: "관측성·운영(학습)" → "관측성(학습)", "운영·트러블슈팅(실전)" 분리, Topics 등록
 
-## [2026-06-01] add | dooray-cli 도구 지식 — 사용·설계 패턴·MVP 방법론
+## [2026-06-01] add | dooray-cli 사용·설계 패턴과 MVP 방법론 지식
 - Source: raw/repos/2026-06-01-dooray-cli-tool-analysis.md (github.com/jon890/dooray-cli)
 - 신규 1 페이지: concept(agent-friendly-cli-design)
 - 보강 3 페이지: dooray-cli(도구 섹션 — 무엇/어떻게/어디에), ai-harness-pattern(하네스 정의, MVP 3단계 워크플로), nhncloud-cli(agent-friendly 백링크)
 - 평가: 도구 사용 지식은 비어 있고 하네스 관점만 있었음 → 도구 정체성·사용·설계 패턴을 채움. 개별 명령 문법은 --help/README 로 충분하여 제외
 
-## [2026-06-01] add | AI 개발 하네스 topic 신설 — "업무 스타일" 카테고리 분리
+## [2026-06-01] add | AI 개발 하네스 topic 을 신설해 "업무 스타일" 카테고리 분리
 - 신규 1 페이지: topic(ai-dev-harness)
 - 보강: ai-harness-pattern 역백링크
 - INDEX: "업무 스타일"(13개 비대) → "AI 개발 하네스"(8), "개인 코딩 규율·취향"(5) 분리, Topics 등록
@@ -122,13 +122,13 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
   - PR 본문 양식
   - 개인/팀 규칙 위치 분리(개인=~/.claude, 팀=레포 .claude/rules)
 
-## [2026-06-02] add | OpenClaw topic 신설 — 게이트웨이 운영·설정 지식
+## [2026-06-02] add | OpenClaw 게이트웨이 운영·설정 topic 신설
 - Source: raw/notes/2026-06-02-openclaw-knowledge-session.md (공식 docs, GitHub 소스, doctor/CLI 실측)
 - 신규 10 페이지: topic openclaw, concept 9개(overview, architecture, sessions, channels-routing, tool-policy, config, gateway-ops, cli-reference, message-tool)
 - 보강 1 페이지: ai-nodes entity 에 openclaw 교차링크
 - 계기: "작업 요청 → 관련 지식 탐색" 플로우용 일반 지식 누적(함정만 X). tool-policy allow 교집합 함정·웹UI↔Discord 미러링 한계 포함
 
-## [2026-06-02] add | orphan transcript mining — openclaw-web-search 신규
+## [2026-06-02] add | orphan transcript mining 으로 openclaw-web-search 신규
 - Source: ~/.openclaw/agents/main/sessions orphan transcript 442개 분석 (raw/notes/2026-06-02-openclaw-knowledge-session.md 에 mining 섹션 추가)
 - 신규 1 페이지: openclaw-web-search (provider autodetect 우선순위·key-free·교훈)
 - 보강 1 페이지: openclaw-channels-routing 에 discord requireMention 팁
@@ -148,13 +148,13 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: raw/notes/ingress-controller-internal-external-split.md
 - 신규 1 페이지(ingress-controller-internal-external-split), 보강 0
 
-## [2026-06-12] 적재 | docu-parser 하네스 발전분 환원 — 기존 하네스 5개념 보강
+## [2026-06-12] 적재 | docu-parser 하네스 발전분을 환원해 기존 하네스 5개념 보강
 - Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (한 프로젝트 하네스가 plan 43개 진행하며 발전한 분석 중 기존 concept 보강분, repo 무관 일반화)
 - 보강 5 concept: build-with-teams-rules(스폰 안전·재시도 한도·spawn-shutdown·특이사항 4종·마킹 사고 역검증), self-improving-harness(역할별 회고 거울 구조·회피 패턴 wiki 운영 규율), ai-harness-pattern(커스텀 도메인 에이전트=단일 소스), planning-eight-step-design(번호 충돌 방지·docs↔코드 식별자 정합), merge-conflict-free-append(축적 점검·prune 운영 규율 한 줄 연결)
 - 운영 개념(격리 검증·인스턴스 순차 배포 검증 rolling·에러 분류)은 사용자 결정으로 brain 신설 보류 — 보강분만 반영
 - 맥락: 2026-06-01 노트는 planning/review-fix/docs-check 3스킬만 추출 → 그 후 발전한 (1)자기개선 인프라 (2)평가자 다단 파이프라인 보강분을 환원. docu-parser 구체(인스턴스명·도메인·사내 식별자)는 전부 제거
 
-## [2026-06-12] lint | public 연결·stale 점검 — 건강 확인, 실질 수정 0
+## [2026-06-12] lint | public 연결·stale 점검에서 건강 확인, 실질 수정 0
 - 검사: 구조 10항, stale 품질축 / 발견: 실질 0 (brain_score -53 은 대부분 오탐)
 - 연결: 깨진 백링크 0, 고아 0, 경로형 0(raw Sources 면제), 누출 0 (work-style 은 public topics 인데 score 가 work/ slug 로 오인)
 - stale: 하네스 concept 다 최근·역할 분명 → prune 불필요. openclaw 는 이미 topics/openclaw, INDEX 카테고리로 분리 완료(비대 오판)
@@ -171,7 +171,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 4 페이지, 보강 1 페이지(self-improving-harness)
 - brain-curate 스킬로 public 27세션 분석 → 81후보 → 병합 28 → SkillOpt 군 등록
 
-## [2026-06-16] 적재 | ai-code-review-github-actions 보강 — read-only 인라인 라인 계산 + 오탐/큰diff 함정
+## [2026-06-16] 적재 | ai-code-review-github-actions 에 read-only 인라인 라인 계산과 오탐·큰diff 함정 보강
 - Source: fos-blog `.github/workflows/code-review-prompt.txt` 단일 opus 전환 작업, 독립 평가에서 도출한 일반화 학습
 - 신규 1 섹션: "인라인 라인 계산 — read-only 리뷰봇의 함정" (hunk 헤더 누적 계산법·422 는 entry 만 빼고 재시도·실패해도 요약 게시)
 - 함정 3 bullet: 큰 diff false negative(규모 판단 후 전수 못 하면 명시), 구체 체크리스트의 오탐 역효과(read-only↔구체성 trade-off), 빈 배열 API 차단 > 자연어 sanity
@@ -182,7 +182,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 2 concept(connection-pool-sizing, connection-pool-pitfalls), 1 entity(coding-engineer-tv)
 - 보강 1: red-use-metrics (Saturation↔커넥션 풀 한계 연결)
 
-## [2026-06-16] add | 하네스 강화 — 전용 agent·pitfalls 구조·부트스트랩 (3 concept)
+## [2026-06-16] add | 하네스 강화로 전용 agent·pitfalls 구조·부트스트랩 추가 (3 concept)
 - Source: raw/notes/2026-06-12-docu-parser-harness-evolution.md (섹션 1·5), docu-parser .claude/ 실측
 - 신규 3 concept(custom-domain-agent, pitfalls-file-per-pattern, harness-bootstrap-checklist), 보강 1(ai-harness-pattern 백링크 3)
 - 2026-06-12 raw note 의 보강-보류분을 정식 concept 으로 승격. brain-add 에 HTML 미리보기(6b), brain-preview 생성기 번들화(scripts/+templates/) 반영.
