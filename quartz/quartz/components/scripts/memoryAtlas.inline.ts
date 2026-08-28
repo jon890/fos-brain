@@ -275,6 +275,7 @@ function updateResults(
     ...data.nodes.map((node) => {
       const item = document.createElement("li")
       item.dataset.slug = node.slug
+      item.dataset.degree = String(node.degree)
       const button = document.createElement("button")
       button.type = "button"
       button.textContent = node.title
