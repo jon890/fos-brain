@@ -26,6 +26,8 @@ type GraphLink = {
   target: GraphNode | FullSlug
 }
 
+type MemoryAtlasLabelTone = "selected" | "connected" | "passive" | "dimmed"
+
 type GraphInstance = {
   (container: HTMLElement): GraphInstance
   graphData(data: { nodes: GraphNode[]; links: GraphLink[] }): GraphInstance
@@ -67,10 +69,12 @@ type DisposableObject = {
   material?:
     | {
         dispose?: () => void
+        opacity?: number
         map?: { dispose?: () => void }
       }
     | Array<{
         dispose?: () => void
+        opacity?: number
         map?: { dispose?: () => void }
       }>
 }
@@ -91,6 +95,12 @@ const COLORS = {
   evidence: "#5cc8b2",
 }
 const VIEW_STORAGE_KEY = "memoryAtlasView"
+const LABEL_STYLE: Record<MemoryAtlasLabelTone, { opacity: number; scale: number }> = {
+  selected: { opacity: 0.96, scale: 1.04 },
+  connected: { opacity: 0.76, scale: 0.96 },
+  passive: { opacity: 0.3, scale: 0.82 },
+  dimmed: { opacity: 0.12, scale: 0.76 },
+}
 
 function restoreStoredView(): StoredView | undefined {
   try {
@@ -165,6 +175,55 @@ function activeSlugSet(links: GraphLink[], selected?: FullSlug): Set<FullSlug> |
     if (target === selected) active.add(source)
   }
   return active
+}
+
+function labelToneFor(
+  node: MemoryAtlasNode,
+  selected: FullSlug | undefined,
+  activeSlugs: ReadonlySet<FullSlug> | undefined,
+): MemoryAtlasLabelTone {
+  if (!selected) return "passive"
+  if (node.slug === selected) return "selected"
+  return activeSlugs?.has(node.slug) ? "connected" : "dimmed"
+}
+
+function syncRenderedMetrics(
+  container: HTMLElement,
+  nodeObjects: ReadonlyMap<FullSlug, DisposableObject>,
+  labelTextureTemplateCount: number,
+) {
+  const counts: Record<MemoryAtlasLabelTone, number> = {
+    selected: 0,
+    connected: 0,
+    passive: 0,
+    dimmed: 0,
+  }
+  let highlightedNodes = 0
+  let mutedNodes = 0
+  let styleMismatchCount = 0
+  for (const object of nodeObjects.values()) {
+    if (object.userData?.memoryAtlasNodeEmphasis === "highlighted") highlightedNodes += 1
+    if (object.userData?.memoryAtlasNodeEmphasis === "muted") mutedNodes += 1
+    object.traverse?.((child) => {
+      if (!child.userData?.memoryAtlasLabel) return
+      const tone = child.userData.tone as MemoryAtlasLabelTone
+      if (!(tone in counts)) return
+      counts[tone] += 1
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      const opacity = materials.find((material) => typeof material?.opacity === "number")?.opacity
+      if (opacity !== LABEL_STYLE[tone].opacity) styleMismatchCount += 1
+    })
+  }
+  const labelCount = Object.values(counts).reduce((total, count) => total + count, 0)
+  container.dataset.labelCount = String(labelCount)
+  container.dataset.selectedLabelCount = String(counts.selected)
+  container.dataset.connectedLabelCount = String(counts.connected)
+  container.dataset.passiveLabelCount = String(counts.passive)
+  container.dataset.dimmedLabelCount = String(counts.dimmed)
+  container.dataset.highlightedNodeCount = String(highlightedNodes)
+  container.dataset.mutedNodeCount = String(mutedNodes)
+  container.dataset.labelStyleMismatchCount = String(styleMismatchCount)
+  container.dataset.labelTextureTemplateCount = String(labelTextureTemplateCount)
 }
 
 function spacingRadius(spacing: MemoryAtlasSpacing): number {
@@ -244,22 +303,48 @@ function layoutNodes(nodes: GraphNode[], layout: MemoryAtlasLayout, spacing: Mem
   }
 }
 
-function createLabel(text: string, color: string) {
+function createLabelTexture(text: string, color: string) {
   const canvas = document.createElement("canvas")
-  const context = canvas.getContext("2d")!
-  const size = 256
-  canvas.width = size
+  let context = canvas.getContext("2d")!
+  const fontSize = 18
+  const fontFamily = "IBM Plex Sans KR, sans-serif"
+  context.font = `500 ${fontSize}px ${fontFamily}`
+  const measuredWidth = context.measureText(text).width
+  const canvasWidth = Math.ceil(Math.min(640, Math.max(128, measuredWidth + 24)))
+  const fittedFontSize = Math.max(
+    12,
+    Math.floor(fontSize * Math.min(1, (canvasWidth - 24) / Math.max(measuredWidth, 1))),
+  )
+  canvas.width = canvasWidth
   canvas.height = 64
-  context.font = "500 18px IBM Plex Sans KR, sans-serif"
-  context.fillStyle = "rgba(3, 11, 17, 0.38)"
-  context.fillRect(0, 0, size, 64)
+  context = canvas.getContext("2d")!
+  context.font = `500 ${fittedFontSize}px ${fontFamily}`
+  context.fillStyle = "rgba(3, 11, 17, 0.16)"
+  context.fillRect(0, 0, canvasWidth, 64)
   context.fillStyle = color
-  context.fillText(text.slice(0, 18), 12, 38)
-  const texture = new THREE.CanvasTexture(canvas)
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
+  context.fillText(text, 12, 38, canvasWidth - 24)
+  return new THREE.CanvasTexture(canvas)
+}
+
+function createLabel(
+  text: string,
+  color: string,
+  tone: MemoryAtlasLabelTone,
+  createTexture: (text: string, color: string) => ReturnType<typeof createLabelTexture>,
+) {
+  const style = LABEL_STYLE[tone]
+  const texture = createTexture(text, color)
+  const canvasWidth = Number(texture.image?.width ?? 128)
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    opacity: style.opacity,
+    depthWrite: false,
+  })
   const sprite = new THREE.Sprite(material)
-  sprite.scale.set(42, 10.5, 1)
+  sprite.scale.set(canvasWidth * 0.164 * style.scale, 10.5 * style.scale, 1)
   sprite.position.set(0, 9, 0)
+  sprite.userData = { memoryAtlasLabel: true, tone, title: text }
   return sprite
 }
 
@@ -313,6 +398,7 @@ function createNodeObject(
   state: MemoryAtlasState,
   activeSlugs: Set<FullSlug> | undefined,
   evidenceSlugs: ReadonlySet<FullSlug>,
+  getLabelTexture: (text: string, color: string) => ReturnType<typeof createLabelTexture>,
 ) {
   const group = new THREE.Group()
   const radius = Math.max(
@@ -320,6 +406,7 @@ function createNodeObject(
     Math.min(2.2, 0.52 + Math.sqrt(Math.max(node.degree, 0)) * 0.23 + node.sourceCount * 0.035),
   )
   const isDimmed = Boolean(activeSlugs && !activeSlugs.has(node.slug))
+  group.userData = { memoryAtlasNodeEmphasis: isDimmed ? "muted" : "highlighted" }
   const color = colorFor(node, state.colorBy)
   const material = new THREE.MeshBasicMaterial({
     color,
@@ -357,11 +444,16 @@ function createNodeObject(
     group.add(evidenceRing)
     group.add(createGlow(COLORS.evidence, Math.max(7.2, radius * 9.2), isDimmed ? 0.12 : 0.62))
   }
-  const shouldLabel =
-    state.labels &&
-    !isDimmed &&
-    (state.selectedSlug === node.slug || node.degree >= 28 || node.sourceCount >= 10)
-  if (shouldLabel) group.add(createLabel(node.title, colorFor(node, state.colorBy)))
+  if (state.labels) {
+    group.add(
+      createLabel(
+        node.title,
+        colorFor(node, state.colorBy),
+        labelToneFor(node, state.selectedSlug, activeSlugs),
+        getLabelTexture,
+      ),
+    )
+  }
   return group
 }
 
@@ -381,8 +473,21 @@ function cloneData(data: MemoryAtlasData, state: MemoryAtlasState) {
   layoutNodes(nodes, state.layout, state.spacing)
   return {
     nodes,
-    links: data.links.map((link) => ({ ...link })),
+    links: data.links.map((link) => ({
+      source: linkEndpointSlug(link.source),
+      target: linkEndpointSlug(link.target),
+    })),
   }
+}
+
+function staleLinkEndpointCount(nodes: readonly GraphNode[], links: readonly GraphLink[]): number {
+  const nodeSet = new Set(nodes)
+  let staleCount = 0
+  for (const link of links) {
+    if (typeof link.source !== "string" && !nodeSet.has(link.source)) staleCount += 1
+    if (typeof link.target !== "string" && !nodeSet.has(link.target)) staleCount += 1
+  }
+  return staleCount
 }
 
 export function mountMemoryAtlas({
@@ -399,10 +504,20 @@ export function mountMemoryAtlas({
   container.replaceChildren()
   let currentState = state
   let currentData = cloneData(data, currentState)
+  let currentActiveSlugs = activeSlugSet(currentData.links, currentState.selectedSlug)
   let evidenceSlugs = new Set<FullSlug>()
   let destroyed = false
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
   let nodeObjects = new Map<FullSlug, DisposableObject>()
+  const labelTextureTemplates = new Map<string, ReturnType<typeof createLabelTexture>>()
+  const createCachedLabelTexture = (text: string, color: string) => {
+    const key = `${color}\u0000${text}`
+    const cached = labelTextureTemplates.get(key)
+    if (cached) return cached.clone()
+    const template = createLabelTexture(text, color)
+    labelTextureTemplates.set(key, template)
+    return template.clone()
+  }
   let initialRecenterDone = false
   let initialRecenterTimer: number | undefined
   let initialRecenterFrame: number | undefined
@@ -456,10 +571,14 @@ export function mountMemoryAtlas({
       const object = createNodeObject(
         node,
         currentState,
-        activeSlugSet(currentData.links, currentState.selectedSlug),
+        currentActiveSlugs,
         evidenceSlugs,
+        createCachedLabelTexture,
       )
       nodeObjects.set(node.slug, object)
+      if (nodeObjects.size === currentData.nodes.length) {
+        syncRenderedMetrics(container, nodeObjects, labelTextureTemplates.size)
+      }
       return object
     })
     .linkOpacity(0.3)
@@ -497,7 +616,14 @@ export function mountMemoryAtlas({
   const renderGraphData = (nextData: typeof currentData) => {
     const staleObjects = nodeObjects
     nodeObjects = new Map()
+    currentActiveSlugs = activeSlugSet(nextData.links, currentState.selectedSlug)
+    container.dataset.staleLinkEndpointCount = String(
+      staleLinkEndpointCount(nextData.nodes, nextData.links),
+    )
     graph.graphData(nextData)
+    if (nextData.nodes.length === 0) {
+      syncRenderedMetrics(container, nodeObjects, labelTextureTemplates.size)
+    }
     for (const object of staleObjects.values()) disposeObject(object)
   }
   renderGraphData(currentData)
@@ -548,6 +674,7 @@ export function mountMemoryAtlas({
       if (destroyed) return
       if (slug) cancelInitialRecenter()
       currentState = { ...currentState, selectedSlug: slug }
+      currentData = cloneData(currentData, currentState)
       renderGraphData(currentData)
       const selected = currentData.nodes.find((node) => node.slug === slug)
       if (selected) {
@@ -575,6 +702,7 @@ export function mountMemoryAtlas({
       if (destroyed) return
       evidenceSlugs = new Set(slugs)
       container.dataset.evidenceCount = String(evidenceSlugs.size)
+      currentData = cloneData(currentData, currentState)
       renderGraphData(currentData)
     },
     destroy() {
@@ -591,6 +719,8 @@ export function mountMemoryAtlas({
       graph._destructor?.()
       for (const object of nodeObjects.values()) disposeObject(object)
       nodeObjects.clear()
+      for (const texture of labelTextureTemplates.values()) texture.dispose()
+      labelTextureTemplates.clear()
       container.replaceChildren()
     },
   }

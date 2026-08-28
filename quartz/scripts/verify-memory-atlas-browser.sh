@@ -622,6 +622,7 @@ const waitFor = async (predicate, label) => {
   }
   throw new Error(`timed out waiting for ${label}`)
 }
+
 const byTestId = (id) => {
   const element = document.querySelector(`[data-testid="${id}"]`)
   if (!element) throw new Error(`${id} not found`)
@@ -656,6 +657,85 @@ return ({
   selectedTitle,
   detailHref,
   overflow,
+})
+JS
+}
+
+assert_desktop_label_hierarchy() {
+  local name="$1"
+  assert_eval "$name" <<'JS'
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const waitFor = async (predicate, label) => {
+  for (let i = 0; i < 50; i++) {
+    const value = predicate()
+    if (value) return value
+    await sleep(100)
+  }
+  throw new Error(`timed out waiting for ${label}`)
+}
+const byTestId = (id) => {
+  const element = document.querySelector(`[data-testid="${id}"]`)
+  if (!element) throw new Error(`${id} not found`)
+  return element
+}
+const root = byTestId("memory-atlas")
+const canvas = byTestId("memory-atlas-canvas")
+if (root.dataset.runtimeState !== "ready") throw new Error(`runtime state is ${root.dataset.runtimeState}`)
+const nodeCount = Number(byTestId("memory-atlas-node-count").textContent)
+await waitFor(() => Number(canvas.dataset.labelCount) === nodeCount, "all passive node labels")
+const initialTextureTemplateCount = Number(canvas.dataset.labelTextureTemplateCount)
+if (Number(canvas.dataset.passiveLabelCount) !== nodeCount) {
+  throw new Error(`expected ${nodeCount} passive labels, got ${canvas.dataset.passiveLabelCount}`)
+}
+if (canvas.dataset.labelStyleMismatchCount !== "0") {
+  throw new Error(`passive label material mismatch: ${canvas.dataset.labelStyleMismatchCount}`)
+}
+if (canvas.dataset.staleLinkEndpointCount !== "0") {
+  throw new Error(`initial graph has stale link endpoints: ${canvas.dataset.staleLinkEndpointCount}`)
+}
+const connectedItem = [...document.querySelectorAll('[data-testid="memory-atlas-results"] li')]
+  .find((item) => Number(item.dataset.degree) > 0)
+if (!connectedItem) throw new Error("no connected node is available for label hierarchy")
+connectedItem.querySelector("button")?.click()
+await waitFor(() => Number(canvas.dataset.connectedLabelCount) > 0, "connected node labels")
+const selected = Number(canvas.dataset.selectedLabelCount)
+const connected = Number(canvas.dataset.connectedLabelCount)
+const dimmed = Number(canvas.dataset.dimmedLabelCount)
+const total = Number(canvas.dataset.labelCount)
+const highlightedNodes = Number(canvas.dataset.highlightedNodeCount)
+const mutedNodes = Number(canvas.dataset.mutedNodeCount)
+const selectedTextureTemplateCount = Number(canvas.dataset.labelTextureTemplateCount)
+if (selected !== 1) throw new Error(`expected one selected label, got ${selected}`)
+if (total !== nodeCount) throw new Error(`selection changed label total: ${total} !== ${nodeCount}`)
+if (selected + connected + dimmed !== total) {
+  throw new Error(`label tone counts do not add up: ${selected} + ${connected} + ${dimmed} !== ${total}`)
+}
+if (highlightedNodes !== selected + connected || mutedNodes !== dimmed) {
+  throw new Error(`node emphasis did not match 1-hop labels: highlighted=${highlightedNodes}, muted=${mutedNodes}`)
+}
+if (canvas.dataset.labelStyleMismatchCount !== "0") {
+  throw new Error(`selected label material mismatch: ${canvas.dataset.labelStyleMismatchCount}`)
+}
+if (canvas.dataset.staleLinkEndpointCount !== "0") {
+  throw new Error(`selected graph has stale link endpoints: ${canvas.dataset.staleLinkEndpointCount}`)
+}
+if (selectedTextureTemplateCount !== initialTextureTemplateCount) {
+  throw new Error(`selection recreated label texture templates: ${initialTextureTemplateCount} -> ${selectedTextureTemplateCount}`)
+}
+const labelsToggle = byTestId("memory-atlas-labels")
+labelsToggle.click()
+await waitFor(() => canvas.dataset.labelCount === "0", "label toggle off")
+labelsToggle.click()
+await waitFor(() => Number(canvas.dataset.labelCount) === nodeCount, "label toggle restore")
+return ({
+  ok: true,
+  nodeCount,
+  selected,
+  connected,
+  dimmed,
+  highlightedNodes,
+  mutedNodes,
+  labelTextureTemplateCount: selectedTextureTemplateCount,
 })
 JS
 }
@@ -1260,6 +1340,11 @@ assert_desktop_reset_overflow "desktop-reset-overflow"
 rotate_namespace "desktop-detail"
 open_desktop_home
 assert_desktop_detail_selection "desktop-detail-selection"
+
+rotate_namespace "desktop-label-hierarchy"
+open_desktop_home
+assert_desktop_label_hierarchy "desktop-label-hierarchy"
+capture_screenshot "desktop-label-hierarchy"
 
 rotate_namespace "desktop-ask"
 open_desktop_home
