@@ -36,7 +36,7 @@
       "candidate": "후보 제목",
       "decision": "admit | reinforce | route | reject",
       "value_axes": ["decision"],
-      "future_question": "6개월 뒤 답할 구체적인 질문",
+      "future_question": "시간이 지난 뒤 답할 구체적인 질문",
       "durability_reason": "일회성이 아닌 이유",
       "destination": "public | private | nbrain | skill | agents | repo-docs | none",
       "source_of_truth": "장기 관리 책임이 있는 위치",

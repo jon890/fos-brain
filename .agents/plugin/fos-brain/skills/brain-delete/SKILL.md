@@ -1,6 +1,6 @@
 ---
 name: brain-delete
-description: 개인 지식 기반(brain, ~/personal/fos-brain) 에서 wiki 페이지(개념·주제·개체)를 안전하게 제거한다. 단순 파일 삭제가 아니라 백링크·INDEX·log·cross-link 를 함께 정리해 깨진 링크와 고아 참조를 남기지 않는다. 완전 삭제와 archive 이동 중 선택. raw 원본은 기본 보존. "brain delete", "brain 삭제", "brain 에서 제거", "지식 삭제", "이 개념 지워줘", "wiki 삭제", "페이지 삭제", "노트 삭제", "brain 에서 빼줘", "이 지식 제거" 같은 요청 시 사용.
+description: 개인 지식 기반(brain, ~/personal/fos-brain) 에서 wiki 페이지(개념·주제·개체)를 안전하게 제거하거나 보관 처리한다. 단순 파일 삭제가 아니라 백링크·INDEX·log·cross-link 를 함께 정리해 깨진 링크와 고아 참조를 남기지 않는다. raw 원본은 기본 보존. "brain delete", "brain 삭제", "brain 에서 제거", "지식 삭제", "이 개념 지워줘", "wiki 삭제", "페이지 삭제", "노트 삭제", "brain 에서 빼줘", "이 지식 제거" 같은 요청 시 사용.
 ---
 
 # brain-delete
@@ -20,7 +20,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 | public | 루트(`wiki/`) |
 | private | `private/wiki/` |
 
-대상 페이지가 어느 네임스페이스인지 먼저 확정한다. 모호하면 `AskUserQuestion` 으로 확인.
+대상 페이지가 어느 네임스페이스인지 먼저 확정한다. 모호하면 사용자에게 확인한다.
 
 ## 안전 원칙 (불변)
 
@@ -34,11 +34,11 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 ## 절차
 
 ### 0. qmd 인덱스 점검
-`qmd status` 로 동기화 확인. public 파일이 어긋나면 작업 후 `qmd update && qmd embed` 로 재동기화(삭제 반영).
+`~/.local/bin-pinned/qmd status`로 동기화를 확인한다. 대상 네임스페이스의 파일과 인덱스가 어긋나면 작업 후 `~/.local/bin-pinned/qmd update && ~/.local/bin-pinned/qmd embed`로 재동기화한다.
 
 ### 1. 대상 식별
 - 사용자가 페이지명·경로·검색어로 지목한 대상을 확정한다.
-- 검색어면 `qmd query` 또는 grep 으로 후보를 찾아 `AskUserQuestion` 으로 어느 페이지인지 확정.
+- 검색어면 `qmd query` 또는 `rg`로 후보를 찾아 사용자에게 어느 페이지인지 확인한다.
 - 네임스페이스 확정.
 
 ### 2. 영향 분석 (read-only)
@@ -47,7 +47,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 - **백링크** — 대상을 `[[...]]`로 가리키는 다른 페이지 목록(같은 네임스페이스와 비공개→공개 cross-link 포함).
   ```bash
   # 대상 slug 를 가리키는 페이지 찾기 (네임스페이스 루트에서)
-  grep -rln "\[\[.*<대상-slug>.*\]\]" <ns>/wiki/
+  rg -l "\[\[.*<대상-slug>.*\]\]" <ns>/wiki/
   ```
 - **INDEX 등록 항목** — `<ns>/wiki/INDEX.md` 에 대상이 등록돼 있는지.
 - **대상이 인용한 raw Sources** — 대상 페이지 하단 "Sources" 의 `raw/` 경로(삭제하지 않음, 보고만).
@@ -63,10 +63,10 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 | 인용 raw | M개 (보존 예정) |
 
 ### 3. 미리보기 + 승인
-- 제거 방식과 백링크 처리를 `AskUserQuestion` 으로 확정한다.
+- 제거 방식과 백링크 처리를 사용자에게 확인한다.
   - **제거 방식**(매번 선택):
     - **완전 삭제** — 파일 제거. public 은 git 이력으로 복구 가능.
-    - **archive 이동** — `<ns>/wiki/archive/` 로 옮기고 INDEX 에서만 내린다. 파일은 유지, 그래프에서 빠짐.
+    - **보관 처리** — `<ns>/wiki/archive/`로 옮기고 INDEX에서 내린다. 파일이 남으므로 Quartz 그래프와 검색에서 자동으로 제외되지는 않는다.
   - **백링크 처리**(끊기는 링크마다 확인):
     - **링크 제거** — 가리키던 `[[...]]` 표기를 해당 페이지에서 삭제(문장 자연스럽게 정리).
     - **다른 페이지로 대체** — 대체 대상이 있으면 `[[새-페이지]]` 로 교체.
@@ -77,7 +77,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 승인된 내용만 실행한다.
 
 - **완전 삭제**: 대상 파일 제거.
-- **archive 이동**: `<ns>/wiki/archive/` 생성 후 이동. frontmatter 에 `archived: YYYY-MM-DD` 추가.
+- **보관 처리**: `<ns>/wiki/archive/` 생성 후 이동. frontmatter에 `archived: YYYY-MM-DD`를 추가한다. 공개 화면이나 검색에서 숨겨야 한다면 해당 게시·색인 설정도 별도로 적용하고 검증한다.
 - **백링크 정리**: 승인된 처리(제거/대체)를 각 페이지에 적용.
 - **INDEX 갱신**: `<ns>/wiki/INDEX.md` 에서 대상 항목 제거.
 
@@ -85,7 +85,7 @@ brain 은 백링크·INDEX·log·Sources·cross-link 로 촘촘히 연결돼 있
 `<ns>/wiki/log.md` **파일 맨 끝**에 추가한다. 시간순 오름차순이므로 맨 위나 중간에 끼워 넣지 않는다.
 ```
 ## [YYYY-MM-DD] delete | <한 줄 요약>
-- 대상: <페이지 경로> (방식: 완전 삭제 | archive)
+- 대상: <페이지 경로> (방식: 완전 삭제 | 보관 처리)
 - 정리: 백링크 N건 처리(제거 X / 대체 Y), INDEX 항목 제거
 - 사유: <왜 지웠는지>
 - raw: 보존(M개) | 함께 삭제(명시 승인)

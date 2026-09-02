@@ -4,7 +4,7 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 ---
 # brain-curate
 
-여러 Claude Code 세션 기록을 훑어 brain 에 올릴 가치가 있는 durable 지식을 발굴하는 큐레이션 워크플로우.
+여러 Claude Code와 Codex CLI 세션 기록을 훑어 brain에 올릴 가치가 있는 durable 지식을 발굴하는 큐레이션 워크플로우다.
 실제 등록은 `brain-add`에 위임한다. 이 스킬은 **무엇을 올릴지 발굴·선별**까지 책임진다.
 
 핵심 설계 사실:
@@ -23,6 +23,7 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 ## 대상 디렉터리
 
 세션 기록은 두 소스에서 온다. `--tool`로 선택한다(기본 `both`).
+이하 `<skill-dir>`은 이 `SKILL.md`가 있는 디렉터리다. 번들 스크립트는 현재 작업 디렉터리가 아니라 이 경로를 기준으로 실행한다.
 
 - Claude Code: `~/.claude/projects/<인코딩된-경로>/<세션id>.jsonl`
 - Codex CLI: `~/.codex/sessions/<yyyy>/<mm>/<dd>/rollout-*.jsonl` (OpenAI Responses API 계열 스키마 — `event_msg.user_message`/`agent_message`, `response_item.function_call`/`function_call_output`)
@@ -31,23 +32,20 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 
 ## 상태 파일 (증분 워터마크)
 
-`~/.claude/brain-curate.state.json`은 마지막 큐레이션 시점을 기록해 같은 세션을 두 번 보지 않는다.
+`<skill-dir>/scripts/curate_state.py`가 도구에 종속되지 않는 로컬 상태 디렉터리에 마지막 큐레이션 시점을 기록한다.
+기존 `~/.claude/brain-curate.state.json`이 있으면 첫 갱신 때 값을 이어받는다.
 
-```json
-{
-  "last_curated": 1749700000.0,
-  "last_run_iso": "2026-06-12 11:40",
-  "runs": [{"iso": "...", "sessions": 25, "registered": 3}]
-}
+```bash
+python3 "<skill-dir>/scripts/curate_state.py" show
 ```
 
-없으면 첫 실행으로 간주한다.
+출력의 `state.last_curated`가 없으면 첫 실행으로 간주한다.
 
 ## 1단계: 범위 선정
 
-`scripts/list_sessions.py` 로 분석 대상을 좁힌다. 결과는 mtime 내림차순 JSON.
+`<skill-dir>/scripts/list_sessions.py`로 분석 대상을 좁힌다. 결과는 mtime 내림차순 JSON이다.
 
-**첫 실행** (state 파일 없음): 누적분이 많으므로 `AskUserQuestion` 으로 범위를 받는다.
+**첫 실행** (state 파일 없음): 누적분이 많으므로 사용자에게 범위를 묻는다.
 
 - 최근 N일 (예: 7일) — `--days 7`
 - 특정 프로젝트만 — `--project <폴더문자열>`
@@ -56,39 +54,31 @@ description: Claude Code(~/.claude/projects/**/*.jsonl)와 Codex CLI(~/.codex/se
 **이후 실행** (증분): state 의 `last_curated` 를 `--since` 로 넘긴다.
 
 ```bash
-python3 scripts/list_sessions.py --since <last_curated> --min-bytes 51200
+python3 "<skill-dir>/scripts/list_sessions.py" --since <last_curated> --min-bytes 51200
 ```
 
 노이즈 필터(`--exclude-temp`)는 기본 끈다. 가치 판단은 추출 단계 sub-agent에 맡긴다.
-단 대상이 너무 많으면(수십 개 이상) 사용자에게 규모를 알리고 `--exclude-temp` 나 범위 축소를 제안한다.
-
-`brain` 플러그인(`.agents/plugin/brain`)의 Stop hook이 세션 종료마다 `staging/pending-sessions.jsonl`에 포인터(도구·session_id·transcript 경로)를 남긴다.
-이 파일은 발굴 데이터 소스가 아니라 "세션이 끝났다"는 트리거 신호일 뿐이다. 실제 대상 목록은 항상 `list_sessions.py`의 디렉터리 스캔으로 만든다(더 정확하고 mtime 기준 정렬도 된다).
+대상이 현재 실행에서 다루기 어려울 만큼 많으면 사용자에게 규모를 알리고 `--exclude-temp`나 범위 축소를 제안한다.
 
 대상 목록(개수·크기·네임스페이스 추정·경로)을 사용자에게 간단히 보고하고 진행한다.
 
 ## 2단계: 전처리 (정제)
 
-각 대상 세션을 `scripts/extract_transcript.py` 로 정제 텍스트로 변환한다.
-tool 출력·중간 로그를 걷어내 16배 안팎으로 줄이면서 "무엇을 왜 했고 무엇을 알아냈는가" 맥락은 남긴다.
+각 대상 세션을 `<skill-dir>/scripts/extract_transcript.py`로 정제 텍스트로 변환한다.
+tool 출력·중간 로그를 걷어내면서 "무엇을 왜 했고 무엇을 알아냈는가" 맥락은 남긴다.
 
 ```bash
 mkdir -p /tmp/brain-curate
-python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션id>.txt
+python3 "<skill-dir>/scripts/extract_transcript.py" <세션.jsonl> > /tmp/brain-curate/<세션id>.txt
 ```
 
 - 기본 `--max-result-chars 1500` (tool_result 절단 상한). 에러·실패 라인은 우선 보존된다.
-- 정제 후에도 큰 세션(수백 KB+)은 추출 agent 입력 한도를 넘을 수 있다 → 그 세션만 절반으로 나눠 두 agent 에 분배하거나 `--max-result-chars` 를 줄인다.
+- 정제 후에도 추출 agent 입력 한도를 넘는 세션은 의미 단위로 나누거나 `--max-result-chars`를 줄인다.
 
 ## 3단계: 병렬 추출
 
-정제된 transcript 들을 sub-agent 에 분배해 durable 후보를 뽑는다.
+정제된 transcript에서 durable 후보를 뽑는다. 서로 독립된 세션이 많고 병렬화가 실제로 유리할 때만 현재 환경에서 사용할 수 있는 sub-agent에 나눈다.
 각 agent는 공용 정책과 `references/extraction-criteria.md`의 세션 전처리 기준을 따른다.
-
-**규모에 따라 방식을 고른다:**
-
-- 대상이 **8개 이하**: `Agent` 도구를 한 메시지에 여러 개 띄워 병렬 처리한다.
-- 대상이 많으면: `Workflow`로 병렬 처리한다(토큰을 많이 쓰므로 규모를 사용자에게 먼저 알린다).
 
 각 추출 agent 프롬프트에 담을 것:
 
@@ -142,8 +132,8 @@ python3 scripts/extract_transcript.py <세션.jsonl> > /tmp/brain-curate/<세션
 채팅 인라인 본문만으로는 후보와 페이지 레이아웃이 잘 안 보인다. 등록 전 검토용으로 현재 Memory Atlas 문서 화면의 시각 언어를 반영한 HTML 미리보기를 브라우저로 띄운다(인라인 표시가 1차, HTML 은 보조).
 
 ```bash
-python3 scripts/generate_preview.py --data <preview.json> --out /tmp/brain-preview.html
-scripts/show_preview.sh /tmp/brain-preview.html
+python3 "<skill-dir>/scripts/generate_preview.py" --data <preview.json> --out /tmp/brain-preview.html
+"<skill-dir>/scripts/show_preview.sh" /tmp/brain-preview.html
 ```
 
 - 입력 JSON: `{title, stats, candidates[], pages[]}`. candidates(후보 카드)·pages(wiki 페이지 본문 미리보기) 중 있는 것만 렌더된다.
@@ -154,9 +144,9 @@ scripts/show_preview.sh /tmp/brain-preview.html
 - 폰트는 Google Fonts CDN을 사용하며 오프라인이면 시스템 폰트로 대체된다.
 - 본문에 `</script>` 가 있으면 생성기가 거부한다.
 
-## 7단계: 선택 (AskUserQuestion)
+## 7단계: 선택
 
-등록할 후보를 `AskUserQuestion`(multiSelect)으로 받는다. 후보가 많으면 묶음으로 나눠 묻거나 번호로 받는다.
+등록할 후보를 사용자에게 받는다. 구조화된 복수 선택 도구가 있으면 사용하고, 없으면 번호로 받는다.
 네임스페이스가 갈리는 후보는 그 결정도 함께 묻는다. 미리보기와 질문을 같은 턴에 묶지 않고 사용자가 표를 읽은 다음 턴에 선택받는다.
 
 ## 8단계: 등록 (brain-add 위임)
@@ -167,9 +157,10 @@ brain-add가 다시 미리보기와 승인을 거친 뒤에만 raw와 wiki에 �
 
 ## 9단계: 마무리
 
-- **워터마크 갱신**: `~/.claude/brain-curate.state.json` 의 `last_curated` 를 이번 실행 시작 시각으로, `runs` 에 요약 추가.
+- **워터마크 갱신**: 등록 단계까지 마친 뒤 다음 명령으로 실행 시작 시각과 결과 요약을 기록한다.
+  `python3 "<skill-dir>/scripts/curate_state.py" advance --started-at <실행-시작-epoch> --sessions <분석-수> --registered <등록-수>`
 - **log**: brain-add 가 각 네임스페이스 `wiki/log.md` 에 add 기록을 남긴다. 추가로 큐레이션 단위 요약 한 줄을 남겨도 된다.
-- **임시 파일 정리**: `/tmp/brain-curate/` 는 남겨도 무방하나 원하면 삭제.
+- **임시 파일 정리**: 민감한 세션 정제본이 남지 않도록 `/tmp/brain-curate/`를 기본 삭제한다. 사용자가 디버깅 보존을 명시한 경우에만 남긴다.
 - **요약 보고**: 분석한 세션 수, 추출 후보 수, 등록·보류·제외를 표로 보고.
 
 ## 금지

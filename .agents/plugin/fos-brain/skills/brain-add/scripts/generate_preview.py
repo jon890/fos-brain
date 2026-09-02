@@ -6,7 +6,7 @@ brain-curate와 같은 템플릿을 사용해 실제 Quartz 문서 화면의 색
 brain-add 전용 변환기만 소유한다.
 
 사용 예:
-    python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
+    python3 <skill-dir>/scripts/generate_preview.py \
         --ns public \
         --title "하네스 지식 강화 — 3 페이지" \
         --summary "신규 3개 + ai-harness-pattern 허브 백링크 보강" \
@@ -14,7 +14,7 @@ brain-add 전용 변환기만 소유한다.
         --update /tmp/ai-harness-pattern.md \
         --known-from ~/personal/fos-brain/wiki \
         --out /tmp/brain-preview.html
-    cmux browser open "file:///tmp/brain-preview.html"
+    생성 뒤 현재 실행 환경의 브라우저 제어 수단으로 연다.
 
 주의: 페이지 본문에 '</script>' 문자열이 있으면 공용 템플릿 주입이 깨지므로 거부한다.
 """

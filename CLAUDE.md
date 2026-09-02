@@ -75,7 +75,7 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 
 ## 지식 유입 정책
 
-fos-brain은 6개월 뒤에도 사용자의 업무 방식, 취향, 결정, 개인 시스템, 이력, 장기 분야 지식을 이해하는 데 필요한 개인 지식만 저장한다.
+fos-brain은 시간이 지난 뒤에도 사용자의 업무 방식, 취향, 결정, 개인 시스템, 이력, 장기 분야 지식을 이해하는 데 필요한 개인 지식만 저장한다.
 일반 설명, 일회성 작업, 코드와 git으로 자명한 사실, 실행 절차, 행동 규칙, 좁은 장애 우회법, 일시 상태는 올바른 단일 소스로 보내거나 제외한다.
 회사 내부 지식은 public과 private 어느 쪽에도 저장하지 않고 nbrain으로 보낸다.
 
@@ -139,7 +139,7 @@ tags: ["주제"]
 
 ### 새 머신 설정
 
-**권장: 플러그인으로 설치** (스킬과 hook을 함께 적용):
+**권장: 플러그인으로 설치** (다섯 brain 스킬을 함께 적용):
 
 ```bash
 # Claude Code: settings.json을 직접 편집하는 것만으로는 반영되지 않는다. CLI로 등록·설치까지 실행한다.
@@ -157,10 +157,9 @@ fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않�
 사용자 프롬프트마다 지식을 자동 주입하지 않는다.
 필요한 지식은 사용자가 요청하거나 현재 작업에 실질적으로 필요할 때 `brain-search`를 명시적으로 호출해 검색한다.
 
-`**.claude-plugin/plugin.json`에 `hooks`/`skills` 필드를 넣지 않는다**.
-Claude Code는 플러그인 루트의 `hooks/hooks.json`과 `skills/`를 관례로 자동 로드한다.
-manifest에 `"hooks": "./hooks/hooks.json"`처럼 명시하면 "Duplicate hooks file detected"로 설치가 실패한다.
-Codex 쪽 루트 `plugin.json`은 반대로 이 필드가 필수다(oh-my-codex 관례). 두 매니페스트가 다르게 생긴 이유다.
+`.claude-plugin/plugin.json`에는 `skills` 필드를 넣지 않는다.
+Claude Code는 플러그인 루트의 `skills/`를 관례로 로드한다.
+Codex 쪽 루트 `plugin.json`은 `skills` 경로를 명시한다.
 
 **대안: 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
 
@@ -221,7 +220,7 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
 - **해결 — wrapper 로 고정**: `~/.local/bin-pinned/qmd` 가 node 24.15.0 을 절대 경로로 못박고, 런처를 건너뛰어 `dist/cli/qmd.js` 를 직접 실행한다. PATH 는 `~/.zshenv.d/10-pinned-bin.sh` 가 mise shim 보다 앞에 둔다.
     - 런처가 세팅하던 환경 변수(`GGML_METAL_NO_RESIDENCY`, MCP 모드의 로그 억제)는 wrapper 안에서 같은 규칙으로 재현한다.
     - qmd 를 재설치하거나 node 를 올리면 wrapper 의 고정 버전을 함께 갱신한다.
-- **`bun.lock` touch 는 쓰지 않는다 (실측)**: 런처는 lockfile 로 런타임을 고르는데(`bun.lock`→bun, `package-lock.json`→node), bun 이 PATH 에 없으면 `qmd: failed to launch bun: spawn bun ENOENT` 로 죽는다. fos-brain 플러그인의 `setup-check.cjs` 가 매 세션 이 파일을 touch 하므로, 런처를 우회하는 wrapper 가 필요한 이유이기도 하다.
+- **`bun.lock`을 실행 환경 복구 수단으로 만들거나 수정하지 않는다**: 런처는 lockfile로 런타임을 고르므로, bun이 PATH에 없으면 `qmd: failed to launch bun: spawn bun ENOENT`로 실패할 수 있다. wrapper로 런타임을 고정하고 저장소의 의존성 파일은 건드리지 않는다.
 - 진단 순서: `which qmd` 로 wrapper 가 잡히는지 → `qmd collection list` 로 DB 접근이 되는지 → 고정한 node 버전이 아직 설치돼 있는지.
 - qmd 가 끝내 안 되면 `brain-search` 는 grep 으로 폴백한다(품질은 떨어지지만 동작).
 

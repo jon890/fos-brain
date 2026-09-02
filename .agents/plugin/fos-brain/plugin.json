@@ -1,14 +1,13 @@
 {
   "name": "fos-brain",
-  "version": "0.2.1",
-  "description": "fos-brain 개인 지식 기반 hook·스킬 통합 번들 (Codex)",
+  "version": "0.2.4",
+  "description": "fos-brain 개인 지식 기반 스킬 번들 (Codex)",
   "author": {
     "name": "jon890"
   },
   "homepage": "https://github.com/jon890/fos-brain",
   "repository": "https://github.com/jon890/fos-brain.git",
   "license": "MIT",
-  "keywords": ["brain", "memory", "qmd", "search", "session-tracking"],
-  "hooks": "./hooks/hooks.json",
+  "keywords": ["brain", "memory", "qmd", "search", "curation"],
   "skills": "./skills/"
 }

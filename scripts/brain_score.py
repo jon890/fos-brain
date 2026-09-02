@@ -2,11 +2,10 @@
 """
 brain_score.py — fos-brain 무결성 점수 측정기
 
-brain-lint 10개 항목 중 *객관적으로 채점 가능한* 구조 항목만 점수로 환산한다.
-중복·모순·교차참조 제안·품질축(3·7·8·9) 은 주관 판단이라 점수에서 제외한다.
+brain-lint 항목 중 *객관적으로 채점 가능한* 구조 항목만 점수로 환산한다.
+중복·모순·교차 참조 제안·품질 축은 주관 판단이라 점수에서 제외한다.
 
 reward = -(가중 위반 합).  위반 0이면 score 0(만점).
-docs-audit 의 docs_score.py 와 같은 SkillOpt 검증 점검 패턴.
 공개/비공개 누출(visibility_leak)은 보안 위험이라 가중치 최고.
 
 사용:
@@ -22,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 WEIGHTS = {
-    "visibility_leak": 10,    # 보안 — public 이 private/work 를 링크 (유출)
+    "visibility_leak": 10,    # 보안 — public 이 private 를 링크 (유출)
     "broken_backlink": 5,     # [[slug]] 가 어느 페이지도 안 가리킴
     "path_wikilink": 4,       # [[topics/X]] 경로형 — 로컬 빌드 404
     "missing_sources": 3,     # 본문 있는데 ## Sources 없음/빔
@@ -77,7 +76,6 @@ def collect_namespaces(root):
     priv = root / "private" / "wiki"
     if priv.exists():
         ns["private"] = [priv]
-    ns["work"] = [p for p in root.glob("work/*/wiki") if p.is_dir()]
     pages = {}  # ns -> [Path]
     for name, dirs in ns.items():
         acc = []
@@ -125,7 +123,7 @@ def measure(root):
                 target_ns = slug_ns.get(slug)
                 if not target_ns:
                     axes["broken_backlink"].append({"file": rel, "slug": slug})
-                elif nsname == "public" and target_ns <= {"private", "work"}:
+                elif nsname == "public" and target_ns <= {"private"}:
                     # public 페이지가 비공개에만 있는 slug 를 가리킴 → 누출
                     axes["visibility_leak"].append({"file": rel, "slug": slug})
 

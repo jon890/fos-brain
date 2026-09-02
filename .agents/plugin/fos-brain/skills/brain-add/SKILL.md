@@ -10,7 +10,8 @@ Karpathy 스타일 지식 기반의 적재 단계다.
 
 ## 대상 디렉터리
 
-대상은 `~/personal/fos-brain`이다. 다른 곳에서 호출되었다면 사용자에게 확인한다.
+대상은 `~/personal/fos-brain`이다.
+이하 `<skill-dir>`은 이 `SKILL.md`가 있는 디렉터리다. 번들 스크립트는 현재 작업 디렉터리가 아니라 이 경로를 기준으로 실행한다.
 
 ## 공용 지식 유입 정책 (필수)
 
@@ -20,7 +21,7 @@ Karpathy 스타일 지식 기반의 적재 단계다.
 
 ## 0단계: 네임스페이스 선택 (필수)
 
-`AskUserQuestion` 으로 어느 brain 에 넣을지 묻는다(사용자가 이미 지정했으면 생략):
+어느 brain에 넣을지 사용자가 이미 지정하지 않았으면 묻는다.
 
 - `public` — 루트(`raw/`, `wiki/`). git commit과 Quartz 공개 대상.
 - `private` — `private/`. gitignore(개인 비공개).
@@ -31,7 +32,7 @@ Karpathy 스타일 지식 기반의 적재 단계다.
 
 ## 1단계: 소스 선택 (필수)
 
-사용자가 소스를 명시하지 않았으면 `AskUserQuestion` 으로 묻는다:
+사용자가 소스를 명시하지 않았으면 묻는다.
 
 - **현재 세션에서 논의한 내용** — `/brain-add` 를 호출하면 지금까지의 대화·결정·분석을 소스로 삼아 정리한다. 사용자가 명시 호출하면 이 옵션을 기본값으로 삼는다.
 - obsidian 최근 메모(`~/personal/obsidian/YYYY년 메모/` 의 최근 변경분)
@@ -94,7 +95,7 @@ Karpathy 스타일 지식 기반의 적재 단계다.
 ## 4단계: 개념 추출 및 cross-reference 탐색
 
 - 임시 소스에서 별도 페이지로 다룰 개념을 선정한다.
-- **Karpathy 원칙**: 한 소스 적재는 흔히 10개 이상 wiki 페이지에 영향. INDEX 의 기존 페이지를 훑어 보강·교차 참조 후보를 찾는다.
+- INDEX의 기존 페이지를 훑어 실제로 의미가 겹치는 보강·교차 참조 후보만 찾는다. 개수를 맞추려고 페이지를 늘리지 않는다.
 - 기존 페이지와 겹치면 **새로 만들지 말고 보강**.
 
 ### 주제 지정 적재의 커버리지 순서 (중요)
@@ -151,7 +152,7 @@ wiki에 쓰기 전에 채팅 인라인(기록용)과 HTML 미리보기(렌더링
 - 신규/보강을 배지로 구분하고, `[[wikilink]]` 대상이 기존 brain 또는 이번 작성 페이지에 있는지 표시한다(빨간 배지 = 어느 쪽에도 없는 대상).
 
 ```bash
-python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
+python3 "<skill-dir>/scripts/generate_preview.py" \
   --ns <public|private> \
   --title "<요약 제목>" \
   --summary "<한 줄 설명>" \
@@ -159,8 +160,9 @@ python3 ~/.claude/skills/brain-add/scripts/generate_preview.py \
   --update /tmp/brain-update/*.md \
   --known-from ~/personal/fos-brain/wiki \
   --out /tmp/brain-preview.html
-cmux browser open "file:///tmp/brain-preview.html"
 ```
+
+생성한 HTML은 현재 실행 환경에서 사용할 수 있는 브라우저 제어 수단으로 연다. 사용자가 브라우저를 지정했으면 그 선택을 따른다.
 
 - `--ns` 가 private 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`).
 - `--new` 는 새로 만들 페이지, `--update` 는 기존 보강 페이지. 보강본은 실제 brain 파일을 복사해 보강 내용을 얹은 버전을 넘긴다.
@@ -170,7 +172,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 ### 6c. 결정 (다음 턴)
 
 미리보기 6a와 6b는 그 턴에 끝낸다.
-유입 검증에서 갈린 항목·네임스페이스 확정은 사용자가 본문을 읽은 **다음 턴**에 `AskUserQuestion` 으로 묻는다.
+유입 검증에서 갈린 항목·네임스페이스 확정은 사용자가 본문을 읽은 **다음 턴**에 묻는다.
 미리보기와 같은 턴에 모달을 띄우면 본문을 가려 읽기 전에 결정을 강요하게 된다.
 사용자 검토·승인을 받은 뒤 7단계로 진행한다.
 승인한 `admit`이나 `reinforce` 후보가 없으면 raw, wiki, INDEX, log, qmd를 바꾸지 않고 종료한다.
@@ -183,7 +185,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 - 새 concept: `<ns>/wiki/concepts/<kebab-case>.md` (CLAUDE.md 스키마)
 - 개체(사람·프로젝트·목표): `<ns>/wiki/entities/<kebab-case>.md`
-- 보강: 기존 페이지 하단 `## 추가 (YYYY-MM-DD)` 로 append, Sources 갱신
+- 보강: 현재 사실이나 상태가 바뀌면 기존 절을 제자리에서 갱신한다. 과거 경과가 이후 판단에 필요할 때만 날짜가 있는 이력 절로 남기고 Sources를 갱신한다.
 - 새 문서와 의미를 실질적으로 보강한 문서에는 기존 `type`, `created`, `updated`와 함께 `title`, `description`, `tags`를 기록한다. 기존 문서는 권장 필드가 없다는 이유만으로 일괄 변경하지 않는다.
 - 지식의 수명 상태가 필요하면 `status`를 `draft`, `stable`, `deprecated` 중에서 기록하고, 재검토 날짜가 있으면 `stale_after`를 `YYYY-MM-DD`로 기록한다.
 - 검색과 교환에 구조화된 출처가 필요하면 `sources`에 필수 `resource`, 선택적 `id`, 선택적 `title`을 기록하되 본문의 `## Sources`도 유지한다.
@@ -198,7 +200,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 - "마지막 brain-add" 메타에 오늘 날짜
 - public·private(qmd 인덱싱 대상) 네임스페이스면 검색 인덱스 갱신: `qmd update && qmd embed` (private 는 `brain-private` 컬렉션 — `~/.config/qmd/index.yml` 에 없으면 먼저 등록)
 - **카테고리 비대 점검 (topic 분리)** — 새 concept 을 등록하며 INDEX 한 카테고리가 비대해졌는지 본다.
-  - 한 카테고리에 concept 이 대략 **7개를 넘고**, 그중 일부가 한 주제를 이루면 `topics/` 페이지로 묶을지 검토한다.
+  - 일부 concept이 독립된 한 주제를 이루면 `topics/` 페이지로 묶을지 검토한다.
   - 이미 적합한 topic 이 있으면 그 Concepts 에 편입, 없으면 신설 제안.
   - **자동 분리 금지** — 주제 경계·이름은 사용자에게 확인한 뒤 진행한다.
   - 성격이 다른 항목이 한 카테고리에 섞여 있으면(예: 학습 개념과 실전 장애) 개수와 무관하게 분리를 검토한다.
@@ -210,7 +212,7 @@ cmux browser open "file:///tmp/brain-preview.html"
 
 - 등록한 핵심 개념마다 brain 을 조회해 그 페이지가 상위로 나오는지 본다.
   - public·private: `qmd query "<개념 문장>"`, 필요하면 `-c <컬렉션>` 한정(예: `-c brain-private`).
-  - 비교 기준: 의도한 페이지가 1~2위로, 엉뚱한 기존 페이지보다 높은 점수로 나와야 한다.
+  - 비교 기준: 의도한 페이지가 관련 없는 기존 페이지보다 앞에 나와 실제 질문에서 찾을 수 있어야 한다.
 - 안 나오면 인덱싱 경로를 점검한다.
   - 컬렉션이 `~/.config/qmd/index.yml` 에 등록됐는지 → 없으면 `path`·`pattern` 추가.
   - `qmd update && qmd embed` 를 돌렸는지 → 재실행 후 재조회.
