@@ -6,6 +6,7 @@ work/
 # Quartz 빌드 산출물·의존성
 quartz/node_modules/
 quartz/public/
+quartz/.generated/
 quartz/.quartz-cache/
 quartz/quartz/.quartz-cache/
 quartz/tsconfig.tsbuildinfo
