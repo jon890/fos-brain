@@ -75,7 +75,7 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
         <div class="memory-atlas__brand">
           <p>FOS / MEMORY</p>
           <h1>기억의 항해도</h1>
-          <span data-testid="memory-atlas-status">3D 탐색 엔진을 준비하고 있습니다.</span>
+          <span data-testid="memory-atlas-status">지식 관계 지도를 준비하고 있습니다.</span>
         </div>
 
         <div class="memory-atlas__stats" aria-live="polite">
@@ -86,6 +86,36 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
             <strong data-testid="memory-atlas-link-count">0</strong> links
           </span>
         </div>
+
+        <section class="memory-atlas__entrypoints" aria-label="시작점">
+          <h2>시작점</h2>
+          <div class="memory-atlas__entrypoint-group" data-testid="memory-atlas-entrypoints-fixed">
+            <button type="button" data-memory-atlas-entrypoint="career">
+              <span>커리어</span>
+              <small>대표 노드를 찾는 중</small>
+            </button>
+            <button type="button" data-memory-atlas-entrypoint="health">
+              <span>건강</span>
+              <small>대표 노드를 찾는 중</small>
+            </button>
+            <button type="button" data-memory-atlas-entrypoint="ai">
+              <span>AI</span>
+              <small>대표 노드를 찾는 중</small>
+            </button>
+            <button
+              type="button"
+              class="memory-atlas__entrypoint-child"
+              data-memory-atlas-entrypoint="rag"
+            >
+              <span>RAG</span>
+              <small>현재 집중</small>
+            </button>
+          </div>
+          <details class="memory-atlas__section memory-atlas__entrypoint-auto">
+            <summary>발견한 영역</summary>
+            <ol data-testid="memory-atlas-entrypoints-auto"></ol>
+          </details>
+        </section>
 
         <label class="memory-atlas__field">
           <span>검색</span>
@@ -237,6 +267,14 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
           >
             Brain에게 묻기
           </button>
+          <div class="memory-atlas__mode-switch" aria-label="지도 보기 전환">
+            <button type="button" data-memory-atlas-mode-button="2d" aria-pressed="true">
+              2D 관계
+            </button>
+            <button type="button" data-memory-atlas-mode-button="3d" aria-pressed="false">
+              3D 조망
+            </button>
+          </div>
           <label class="memory-atlas__field">
             <span>검색</span>
             <div class="memory-atlas__search-control">
@@ -257,6 +295,19 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
               </button>
             </div>
           </label>
+        </div>
+
+        <div class="memory-atlas__context" data-testid="memory-atlas-context" aria-live="polite">
+          <button type="button" data-testid="memory-atlas-clear-selection" hidden>
+            전체 지도로
+          </button>
+          <div>
+            <span>현재 중심</span>
+            <strong data-testid="memory-atlas-context-title">전체 지도</strong>
+          </div>
+          <p data-testid="memory-atlas-depth-legend">
+            선택 1.0 · 1-hop 0.9 · 2-hop 0.56 · 3-hop 0.32 · 배경 0.13
+          </p>
         </div>
 
         <div

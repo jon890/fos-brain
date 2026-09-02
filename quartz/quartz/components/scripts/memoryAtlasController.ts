@@ -11,13 +11,21 @@ import {
   type MemoryAtlasState,
 } from "../memoryAtlasData"
 import {
+  buildMemoryAtlasWeightedEdges,
+  deriveAutomaticMemoryAtlasEntrypoints,
+  resolveFixedMemoryAtlasEntrypoints,
+  type MemoryAtlasEntrypoint,
+} from "../memoryAtlasGraph"
+import {
   createEmptyPublishedMemoryAtlasSemantics,
   parsePublishedMemoryAtlasSemantics,
   restrictPublishedMemoryAtlasSemanticsToSlugs,
+  type MemoryAtlasSemanticEdge,
 } from "../memoryAtlasSemantics"
 import type { ContentDetails } from "../../plugins/emitters/contentIndex"
 import type { FullSlug } from "../../util/path"
 import type {
+  MemoryAtlasRuntimeContext,
   MemoryAtlasRuntimeHandle,
   MemoryAtlasRuntimeModule,
   MemoryAtlasRuntimeMountOptions,
@@ -292,9 +300,9 @@ export function createMemoryAtlasRuntimeLifecycle(loadRuntime: RuntimeLoader) {
       handle = runtime.mountMemoryAtlas(mountOptions)
       return handle
     },
-    update(data: MemoryAtlasData, state: MemoryAtlasState) {
+    update(data: MemoryAtlasData, state: MemoryAtlasState, context?: MemoryAtlasRuntimeContext) {
       if (destroyed) return
-      handle?.update(data, state)
+      handle?.update(data, state, context)
     },
     select(slug?: FullSlug) {
       if (destroyed) return
@@ -396,6 +404,80 @@ function updateResults(
       meta.textContent = [node.type, node.namespace, node.tags.slice(0, 2).join(", ")]
         .filter(Boolean)
         .join(" · ")
+      item.append(button, meta)
+      return item
+    }),
+  )
+}
+
+function updateContextBar(root: HTMLElement, data: MemoryAtlasData, state: MemoryAtlasState) {
+  const node = data.nodes.find((candidate) => candidate.slug === state.selectedSlug)
+  const title = root.querySelector<HTMLElement>('[data-testid="memory-atlas-context-title"]')
+  const clear = root.querySelector<HTMLButtonElement>(
+    '[data-testid="memory-atlas-clear-selection"]',
+  )
+  if (title) title.textContent = node?.title ?? "전체 지도"
+  if (clear) clear.hidden = !node
+}
+
+function updateFixedEntrypointButton(
+  root: HTMLElement,
+  entrypoint: MemoryAtlasEntrypoint,
+  onSelect: (slug: FullSlug) => void,
+) {
+  const button = root.querySelector<HTMLButtonElement>(
+    `[data-memory-atlas-entrypoint="${entrypoint.id}"]`,
+  )
+  if (!button) return
+  const hint = button.querySelector("small")
+  button.disabled = !entrypoint.enabled || !entrypoint.representativeSlug
+  button.dataset.slug = entrypoint.representativeSlug ?? ""
+  if (hint) {
+    hint.textContent = entrypoint.representativeSlug
+      ? entrypoint.id === "rag"
+        ? `현재 집중 · ${entrypoint.representativeSlug}`
+        : entrypoint.representativeSlug
+      : "대표 노드 없음"
+  }
+  button.onclick = () => {
+    if (entrypoint.representativeSlug) onSelect(entrypoint.representativeSlug)
+  }
+  for (const child of entrypoint.children ?? []) {
+    updateFixedEntrypointButton(root, child, onSelect)
+  }
+}
+
+function updateEntrypoints(
+  root: HTMLElement,
+  data: MemoryAtlasData,
+  semanticEdges: readonly MemoryAtlasSemanticEdge[],
+  onSelect: (slug: FullSlug) => void,
+) {
+  const fixed = resolveFixedMemoryAtlasEntrypoints(data)
+  for (const entrypoint of fixed) updateFixedEntrypointButton(root, entrypoint, onSelect)
+
+  const fixedSlugs = fixed.flatMap((entrypoint) => [
+    ...(entrypoint.representativeSlug ? [entrypoint.representativeSlug] : []),
+    ...((entrypoint.children ?? []).flatMap((child) =>
+      child.representativeSlug ? [child.representativeSlug] : [],
+    ) as FullSlug[]),
+  ])
+  const weightedEdges = buildMemoryAtlasWeightedEdges(data, semanticEdges)
+  const automatic = deriveAutomaticMemoryAtlasEntrypoints(data, weightedEdges, {
+    excludeSlugs: fixedSlugs,
+  })
+  const list = root.querySelector<HTMLOListElement>('[data-testid="memory-atlas-entrypoints-auto"]')
+  if (!list) return
+  list.replaceChildren(
+    ...automatic.map((entrypoint) => {
+      const item = document.createElement("li")
+      const button = document.createElement("button")
+      const meta = document.createElement("small")
+      button.type = "button"
+      button.textContent = entrypoint.label
+      button.dataset.slug = entrypoint.representativeSlug
+      button.addEventListener("click", () => onSelect(entrypoint.representativeSlug))
+      meta.textContent = `${entrypoint.memberSlugs.length}개 노드 · score ${entrypoint.score}`
       item.append(button, meta)
       return item
     }),
@@ -511,6 +593,10 @@ function syncControls(root: HTMLElement, state: MemoryAtlasState) {
   const labels = root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-labels"]')
   const tags = root.querySelector<HTMLSelectElement>('[data-testid="memory-atlas-tag-filter"]')
   if (mode) mode.value = state.mode
+  root.querySelectorAll<HTMLButtonElement>("[data-memory-atlas-mode-button]").forEach((button) => {
+    const active = button.dataset.memoryAtlasModeButton === state.mode
+    button.setAttribute("aria-pressed", String(active))
+  })
   if (layout) layout.value = state.layout
   if (color) color.value = state.colorBy
   if (spacing) spacing.value = state.spacing
@@ -521,6 +607,11 @@ function syncControls(root: HTMLElement, state: MemoryAtlasState) {
       option.selected = selectedTags.has(option.value)
     }
   }
+}
+
+function setModeControlValue(root: HTMLElement, mode: MemoryAtlasMode) {
+  const select = root.querySelector<HTMLSelectElement>('[data-testid="memory-atlas-mode"]')
+  if (select) select.value = mode
 }
 
 function resetMemoryAtlasState(root: HTMLElement, data: MemoryAtlasData): MemoryAtlasState {
@@ -564,6 +655,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   let askState: AskState = "idle"
   let fullData: MemoryAtlasData = { nodes: [], links: [] }
   let visibleData: MemoryAtlasData = fullData
+  let semanticEdges: MemoryAtlasSemanticEdge[] = []
   const cleanups: (() => void)[] = []
   let askController: AbortController | undefined
   let lastQuestion = ""
@@ -578,11 +670,28 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       container: canvas,
       data: visibleData,
       state,
+      context: { semanticEdges },
       onSelect: selectNode,
     })
     if (destroyed) return
     setRuntimeState(root, "ready")
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
+  }
+
+  const openEntrypoint = (slug: FullSlug) => {
+    state = { ...selectMemoryAtlasNode(state, slug), mode: "2d" }
+    syncControls(root, state)
+    visibleData = filterMemoryAtlas(fullData, state)
+    updateStats(root, visibleData)
+    updateResults(root, visibleData, state, selectNode)
+    updateDetail(root, visibleData, state.selectedSlug)
+    updateContextBar(root, visibleData, state)
+    storeState(state)
+    void mountRuntime().catch((error) => {
+      if (destroyed) return
+      console.error(error)
+      setRuntimeState(root, "error")
+    })
   }
 
   const cleanup = () => {
@@ -613,13 +722,14 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       syncSearchInputs(root, "")
       visibleData = filterMemoryAtlas(fullData, state)
       updateStats(root, visibleData)
-      renderHandle?.update(visibleData, state)
+      renderHandle?.update(visibleData, state, { semanticEdges })
       setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
     }
     storeState(state)
     renderHandle?.select(slug)
     updateDetail(root, visibleData, slug)
     updateResults(root, visibleData, state, selectNode)
+    updateContextBar(root, visibleData, state)
   }
 
   const setAskState = (nextState: AskState, message: string, retryable = false) => {
@@ -771,12 +881,13 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         setRuntimeState(root, "error")
       })
     } else {
-      renderHandle?.update(visibleData, state)
+      renderHandle?.update(visibleData, state, { semanticEdges })
     }
     if (state.selectedSlug && !visibleData.nodes.some((node) => node.slug === state.selectedSlug)) {
       selectNode(undefined)
     }
     renderHandle?.setEvidenceSlugs(new Set())
+    updateContextBar(root, visibleData, state)
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
   }
 
@@ -808,6 +919,8 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     updateStats(root, visibleData)
     updateResults(root, visibleData, state, selectNode)
     updateDetail(root, visibleData, state.selectedSlug)
+    updateContextBar(root, visibleData, state)
+    updateEntrypoints(root, fullData, semanticEdges, openEntrypoint)
 
     void semanticsLoader()
       .then((semanticsJson) => {
@@ -827,12 +940,17 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         root.dataset.semanticsState = "fallback"
         return createEmptyPublishedMemoryAtlasSemantics()
       })
+      .then((semantics) => {
+        semanticEdges = semantics.edges
+        updateEntrypoints(root, fullData, semanticEdges, openEntrypoint)
+        renderHandle?.update(visibleData, state, { semanticEdges })
+      })
 
     await mountRuntime()
   } catch (error) {
     if (destroyed) return
     console.error(error)
-    setStatus("3D 그래프 초기화에 실패했습니다.")
+    setStatus("지식 관계 지도 초기화에 실패했습니다.")
     const message = root.querySelector<HTMLElement>('[data-testid="memory-atlas-error-message"]')
     if (message) message.textContent = error instanceof Error ? error.message : String(error)
     setRuntimeState(root, "error")
@@ -875,9 +993,19 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   ]) {
     root.querySelectorAll(selector).forEach((element) => bind(element, "change", () => refresh()))
   }
+  root.querySelectorAll<HTMLButtonElement>("[data-memory-atlas-mode-button]").forEach((button) =>
+    bind(button, "click", () => {
+      const mode = button.dataset.memoryAtlasModeButton === "3d" ? "3d" : "2d"
+      setModeControlValue(root, mode)
+      refresh()
+    }),
+  )
 
   bind(root.querySelector('[data-testid="memory-atlas-recenter"]'), "click", () =>
     renderHandle?.recenter(),
+  )
+  bind(root.querySelector('[data-testid="memory-atlas-clear-selection"]'), "click", () =>
+    selectNode(undefined),
   )
   bind(root.querySelector('[data-testid="memory-atlas-ask-toggle"]'), "click", () => {
     setAskHidden(root, false)
