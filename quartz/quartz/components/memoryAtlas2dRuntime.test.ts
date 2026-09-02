@@ -121,6 +121,16 @@ describe("memory atlas 2D runtime scene", () => {
     assert.strictEqual(JSON.stringify(scene).includes("_private/"), false)
   })
 
+  test("keeps mobile node centers inside the label-safe horizontal inset", () => {
+    const scene = buildMemoryAtlas2dScene(sampleData(), createDefaultMemoryAtlasState(), [], {
+      width: 390,
+      height: 844,
+    })
+
+    assert.ok(scene.nodes.every((node) => node.x >= 390 * 0.22))
+    assert.ok(scene.nodes.every((node) => node.x <= 390 - 390 * 0.22))
+  })
+
   test("keeps the 2D bundle free from 3D runtime imports", () => {
     const source = readFileSync(
       new URL("./scripts/memoryAtlas2dRuntime.ts", import.meta.url),

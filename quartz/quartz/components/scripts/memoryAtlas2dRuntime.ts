@@ -122,6 +122,8 @@ export function buildMemoryAtlas2dScene(
       : new Map<FullSlug, number>()
   const globalBySlug = new Map(globalPositions.map((position) => [position.slug, position]))
   const positionBySlug = new Map(localPositions.map((position) => [position.slug, position]))
+  const horizontalInset = Math.min(120, width * (width <= 800 ? 0.22 : 0.12))
+  const verticalInset = 20
 
   const nodes = data.nodes
     .map((node) => {
@@ -133,8 +135,14 @@ export function buildMemoryAtlas2dScene(
       return {
         slug: node.slug,
         title: node.title,
-        x: position?.x ?? global?.x ?? width / 2,
-        y: position?.y ?? global?.y ?? height / 2,
+        x: Math.min(
+          width - horizontalInset,
+          Math.max(horizontalInset, position?.x ?? global?.x ?? width / 2),
+        ),
+        y: Math.min(
+          height - verticalInset,
+          Math.max(verticalInset, position?.y ?? global?.y ?? height / 2),
+        ),
         globalX: global?.x ?? width / 2,
         globalY: global?.y ?? height / 2,
         ...(typeof depth === "number" ? { depth } : {}),

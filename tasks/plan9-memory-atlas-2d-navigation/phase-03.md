@@ -80,7 +80,7 @@ scripts/verify-memory-atlas.sh
 
 ```bash
 # cwd: <worktree>/
-! rg -n '(^|[^-])agent-browser|orca browser|browser backend' quartz/scripts/verify-memory-atlas-browser.sh quartz/scripts/verify-memory-atlas-browser.mjs quartz/scripts/memory-atlas-browser-assertions.mjs
+! rg -n '(^|[[:space:]])agent-browser([[:space:]]|$)|orca browser' quartz/scripts/verify-memory-atlas-browser.sh quartz/scripts/verify-memory-atlas-browser.mjs quartz/scripts/memory-atlas-browser-assertions.mjs
 ~/.claude/scripts/korean-style-check.sh docs/prd.md docs/flow.md docs/code-architecture.md docs/data-schema.md docs/memory-atlas-design.md docs/adr/002-memory-atlas-3d-home.md docs/adr/008-memory-atlas-2d-semantic-navigation.md docs/adr/INDEX.md
 python3 ~/.claude/scripts/check-readability.py docs/prd.md docs/flow.md docs/code-architecture.md docs/data-schema.md docs/memory-atlas-design.md docs/adr/002-memory-atlas-3d-home.md docs/adr/008-memory-atlas-2d-semantic-navigation.md docs/adr/INDEX.md
 ```

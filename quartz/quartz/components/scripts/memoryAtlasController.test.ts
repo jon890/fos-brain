@@ -5,6 +5,7 @@ import type { FullSlug } from "../../util/path"
 import {
   createMemoryAtlasRuntimeLifecycle,
   loadMemoryAtlasDataWithFallback,
+  memoryAtlasRuntimeSrcForMode,
   restoreStoredMemoryAtlasState,
 } from "./memoryAtlasController"
 
@@ -50,6 +51,20 @@ describe("memory atlas controller", () => {
     })
 
     assert.strictEqual(restored.mode, "3d")
+  })
+
+  test("reads numeric runtime data attributes without relying on dataset camel casing", () => {
+    const root = {
+      getAttribute(name: string) {
+        return {
+          "data-runtime-2d-src": "/static/memory-atlas-2d.js",
+          "data-runtime-3d-src": "/static/memory-atlas-3d.js",
+        }[name]
+      },
+    } as Pick<HTMLElement, "getAttribute">
+
+    assert.strictEqual(memoryAtlasRuntimeSrcForMode(root, "2d"), "/static/memory-atlas-2d.js")
+    assert.strictEqual(memoryAtlasRuntimeSrcForMode(root, "3d"), "/static/memory-atlas-3d.js")
   })
 
   test("uses SSR document list when the content index loader fails", async () => {

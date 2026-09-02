@@ -1,10 +1,10 @@
 {
   "name": "plan9-memory-atlas-2d-navigation",
   "description": "Memory Atlas에 기본 2D 전체 지도, 선택 중심 지역 관계, 고정·자동 시작점과 유지보수 가능한 Preact 화면 경계를 추가한다.",
-  "status": "pending",
+  "status": "completed",
   "created_at": "2026-09-02",
   "total_phases": 3,
-  "current_phases": 0,
+  "current_phases": 3,
   "phases": [
     {
       "number": 1,

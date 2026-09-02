@@ -232,13 +232,16 @@ function loadContentIndex(): Promise<ContentIndexRecord> {
   return fetchData
 }
 
-function runtimeSrcForMode(root: HTMLElement, mode: MemoryAtlasMode): string | undefined {
-  return mode === "3d" ? root.dataset.runtime3dSrc : root.dataset.runtime2dSrc
+export function memoryAtlasRuntimeSrcForMode(
+  root: Pick<HTMLElement, "getAttribute">,
+  mode: MemoryAtlasMode,
+): string | undefined {
+  return root.getAttribute(`data-runtime-${mode}-src`) ?? undefined
 }
 
 function loadRuntimeFromDom(root: HTMLElement): RuntimeLoader {
   return async (mode) => {
-    const runtimeUrl = runtimeSrcForMode(root, mode)
+    const runtimeUrl = memoryAtlasRuntimeSrcForMode(root, mode)
     if (!runtimeUrl) throw new Error(`${mode} Memory Atlas runtime source is missing`)
     return (await import(runtimeUrl)) as MemoryAtlasRuntimeModule
   }

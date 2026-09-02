@@ -308,6 +308,7 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
           <p data-testid="memory-atlas-depth-legend">
             선택 1.0 · 1-hop 0.9 · 2-hop 0.56 · 3-hop 0.32 · 배경 0.13
           </p>
+          <p data-testid="memory-atlas-relation-legend">wiki 링크 · 의미 유사도</p>
         </div>
 
         <div
