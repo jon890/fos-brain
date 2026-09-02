@@ -131,5 +131,5 @@ Memory Atlas 회귀 검사는 `cd quartz && scripts/verify-memory-atlas.sh` 한 
 
 기본 검증 포트는 HTTP `8096`, 실시간 갱신 `3096`이다.
 충돌할 때는 `MEMORY_ATLAS_VERIFY_PORT`와 `MEMORY_ATLAS_VERIFY_WS_PORT`로 바꾼다.
-Quartz 로그는 기본적으로 `/tmp/fos-brain-memory-atlas-suite`, 브라우저 assertion과 화면 캡처는 `/tmp/fos-brain-memory-atlas-plan4`에 남긴다.
+Quartz 로그, 브라우저 assertion과 화면 캡처는 기본적으로 `/tmp/fos-brain-memory-atlas-suite`에 남긴다.
 브라우저 연결 시간 초과만 새 격리 세션으로 복구하며, 제품 동작이나 화면 assertion 실패는 재시도하지 않고 즉시 실패로 기록한다.

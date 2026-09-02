@@ -301,7 +301,7 @@ try {
   await waitHarnessReadyWithSingleRecovery(driverName)
   await assertDriver("viewport-basics", assertions.viewportBasics)
   await assertDriver("local-relation-flow", assertions.localRelationFlow)
-  await assertDriver("keyboard-flow", assertions.keyboardFlow)
+  await assertDriver("keyboard-accessibility-contract", assertions.keyboardAccessibilityContract)
   await assertDriver("mode-and-lazy-load", assertions.modeAndLazyLoad)
   await assertDriver("reduced-motion", assertions.reducedMotion)
   await assertDriver("semantics-failure-and-privacy", assertions.semanticsFailureAndPrivacy)

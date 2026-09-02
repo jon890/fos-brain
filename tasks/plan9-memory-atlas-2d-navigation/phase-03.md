@@ -24,6 +24,9 @@ Orca가 선택되면 `ORCA_WORKTREE=path:<worktree>`를 지정하고 열린 hand
 browser assertion은 JavaScript 표현식과 이름을 Node 모듈에 두고 shell heredoc으로 만들지 않는다.
 Node 실행기는 `spawn`의 인자 배열로 표현식을 driver에 전달해 shell quote에 의존하지 않는다.
 성공과 실패 경로 모두에서 탭, 임시 server와 화면 산출물을 정리한다.
+Orca의 비활성 탭에서는 `shot`이 제품 동작과 무관하게 실패할 수 있다.
+이 경우 상호작용 assertion의 성공 판정은 그대로 유지하고, 화면 증거만 같은 `browser-driver`의 headless backend로 만든다.
+다른 backend 결과로 상호작용 실패를 성공 처리하지 않는다.
 
 ### 2. 2D 전체·지역 관계 시나리오
 
@@ -32,7 +35,8 @@ driver에 viewport 명령이 없으므로 같은 출처 iframe을 1440×1000과 
 두 viewport에서 기본 mode가 2D이고 문서와 보이는 조작 요소의 `scrollWidth`가 `clientWidth`를 넘지 않는지 검사한다.
 고정 커리어·건강·AI와 AI 아래 RAG, 자동 시작점 영역, 모든 2D 노드 제목과 관계 유형 범례를 검사한다.
 RAG 시작점 선택, 1-hop·2-hop opacity, 연결 노드 재선택, 배경 노드 유지와 전체 지도 복원을 순서대로 실행한다.
-키보드 `Tab`, `Enter`, `Space`, `Escape`만으로 같은 흐름을 완료한다.
+driver가 실제 key 입력 명령을 제공하지 않으므로 native `button`과 tab order를 검사하고 `Tab`, `Enter`, `Space`, `Escape` handler를 JavaScript event로 확인한다.
+브라우저 기본 activation을 흉내 내는 `.click()`은 별도 단계로 호출해 synthetic key event가 실제 입력인 것처럼 판정하지 않는다.
 움직임 줄이기는 iframe의 `matchMedia`를 재초기화 전에 override한 뒤 최종 좌표가 즉시 적용되는지 검사한다.
 
 ### 3. mode·실패·privacy 회귀
@@ -51,7 +55,8 @@ public fixture에 private 의미 edge와 시작점 후보를 넣어도 DOM, 상�
 
 `verify-memory-atlas.sh`는 format, typecheck, unit, build, 임시 server와 browser-driver 회귀를 순서대로 실행한다.
 검사 산출물은 기존 `/tmp/fos-brain-memory-atlas-suite` 아래에 assertion JSON, console, errors와 1440px·390px screenshot을 남긴다.
-검사 실패를 재시도로 성공 처리하지 않고 browser 연결 timeout만 새 handle로 한 번 복구한다.
+상호작용 검사 실패를 재시도로 성공 처리하지 않고 browser 연결 timeout만 새 handle로 한 번 복구한다.
+Orca의 비활성 탭 캡처 제한은 상호작용 검사가 모두 성공한 뒤 화면 증거에 한해 headless backend로 보완한다.
 모든 검증이 성공한 뒤에만 task index를 완료 상태로 바꾼다.
 
 ## Critical Files

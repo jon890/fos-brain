@@ -147,7 +147,7 @@ if (root.classList.contains("memory-atlas--detail-open")) throw new Error("detai
 return { centered: "GraphRAG", restored: true }
 `),
 
-  keyboardFlow: wrap(`
+  keyboardAccessibilityContract: wrap(`
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
@@ -158,6 +158,7 @@ tabForward(doc)
 if (doc.activeElement === doc.body) throw new Error("Tab left focus on body")
 let ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
 if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable for Enter")
+if (ragEntry.tagName !== "BUTTON" || ragEntry.tabIndex < 0) throw new Error("RAG entrypoint is not a native keyboard-focusable button")
 ragEntry.focus()
 activateWithKeyboard(ragEntry, "Enter")
 await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "Enter selects RAG")
@@ -169,6 +170,7 @@ activateWithKeyboard(ragEntry, " ")
 await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "Space selects RAG")
 const selected = canvas.querySelector(".memory-atlas-2d__nodes button[data-selected='true']")
 if (!selected || selected.dataset.depth !== "0") throw new Error("Space selection did not update 2D node state")
+if (selected.tagName !== "BUTTON" || selected.tabIndex < 0) throw new Error("selected graph node is not a native keyboard-focusable button")
 key(doc, "Escape")
 await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "Escape clears Space selection")
 return { tab: true, enter: true, space: true, escape: true }

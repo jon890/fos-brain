@@ -837,11 +837,16 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     clearAskResult()
     setAskState("retrieving", "근거를 찾고 있습니다.")
     try {
-      const request = askBrain(question, controller.signal)
+      const request = askBrain(question, controller.signal).then(
+        (answer) => ({ ok: true as const, answer }),
+        (error: unknown) => ({ ok: false as const, error }),
+      )
       await nextFrame()
       if (controller.signal.aborted) return
       setAskState("generating", "답변을 만들고 있습니다.")
-      const answer = await request
+      const result = await request
+      if (!result.ok) throw result.error
+      const answer = result.answer
       if (controller.signal.aborted) return
       if (!answer.sources.length) {
         clearAskResult()
