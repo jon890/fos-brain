@@ -33,20 +33,30 @@ React 의존성, `preact/compat`와 별도 client hydration을 추가하지 않�
 기존 Brain 질문의 질문·답변 비저장, abort, 근거 강조 해제와 검색 초기화 동작을 보존한다.
 기존 sessionStorage를 사용할 때 mode를 추가하고 예전 저장값에는 `2d` 기본값을 적용한다.
 
+`memoryAtlasSemantics.ts`에는 `scope`가 없는 게시 JSON 전용 parser를 추가한다.
+controller는 `/static/memory-atlas-semantics.json`을 이 parser로 읽고 현재 콘텐츠 slug로 다시 제한한다.
+파일이 없거나 잘못되면 빈 의미 관계로 축소하고 link·tag 기반 계산은 계속한다.
+
 ### 3. 공통 renderer 계약과 runtime 분리
 
 `memoryAtlasRuntimeTypes.ts`에 `update`, `select`, `recenter`, `setEvidenceSlugs`, `destroy`를 가진 공통 handle과 mount 입력을 정의한다.
 현재 `memoryAtlasRuntime.ts`의 3D 구현을 `memoryAtlas3dRuntime.ts`로 옮기되 camera 복원, 질문 근거 강조와 자원 정리를 유지한다.
 controller는 mode가 바뀔 때 이전 handle의 `destroy`를 먼저 호출하고 선택한 runtime만 동적으로 불러온다.
 
-`memoryAtlasAssets.ts`는 2D와 3D 진입점을 별도 ESM 파일로 bundle한다.
-기본 2D에서 `three`와 `3d-force-graph` bundle을 요청하지 않고 `3D 조망`을 처음 선택할 때만 내려받는다.
+`memoryAtlas2dRuntime.ts`는 공통 handle을 구현하는 최소 접근 가능 목록 renderer로 먼저 만든다.
+이 phase에서는 제목 button과 선택·정리 계약만 제공하고, 좌표·SVG 연결선·지역 관계는 Phase 02에서 완성한다.
+`memoryAtlasAssets.ts`는 2D와 3D 진입점을 `/static/memory-atlas-2d.js`, `/static/memory-atlas-3d.js`로 별도 bundle한다.
+controller의 runtime loader는 mode별 동적 import 경계를 가지며, 단위 검사에서는 주입한 mock loader를 사용한다.
+콘텐츠 색인 loader도 주입 경계로 두고, 거부되면 서버 렌더 문서 목록과 retry 상태를 유지하는지 단위 검사한다.
+브라우저가 이미 만든 `fetchData` promise를 나중 fetch override로 바꾸지 않는다.
 
 ### 4. 상태와 생명주기 단위 검사
 
 기본 mode, 예전 저장 상태 복원, mode 전환 시 filter·selection 유지와 선택 노드 filter 제외를 검사한다.
-mock renderer로 `destroy` 뒤 update가 호출되지 않고 mode 전환과 SPA 재초기화마다 handle 하나만 살아 있는지 검사한다.
+Node의 `EventTarget`과 주입한 mock renderer로 `destroy` 뒤 update가 호출되지 않고 mode 전환과 SPA 재초기화마다 handle 하나만 살아 있는지 검사한다.
 질문 패널 닫기와 SPA cleanup 뒤 질문 closure, fetch, renderer와 listener가 정리되는 기존 회귀를 유지한다.
+새 DOM test runtime 의존성은 추가하지 않는다.
+Preact 화면 조각은 `preact-render-to-string` 결과로 접근 가능한 fallback 구조를 검사한다.
 
 ## Critical Files
 
@@ -57,8 +67,11 @@ mock renderer로 `destroy` 뒤 update가 호출되지 않고 mode 전환과 SPA 
 | `quartz/quartz/components/scripts/memoryAtlas.inline.ts` | SPA 진입점으로 축소 |
 | `quartz/quartz/components/scripts/memoryAtlasController.ts` | 최소 상태와 event controller 추가 |
 | `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` | 공통 renderer 생명주기 계약 추가 |
+| `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` | 공통 계약을 쓰는 최소 2D 목록 renderer 추가 |
 | `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` | 기존 3D runtime 이동 |
-| `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` | 2D·3D bundle 분리 |
+| `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` | 2D·3D runtime bundle 분리 |
+| `quartz/quartz/components/memoryAtlasSemantics.ts` | 게시 JSON parser 추가 |
+| `quartz/quartz/components/memoryAtlasSemantics.test.ts` | 게시 JSON fallback·privacy 회귀 추가 |
 | `quartz/quartz/components/memoryAtlasController.test.ts` | 상태와 renderer cleanup 회귀 추가 |
 
 ## 검증
@@ -67,8 +80,11 @@ mock renderer로 `destroy` 뒤 update가 호출되지 않고 mode 전환과 SPA 
 # cwd: <worktree>/quartz
 pnpm test
 pnpm exec tsc --noEmit
-pnpm exec prettier --check quartz/components/MemoryAtlas.tsx quartz/components/memoryAtlasView.tsx quartz/components/scripts/memoryAtlas.inline.ts quartz/components/scripts/memoryAtlasController.ts quartz/components/scripts/memoryAtlasRuntimeTypes.ts quartz/components/scripts/memoryAtlas3dRuntime.ts quartz/plugins/emitters/memoryAtlasAssets.ts
+pnpm exec prettier --check quartz/components/MemoryAtlas.tsx quartz/components/memoryAtlasView.tsx quartz/components/memoryAtlasSemantics.ts quartz/components/memoryAtlasSemantics.test.ts quartz/components/scripts/memoryAtlas.inline.ts quartz/components/scripts/memoryAtlasController.ts quartz/components/scripts/memoryAtlasRuntimeTypes.ts quartz/components/scripts/memoryAtlas2dRuntime.ts quartz/components/scripts/memoryAtlas3dRuntime.ts quartz/plugins/emitters/memoryAtlasAssets.ts
 node -e 'const p=require("./package.json"); if (p.dependencies?.react || p.devDependencies?.react) process.exit(1)'
+pnpm quartz build
+test -f public/static/memory-atlas-2d.js
+test -f public/static/memory-atlas-3d.js
 ```
 
 ```bash
@@ -77,7 +93,8 @@ scripts/verify-public-infra-boundary.sh
 git diff --check
 ```
 
-3D mode를 선택하기 전 local server의 network 기록에는 3D runtime 요청이 없어야 한다.
+Phase 01 정적 빌드에는 `/static/memory-atlas-2d.js`와 `/static/memory-atlas-3d.js`가 모두 있어야 한다.
+기본 2D에서 3D runtime을 요청하지 않는 browser 검증은 Phase 02 구현 뒤 Phase 03에서 수행한다.
 
 ## 의도 메모 (왜)
 

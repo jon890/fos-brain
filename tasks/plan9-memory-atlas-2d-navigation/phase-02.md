@@ -16,13 +16,17 @@
 
 ### 1. 2D renderer와 접근 가능한 노드
 
-`memoryAtlas2dRuntime.ts`는 plan8의 전체·지역 좌표를 입력으로 받고 SVG에는 실제 wiki 연결선과 계산한 의미 관계선을 그린다.
+Phase 01의 최소 `memoryAtlas2dRuntime.ts`를 plan8의 전체·지역 좌표를 쓰는 renderer로 확장한다.
+SVG에는 실제 wiki 연결선과 계산한 의미 관계선을 그린다.
 wiki link는 단단한 항로, 의미 관계는 가늘고 옅은 해류로 구분한다.
 노드는 SVG 안의 text가 아니라 절대 배치한 HTML button으로 만들고 모든 제목을 표시한다.
 button은 click, `Enter`와 `Space`로 선택하며 현재 선택, hop depth와 namespace를 `aria-label`과 data attribute로 제공한다.
 
 ResizeObserver와 움직임 줄이기 media query를 처리한다.
 `destroy`는 observer, event, animation frame과 생성한 DOM을 정리하며 이후 호출을 무시한다.
+
+Phase 01에서 분리한 2D bundle은 `three`와 `3d-force-graph`를 import하지 않는다.
+controller는 `3D 조망`을 처음 선택할 때만 3D bundle을 동적으로 불러온다.
 
 ### 2. 전체 지도와 선택 중심 지역 관계
 
@@ -46,14 +50,16 @@ ResizeObserver와 움직임 줄이기 media query를 처리한다.
 그래프 위 문맥 bar는 `전체 지도로`, 현재 중심 제목과 depth 범례를 제공한다.
 상단의 `2D 관계`와 `3D 조망` 전환은 현재 filter와 선택을 유지한다.
 
-### 4. 반응형·상태 스타일과 DOM 회귀
+### 4. 반응형·상태 스타일과 순수 계산 회귀
 
 `memoryAtlas.scss`는 기존 심해 항해도 token을 재사용하고 새 SaaS card나 별도 색상 체계를 추가하지 않는다.
 1440px에서는 시작점 rail, 문맥 bar와 상세 panel이 graph를 가리지 않게 배치한다.
 390px에서는 mode 전환과 작은 filter 동작만 topbar에 남기고 시작점은 왼쪽 drawer, 상세는 아래 sheet에서 보여준다.
 긴 제목, 자동 영역 label과 depth 범례가 viewport 가로 넘침을 만들지 않게 한다.
 
-DOM 단위 검사는 모든 노드 제목, 선택과 depth attribute, disabled 시작점, public 화면의 private label 부재, 2D·3D 전환 후 현재 mode의 renderer DOM만 남는지 확인한다.
+Node 단위 검사는 2D scene model의 모든 노드 제목, 선택과 depth attribute, disabled 시작점, public 입력의 private label 부재를 확인한다.
+renderer 생명 주기는 주입한 최소 container·observer fake로 검사하며 새 DOM test runtime 의존성은 추가하지 않는다.
+실제 HTML button, SVG, 2D·3D 전환 후 남은 renderer DOM과 반응형 배치는 Phase 03의 browser-driver 회귀가 확인한다.
 
 ## Critical Files
 
@@ -63,7 +69,7 @@ DOM 단위 검사는 모든 노드 제목, 선택과 depth attribute, disabled �
 | `quartz/quartz/components/memoryAtlasView.tsx` | 시작점과 관계 문맥 구조 연결 |
 | `quartz/quartz/components/scripts/memoryAtlasController.ts` | mode·시작점·지역 관계 event 연결 |
 | `quartz/quartz/components/styles/memoryAtlas.scss` | 2D 전체·지역·반응형 상태 추가 |
-| `quartz/quartz/components/memoryAtlas2dRuntime.test.ts` | DOM, 접근성, cleanup 회귀 추가 |
+| `quartz/quartz/components/memoryAtlas2dRuntime.test.ts` | scene model, 접근성 속성과 cleanup 회귀 추가 |
 
 ## 검증
 
