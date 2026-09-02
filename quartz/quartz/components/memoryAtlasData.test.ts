@@ -39,6 +39,27 @@ function state(overrides: Partial<MemoryAtlasState> = {}): MemoryAtlasState {
 }
 
 describe("memory atlas data", () => {
+  test("defaults to 2D mode without storing graph-derived values", () => {
+    const current = createDefaultMemoryAtlasState()
+
+    assert.deepStrictEqual(current, {
+      mode: "2d",
+      query: "",
+      lens: "all",
+      namespaces: [],
+      types: [],
+      freshness: [],
+      tags: [],
+      layout: "constellation",
+      colorBy: "type",
+      spacing: "normal",
+      labels: true,
+    })
+    assert.strictEqual("selectedNode" in current, false)
+    assert.strictEqual("positions" in current, false)
+    assert.strictEqual("entrypoints" in current, false)
+  })
+
   test("clears only the search query when search is dismissed", () => {
     const current = state({
       query: "RAG",
@@ -212,6 +233,7 @@ describe("memory atlas data", () => {
     })
 
     assert.deepStrictEqual(createDefaultMemoryAtlasState(data), {
+      mode: "2d",
       query: "",
       lens: "all",
       namespaces: ["public", "private"],

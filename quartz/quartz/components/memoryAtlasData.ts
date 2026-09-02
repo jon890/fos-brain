@@ -7,6 +7,7 @@ export type MemoryAtlasLens = "all" | "topic" | "type" | "freshness" | "namespac
 export type MemoryAtlasLayout = "constellation" | "cluster" | "orbit"
 export type MemoryAtlasColorBy = "type" | "freshness" | "namespace"
 export type MemoryAtlasSpacing = "compact" | "normal" | "wide"
+export type MemoryAtlasMode = "2d" | "3d"
 
 export type MemoryAtlasNode = {
   id: FullSlug
@@ -34,6 +35,7 @@ export type MemoryAtlasData = {
 }
 
 export type MemoryAtlasState = {
+  mode: MemoryAtlasMode
   query: string
   lens: MemoryAtlasLens
   namespaces?: MemoryAtlasNamespace[]
@@ -67,6 +69,7 @@ export type MemoryAtlasFacets = {
 type ContentIndexRecord = Record<string, ContentDetails> | Map<FullSlug, ContentDetails>
 
 export const DEFAULT_MEMORY_ATLAS_STATE: MemoryAtlasState = {
+  mode: "2d",
   query: "",
   lens: "all",
   namespaces: [],
