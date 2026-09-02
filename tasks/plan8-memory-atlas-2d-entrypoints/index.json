@@ -1,0 +1,22 @@
+{
+  "name": "plan8-memory-atlas-2d-entrypoints",
+  "description": "qmd 의미 관계를 공개 범위에 맞게 정제하고 Memory Atlas의 결정적 2D 배치와 고정·자동 시작점 계산 기반을 만든다.",
+  "status": "completed",
+  "created_at": "2026-09-02",
+  "total_phases": 2,
+  "current_phases": 2,
+  "phases": [
+    {
+      "number": 1,
+      "title": "qmd 의미 관계 생성과 공개 범위 정제",
+      "file": "phase-01.md",
+      "execution_profile": "deep"
+    },
+    {
+      "number": 2,
+      "title": "혼합 graph 배치와 시작점 계산",
+      "file": "phase-02.md",
+      "execution_profile": "deep"
+    }
+  ]
+}
