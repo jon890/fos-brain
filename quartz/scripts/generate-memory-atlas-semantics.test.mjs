@@ -168,6 +168,14 @@ describe("generate memory atlas semantics", () => {
     )
   })
 
+  test("fails on encoded backslash and dot-segment qmd paths without leaving output", async () => {
+    await assertInvalidQmdPathLeavesNoOutput("qmd://brain-wiki/concepts/%2e%2e%5Csecret.md")
+  })
+
+  test("fails on encoded control character qmd paths without leaving output", async () => {
+    await assertInvalidQmdPathLeavesNoOutput("qmd://brain-wiki/concepts/bad%00slug.md")
+  })
+
   test("fails on unallowed collection and root escaping qmd uri", () => {
     assert.throws(
       () => slugFromQmdResult("qmd://brain-raw/notes/source.md", new Map([["brain-wiki", "/tmp"]])),
@@ -238,6 +246,32 @@ async function writeMarkdown(root, relativePath, frontmatter) {
     .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
     .join("\n")
   await fs.writeFile(file, `---\n${yaml}\n---\n# ${frontmatter.title}\n`)
+}
+
+async function assertInvalidQmdPathLeavesNoOutput(file) {
+  const wikiRoot = path.join(tempRoot, "wiki")
+  await writeMarkdown(wikiRoot, "concepts/rag.md", { title: "RAG" })
+  const output = path.join(tempRoot, "out", "memory-atlas-semantics.json")
+  await fs.mkdir(path.dirname(output), { recursive: true })
+  await fs.writeFile(output, "stale")
+
+  const qmdUrl = await startQmdMock(async () => ({
+    results: [{ file, score: 0.7 }],
+  }))
+
+  await assert.rejects(
+    generateMemoryAtlasSemantics({
+      scope: "public",
+      output,
+      qmdUrl,
+      collections: new Map([["brain-wiki", wikiRoot]]),
+      limit: 5,
+      minScore: 0.2,
+      timeoutMs: 1000,
+    }),
+    /path_outside_root|invalid_slug/,
+  )
+  await assert.rejects(fs.stat(output), /ENOENT/)
 }
 
 async function startQmdMock(handler) {

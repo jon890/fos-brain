@@ -132,7 +132,7 @@ export async function readWikiDocuments(collections) {
     const files = await listMarkdownFiles(root)
     for (const file of files) {
       const relativePath = toPosix(path.relative(root, file))
-      if (isOutsideRoot(relativePath)) throw new Error(`path_outside_root:${collection}`)
+      assertSafeRelativePath(collection, relativePath)
       const slug = slugFromRelativePath(collection, relativePath)
       const raw = await fs.readFile(file, "utf8")
       const parsed = matter(raw)
@@ -161,7 +161,7 @@ export function slugFromQmdResult(file, collections) {
   const [, collection, encodedPath] = match
   if (!collections.has(collection)) throw new Error(`collection_not_allowed:${collection}`)
   const relativePath = decodeURIComponent(encodedPath)
-  if (isOutsideRoot(relativePath)) throw new Error(`path_outside_root:${collection}`)
+  assertSafeRelativePath(collection, relativePath)
   return slugFromRelativePath(collection, relativePath)
 }
 
@@ -182,9 +182,7 @@ function slugFromRelativePath(collection, relativePath) {
     .join("/")
     .replace(/\/$/, "")
 
-  if (slug.startsWith(".") || slug.startsWith("/") || slug.includes("#") || slug.includes("?")) {
-    throw new Error(`invalid_slug:${collection}`)
-  }
+  assertSafeSlug(collection, slug)
 
   return collection === "brain-private" ? `_private/${slug}` : slug
 }
@@ -298,6 +296,39 @@ function isOutsideRoot(relativePath) {
     path.isAbsolute(relativePath) ||
     relativePath.split("/").includes("..")
   )
+}
+
+function assertSafeRelativePath(collection, relativePath) {
+  if (
+    isOutsideRoot(relativePath) ||
+    relativePath.includes("\\") ||
+    hasAsciiControlCharacter(relativePath) ||
+    relativePath.split("/").some((segment) => segment === "." || segment === "..")
+  ) {
+    throw new Error(`path_outside_root:${collection}`)
+  }
+}
+
+function assertSafeSlug(collection, slug) {
+  if (
+    slug.length === 0 ||
+    slug.startsWith("/") ||
+    slug.endsWith("/") ||
+    slug.startsWith(".") ||
+    slug.includes(" ") ||
+    slug.includes("#") ||
+    slug.includes("?") ||
+    slug.includes("&") ||
+    slug.includes("\\") ||
+    hasAsciiControlCharacter(slug) ||
+    slug.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
+  ) {
+    throw new Error(`invalid_slug:${collection}`)
+  }
+}
+
+function hasAsciiControlCharacter(value) {
+  return /[\u0000-\u001F\u007F]/u.test(value)
 }
 
 function stringValue(value) {

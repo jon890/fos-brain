@@ -247,6 +247,32 @@ describe("memory atlas graph", () => {
     assert.strictEqual(entrypoints.find((entrypoint) => entrypoint.id === "ai")?.enabled, false)
   })
 
+  test("does not classify general work-style documents as career entrypoints", () => {
+    const data: MemoryAtlasData = {
+      nodes: [node("concepts/ai-harness", { title: "AI Harness", tags: ["work-style"] })],
+      links: [],
+    }
+    const entrypoints = resolveFixedMemoryAtlasEntrypoints(data)
+
+    assert.strictEqual(entrypoints.find((entrypoint) => entrypoint.id === "career")?.enabled, false)
+  })
+
+  test("selects direct career signals for the career entrypoint", () => {
+    const data: MemoryAtlasData = {
+      nodes: [
+        node("concepts/ai-era-expertise", { title: "AI 시대 전문성", tags: ["career"] }),
+        node("concepts/ai-harness", { title: "AI Harness", tags: ["work-style"] }),
+      ],
+      links: [],
+    }
+    const entrypoints = resolveFixedMemoryAtlasEntrypoints(data)
+
+    assert.strictEqual(
+      entrypoints.find((entrypoint) => entrypoint.id === "career")?.representativeSlug,
+      slug("concepts/ai-era-expertise"),
+    )
+  })
+
   test("keeps GraphRAG matching the RAG focus through a long title token", () => {
     const data: MemoryAtlasData = {
       nodes: [node("concepts/graph-retrieval", { title: "GraphRAG", tags: ["graph"] })],

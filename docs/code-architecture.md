@@ -33,17 +33,23 @@
 - `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
 - `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다.
-- `quartz/quartz/components/memoryAtlasView.tsx` — 모드 전환, 시작점, 지역 관계 문맥과 범례의 작은 Preact SSR 조각을 소유한다.
 - `quartz/quartz/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
 - `quartz/quartz/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA 진입점만 소유하고 화면 controller를 시작하거나 정리한다.
-- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 최소 브라우저 상태, 사용자 event, 파생 데이터 계산과 현재 렌더러 교체를 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D 렌더러가 함께 구현하는 생명주기 계약을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — Three.js 렌더러와 카메라, 3D 배치, 선택 경로 강조를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 현재는 SPA 진입, 브라우저 상태, 사용자 event와 3D runtime 생명 주기를 함께 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasRuntime.ts` — 현재 Three.js 렌더러와 카메라, 3D 배치, 선택 경로 강조를 소유한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
-- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
+- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 현재 3D runtime을 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
 - `quartz/scripts/generate-memory-atlas-semantics.mjs` — qmd HTTP vector 검색을 slug 관계 임시 산출물로 바꾸며 실패 시 오래된 산출물을 제거한다.
+
+Plan 9에서는 화면과 브라우저 책임을 다음 파일로 분리한다.
+
+- `quartz/quartz/components/memoryAtlasView.tsx` — 모드 전환, 시작점, 지역 관계 문맥과 범례의 작은 Preact SSR 조각을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 최소 브라우저 상태, 사용자 event, 파생 데이터 계산과 현재 렌더러 교체를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D 렌더러가 함께 구현하는 생명 주기 계약을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — 기존 3D runtime 책임을 이어받는다.
+
+이 분리 뒤 `memoryAtlas.inline.ts`는 SPA 진입점만 남기고, emitter는 2D와 3D runtime을 별도 ESM 파일로 묶는다.
 
 표시 컴포넌트는 frontmatter가 일부만 있어도 동작해야 한다.
 OKF 내보내기 로직을 Quartz에 넣지 않고 교환 경계를 별도 스크립트로 유지한다.

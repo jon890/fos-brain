@@ -110,7 +110,7 @@ export const FIXED_MEMORY_ATLAS_ENTRYPOINTS: MemoryAtlasEntrypointDefinition[] =
     match: {
       slugs: ["topics/career", "concepts/career", "entities/career"] as FullSlug[],
       titleIncludes: ["career", "커리어", "이력", "경력"],
-      tags: ["career", "커리어", "work-style"],
+      tags: ["career", "커리어"],
     },
   },
   {
