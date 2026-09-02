@@ -96,7 +96,7 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
-| `searches` | 객체 배열 | 같은 질문의 `lex`, `vec`를 포함한다. |
+| `searches` | 객체 배열 | 하나 이상의 `lex`, `vec` 검색을 담는다. 일반 지식 검색과 Brain 질문은 같은 질문의 `lex`, `vec`를 함께 사용한다. Memory Atlas 의미 관계 생성은 문서 사이의 의미 이웃만 필요하므로 `vec` 하나만 사용한다. |
 | `collections` | 문자열 배열 | `brain-wiki`, `brain-raw`, `brain-private` 중 하나 이상이다. 단수형 `collection`은 쓰지 않는다. |
 | `limit` | 정수 | 기본값 5이며 1에서 20 사이다. |
 | `rerank` | boolean | CPU 실측 전 기본값은 `false`다. |
@@ -126,10 +126,63 @@ Memory Atlas의 연결은 기존 `links` 배열에서 대상 slug가 현재 색�
 중복된 source와 target 쌍은 하나로 합치며 self-link는 제외한다.
 supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 근거가 없으므로 생성하지 않는다.
 
+## Memory Atlas 의미 관계 임시 산출물
+
+qmd 생성기는 `quartz/.generated/memory-atlas-semantics.json`에 다음 형식의 임시 파일을 만든다.
+이 파일은 gitignore 대상이며 Quartz가 그대로 게시하지 않는다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `schemaVersion` | 정수 | 현재 값은 `1`이다. 다른 값은 전체 파일을 거부한다. |
+| `generatedAt` | ISO 8601 문자열 | 생성기가 실제 완료한 시각이다. |
+| `scope` | `public`, `protected` | 입력 collection 범위를 나타낸다. |
+| `source` | `qmd-vector` | 의미 관계가 qmd vector 검색 결과임을 나타낸다. |
+| `edges` | 객체 배열 | 문서 사이의 의미 이웃 관계다. |
+| `edges[].source` | slug | qmd 검색어로 사용한 wiki 문서다. |
+| `edges[].target` | slug | qmd가 반환한 wiki 문서다. |
+| `edges[].score` | 0 이상 1 이하 숫자 | qmd vector 관련도다. |
+
+edge는 undirected 관계로 취급한다.
+`source`와 `target`을 사전순으로 정규화한 쌍이 unique key이며 중복은 가장 높은 점수 하나만 남긴다.
+self-link, 허용하지 않은 collection, wiki 밖 경로와 설정한 최소 점수 아래 결과는 생성 단계에서 제외한다.
+제목, 태그, 본문, qmd 발췌문, 모델 cache와 자동 군집 이름은 이 파일에 기록하지 않는다.
+
+Quartz emitter는 임시 파일을 읽고 현재 콘텐츠 색인에 양쪽 slug가 모두 있는 edge만 남긴다.
+public 빌드에서는 `_private/` slug를 추가로 거부한다.
+검증된 결과는 `/static/memory-atlas-semantics.json`에 같은 `schemaVersion`, `generatedAt`, `source`, `edges`를 기록한다.
+임시 파일이 없거나 잘못되면 `edges`가 빈 배열인 유효한 결과를 내보내고 Quartz 빌드는 계속한다.
+
+## Memory Atlas 혼합 관계
+
+브라우저는 wiki link, 공통 tag와 검증된 의미 edge를 다음 내부 형태로 합친다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `source` | slug | 사전순으로 앞선 endpoint다. |
+| `target` | slug | 사전순으로 뒤의 endpoint다. |
+| `wiki` | boolean | 실제 wiki link가 한 방향 이상 있으면 `true`다. |
+| `tagScore` | 0 이상 1 이하 숫자 | 두 문서 tag 집합의 Jaccard 유사도다. |
+| `semanticScore` | 0 이상 1 이하 숫자 | 검증된 의미 edge 점수이며 없으면 `0`이다. |
+| `weight` | 양수 | 배치와 자동 영역 분석에 사용하는 혼합 점수다. |
+
+혼합 계수는 `wikiWeight > tagWeight > semanticWeight > 0` 순서를 지켜야 한다.
+`wikiWeight`는 `tagWeight + semanticWeight`보다 커야 하므로 실제 wiki link 하나의 최소 weight가 tag와 semantic 신호만 가진 관계의 최대 weight보다 크다.
+tag와 semantic 임계값, 각 계수의 정확한 값은 이 순서를 유지하면서 fixture에서 관련 문서가 무관한 문서보다 가까워지는 범위로 조정할 수 있다.
+실제 wiki link와 계산한 의미 관계는 화면에서 같은 관계 유형으로 표시하지 않는다.
+
+고정 시작점 정의는 `id`, 사용자용 `label`, tag·제목과 대표 slug를 찾는 `match` 조건, 선택적 `focus` 자식을 가진다.
+고정 최상위 `career`, `health`, `ai`와 AI 아래 `rag` focus는 코드 계약이다.
+현재 빌드에서 일치하는 노드가 없으면 해당 항목은 비활성으로 표시하고 private 노드를 대신 추정하지 않는다.
+
+자동 시작점은 혼합 graph의 결정적 community 분석으로 계산한 임시 값이다.
+각 후보는 `id`, `label`, `representativeSlug`, `memberSlugs`, `score`를 가지며 저장하거나 게시용 JSON에 기록하지 않는다.
+고정 시작점과 member가 대부분 겹치는 후보와 최소 community 크기를 충족하지 못한 후보는 표시하지 않는다.
+
 브라우저 상태는 다음 값을 메모리에만 보관하며 wiki와 콘텐츠 색인을 수정하지 않는다.
 
 | 필드 | 값 | 기본값 |
 | --- | --- | --- |
+| `mode` | `2d`, `3d` | `2d` |
 | `query` | 문자열 | 빈 문자열 |
 | `lens` | `all`, `topic`, `type`, `freshness`, `namespace` | `all` |
 | `types` | 지식 유형 집합 | 전체 |
@@ -144,6 +197,9 @@ supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 
 
 검색은 제목과 태그의 대소문자를 구분하지 않는 부분 일치다.
 필터 묶음 사이는 AND, 같은 필터 묶음의 선택값 사이는 OR로 결합한다.
+선택 노드 객체, hop depth, 전체·지역 좌표, 강조 집합과 시작점은 저장 상태가 아니다.
+이 값들은 현재 콘텐츠, 의미 관계와 `selectedSlug`에서 계산한다.
+모드를 바꿔도 `selectedSlug`와 filter는 유지하며, 선택 노드가 filter 결과에서 빠지면 `selectedSlug`를 지운다.
 
 ## Brain 근거 질문 API
 
