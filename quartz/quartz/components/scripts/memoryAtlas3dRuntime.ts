@@ -10,6 +10,7 @@ import type {
   MemoryAtlasState,
 } from "../memoryAtlasData"
 import type { FullSlug } from "../../util/path"
+import type { MemoryAtlasRuntimeMountOptions } from "./memoryAtlasRuntimeTypes"
 
 type GraphNode = MemoryAtlasNode & {
   x?: number
@@ -495,12 +496,7 @@ export function mountMemoryAtlas({
   data,
   state,
   onSelect,
-}: {
-  container: HTMLElement
-  data: MemoryAtlasData
-  state: MemoryAtlasState
-  onSelect: (slug: FullSlug) => void
-}) {
+}: MemoryAtlasRuntimeMountOptions) {
   container.replaceChildren()
   let currentState = state
   let currentData = cloneData(data, currentState)

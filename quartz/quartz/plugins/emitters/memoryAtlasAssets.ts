@@ -13,32 +13,42 @@ import { write } from "./helpers"
 export const MemoryAtlasAssets: QuartzEmitterPlugin = () => ({
   name: "MemoryAtlasAssets",
   async *emit(ctx, content) {
-    const entryPoint = path.join(
-      process.cwd(),
-      "quartz",
-      "components",
-      "scripts",
-      "memoryAtlasRuntime.ts",
-    )
     const result = await esbuild.build({
-      entryPoints: [entryPoint],
+      entryPoints: {
+        "memory-atlas-2d": path.join(
+          process.cwd(),
+          "quartz",
+          "components",
+          "scripts",
+          "memoryAtlas2dRuntime.ts",
+        ),
+        "memory-atlas-3d": path.join(
+          process.cwd(),
+          "quartz",
+          "components",
+          "scripts",
+          "memoryAtlas3dRuntime.ts",
+        ),
+      },
       bundle: true,
       format: "esm",
       platform: "browser",
       target: ["es2022"],
       minify: true,
+      outdir: "memory-atlas-assets",
       write: false,
     })
 
-    const bundled = result.outputFiles[0]?.contents
-    if (!bundled) throw new Error("Memory Atlas runtime bundle was not generated")
-
-    yield write({
-      ctx,
-      slug: joinSegments("static", "memory-atlas") as FullSlug,
-      ext: ".js",
-      content: Buffer.from(bundled),
-    })
+    for (const output of result.outputFiles) {
+      const name = path.basename(output.path, ".js")
+      if (name !== "memory-atlas-2d" && name !== "memory-atlas-3d") continue
+      yield write({
+        ctx,
+        slug: joinSegments("static", name) as FullSlug,
+        ext: ".js",
+        content: Buffer.from(output.contents),
+      })
+    }
 
     const semantics = await readPublishedSemantics(
       path.join(process.cwd(), ".generated", "memory-atlas-semantics.json"),
