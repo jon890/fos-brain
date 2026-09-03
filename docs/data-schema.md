@@ -203,7 +203,7 @@ tag와 semantic 임계값, 각 계수의 정확한 값은 이 순서를 유지�
 
 ## Brain 근거 질문 API
 
-같은 출처의 `POST /api/brain/ask`는 `application/json`만 받는다.
+같은 출처의 `POST /api/brain/ask`는 관리자 session과 `application/json`을 요구한다.
 
 요청은 다음 필드 하나를 가진다.
 
@@ -270,3 +270,69 @@ qmd의 `qmd://brain-wiki/<path>`는 public wiki 읽기 전용 mount로, `qmd://b
 `brain-ask`는 qmd URL, 모델 API URL, key 파일과 public·private wiki root를 runtime 설정으로 받는다.
 public 문서는 변수의 역할만 정의하며 실제 주소, port, host 경로와 profile 전환 규칙을 기록하지 않는다.
 질문, 답변과 출처 본문은 영구 데이터가 아니며 서버 재시작 뒤 복원하지 않는다.
+
+## Brain 역할과 관리자 session
+
+권한 역할은 `public`과 `admin` 두 값만 사용한다.
+로그인하지 않았거나 session이 유효하지 않으면 항상 `public`이다.
+브라우저가 보낸 역할 값은 읽지 않는다.
+
+관리자 session은 BFF 메모리에 다음 필드로 저장한다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `idHash` | 64자 hex 문자열 | 32바이트 session ID의 SHA-256이며 map key로 사용한다. |
+| `role` | `admin` | 다른 역할은 저장하지 않는다. |
+| `createdAt` | epoch millisecond | session 생성 시각이다. |
+| `expiresAt` | epoch millisecond | 기본값은 생성 시각부터 12시간 뒤다. |
+
+session 저장소는 최대 8개를 유지한다.
+조회할 때 만료된 항목을 삭제하고 새 session이 한도를 넘으면 `createdAt`이 가장 이른 항목을 삭제한다.
+BFF가 종료되면 모든 session을 삭제하며 영구 저장하거나 다른 instance와 공유하지 않는다.
+
+브라우저에는 32바이트 원문 session ID를 base64url로 인코딩해 `__Host-brain_session` cookie로 전달한다.
+cookie는 `Path=/`, `Secure`, `HttpOnly`, `SameSite=Strict`를 사용하고 `Domain`을 지정하지 않는다.
+인증과 private 응답은 `Cache-Control: private, no-store`를 사용한다.
+
+관리자 password hash 파일은 빈 줄 없는 한 줄이며 다음 형식을 사용한다.
+
+```text
+scrypt$131072$8$1$<salt-base64url>$<hash-base64url>
+```
+
+salt는 16바이트 이상이고 derived key는 64바이트다.
+Node `crypto.scrypt`의 `maxmem`은 이 매개변수가 요구하는 메모리보다 크게 256 MiB로 고정한다.
+평문 비밀번호와 hash 원문은 git, 로그와 API 응답에 기록하지 않는다.
+
+## Brain 인증 API
+
+`POST /api/auth/login`은 `application/json` 요청의 `password` 문자열 하나만 받는다.
+앞뒤 공백을 암묵적으로 제거하지 않으며 길이는 1자 이상 256자 이하다.
+
+로그인 성공 응답은 `200`과 다음 필드를 반환하고 session cookie를 설정한다.
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `role` | `admin` | 인증된 단일 역할이다. |
+| `expiresAt` | ISO 8601 문자열 | session 만료 시각이다. |
+
+`GET /api/auth/session`은 항상 `200`이며 `role`, `expiresAt`을 반환한다.
+비로그인 상태는 `role: public`, `expiresAt: null`이다.
+
+`POST /api/auth/logout`은 session이 없어도 `204`를 반환하고 cookie를 만료시킨다.
+`GET /api/auth/authorize`는 관리자면 `204`, 그 외에는 `401`이며 Nginx 권한 확인 요청에 사용한다.
+
+| HTTP | `error.code` | 의미 |
+| --- | --- | --- |
+| 400 | `invalid_login` | 요청 형식이나 password 길이가 잘못되었다. |
+| 401 | `invalid_credentials` | password가 일치하지 않는다. |
+| 401 | `authentication_required` | private 기능에 유효한 session이 없다. |
+| 403 | `origin_rejected` | 상태를 바꾸는 요청의 출처가 허용한 Brain origin과 다르다. |
+| 429 | `login_rate_limited` | 같은 client의 로그인 시도가 15분에 5회를 넘었다. |
+
+## 관리자 콘텐츠 API
+
+`GET /api/private/content-index`는 관리자용 병합 `contentIndex.json`을 반환한다.
+`GET /api/private/memory-atlas-semantics`는 관리자용 관계 데이터 JSON을 반환한다.
+두 endpoint는 관리자 Guard를 적용하고 `Cache-Control: private, no-store`를 반환한다.
+설정한 read-only 파일의 실제 경로 밖으로 이동하거나 다른 파일명을 요청할 수 없다.
