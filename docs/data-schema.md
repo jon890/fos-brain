@@ -290,6 +290,10 @@ session 저장소는 최대 8개를 유지한다.
 조회할 때 만료된 항목을 삭제하고 새 session이 한도를 넘으면 `createdAt`이 가장 이른 항목을 삭제한다.
 BFF가 종료되면 모든 session을 삭제하며 영구 저장하거나 다른 instance와 공유하지 않는다.
 
+로그인 시도 제한 provider는 client 주소를 key로 삼아 15분 구간의 시도 횟수와 마지막 시각을 메모리에 저장한다.
+만료 항목을 먼저 삭제하고 최대 1,024개 client를 유지하며 한도를 넘으면 가장 오래된 항목을 삭제한다.
+이 상태도 BFF가 종료되면 모두 삭제하며 외부 throttling package에 의존하지 않는다.
+
 브라우저에는 32바이트 원문 session ID를 base64url로 인코딩해 `__Host-brain_session` cookie로 전달한다.
 cookie는 `Path=/`, `Secure`, `HttpOnly`, `SameSite=Strict`를 사용하고 `Domain`을 지정하지 않는다.
 인증과 private 응답은 `Cache-Control: private, no-store`를 사용한다.
@@ -305,6 +309,9 @@ Node `crypto.scrypt`의 `maxmem`은 이 매개변수가 요구하는 메모리�
 평문 비밀번호와 hash 원문은 git, 로그와 API 응답에 기록하지 않는다.
 
 ## Brain 인증 API
+
+모든 `POST` 요청은 `Origin` header가 있어야 하며 그 값의 origin이 설정한 Brain origin과 정확히 같아야 한다.
+header가 없거나 값이 다르면 `origin_rejected`로 거부하고 `Referer`를 대체 입력으로 사용하지 않는다.
 
 `POST /api/auth/login`은 `application/json` 요청의 `password` 문자열 하나만 받는다.
 앞뒤 공백을 암묵적으로 제거하지 않으며 길이는 1자 이상 256자 이하다.
@@ -327,7 +334,7 @@ Node `crypto.scrypt`의 `maxmem`은 이 매개변수가 요구하는 메모리�
 | 400 | `invalid_login` | 요청 형식이나 password 길이가 잘못되었다. |
 | 401 | `invalid_credentials` | password가 일치하지 않는다. |
 | 401 | `authentication_required` | private 기능에 유효한 session이 없다. |
-| 403 | `origin_rejected` | 상태를 바꾸는 요청의 출처가 허용한 Brain origin과 다르다. |
+| 403 | `origin_rejected` | `Origin`이 없거나 설정한 Brain origin과 정확히 다르다. |
 | 429 | `login_rate_limited` | 같은 client의 로그인 시도가 15분에 5회를 넘었다. |
 
 ## 관리자 콘텐츠 API

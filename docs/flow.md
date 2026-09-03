@@ -67,26 +67,28 @@ SPA 이동이나 필터 재적용이 겹치면 이전 렌더러와 애니메이�
 
 Memory Atlas는 `GET /api/auth/session`으로 현재 역할을 확인한다.
 public 색인은 정적 경로에서 먼저 읽고, 역할이 `admin`이면 보호 API에서 관리자 색인과 관계 데이터를 다시 읽는다.
-public 빌드에는 private 노드가 없고 private 필터는 관리자 색인을 읽은 뒤에만 표시한다.
+public 빌드에는 private 노드가 없고 private filter와 namespace checkbox는 관리자 색인을 읽은 뒤에만 표시한다.
 
 ## 관리자 로그인 흐름
 
 1. 비로그인 사용자가 Memory Atlas의 `관리자 로그인`을 선택한다.
 2. 화면이 비밀번호 입력 대화상자를 열고 같은 출처의 `POST /api/auth/login`을 호출한다.
-3. BFF는 입력 형식, 요청 출처와 로그인 시도 제한을 검사한다.
+3. BFF는 입력 형식과 로그인 시도 제한을 검사하고, `Origin` header가 없거나 설정한 Brain origin과 정확히 다르면 요청을 거부한다. `Referer`는 대신 사용하지 않는다.
 4. BFF는 mode 600 파일에서 읽은 scrypt hash와 입력 비밀번호를 `crypto.timingSafeEqual`로 검사한다.
 5. 인증에 성공하면 BFF가 256비트 무작위 session ID를 만들고 `admin` 역할과 만료 시각을 메모리에 저장한다.
 6. 브라우저는 `__Host-brain_session` cookie를 받은 뒤 같은 Brain 주소를 다시 읽는다.
-7. Memory Atlas가 관리자 색인과 관계 데이터를 읽어 public 그래프를 교체한다.
+7. Memory Atlas가 관리자 색인과 관계 데이터를 읽어 public 그래프를 교체하고 private namespace checkbox와 `data-available-namespaces`를 함께 갱신한다.
 
 비밀번호가 틀리면 계정 존재나 실패 원인을 구분하지 않는 `invalid_credentials`를 반환한다.
 15분 안에 같은 client에서 5회를 초과하면 `login_rate_limited`를 반환한다.
+로그인 시도 저장소는 최대 1,024개 client를 유지하고 만료 항목을 먼저 정리한 뒤 한도를 넘으면 가장 오래된 항목을 폐기한다.
 session 저장소는 최대 8개를 유지하고 한도를 넘으면 가장 오래된 session을 폐기한다.
 session은 기본 12시간 뒤 만료되며 BFF를 재시작해도 복원하지 않는다.
 
-로그아웃은 session ID를 서버 저장소에서 제거하고 cookie를 만료시킨 뒤 public 화면을 다시 읽는다.
+로그아웃은 session ID를 서버 저장소에서 제거하고 cookie를 만료시킨 뒤 private checkbox, DOM 속성과 `sessionStorage`의 private namespace 선택을 지우고 public 화면을 다시 읽는다.
 session 확인 API가 없거나 실패하면 public 역할로 처리한다.
-session이 만료된 private 문서 요청과 private API 요청은 `401`을 반환한다.
+session이 만료된 private API 요청은 BFF가 `401`을 반환한다.
+실제 `/_private` 문서 요청의 `401`은 private 인프라 저장소의 reverse proxy 통합 검사에서 확인한다.
 
 ## Memory Atlas 의미 관계 생성 흐름
 
