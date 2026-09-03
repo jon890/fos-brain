@@ -301,7 +301,7 @@ async function convertWikilinks(content, sourceFile, wikiRoot, rawRoot, slugInde
       defaultLabel = path.basename(parsed.target, path.extname(parsed.target))
     } else {
       if (parsed.target.includes("/") || parsed.target.includes("\\")) {
-        throw new Error(`Unresolved wiki link (expected bare slug): ${sourceFile}: ${match[0]}`)
+        throw new Error(`Unresolved wiki link (expected [[filename]] without a folder path): ${sourceFile}: ${match[0]}`)
       }
       const candidates = slugIndex.get(parsed.target) ?? []
       if (candidates.length !== 1) {

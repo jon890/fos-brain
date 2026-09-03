@@ -1,4 +1,4 @@
-# Phase 01 — OKF 호환 계약과 내보내기
+# Phase 01: OKF 호환 계약과 내보내기
 
 **Execution profile**: deep
 
@@ -6,7 +6,7 @@
 
 ## 목표
 
-내부 bare-slug 링크를 유지하면서 public 지식을 OKF v0.2 호환 묶음으로 안전하게 내보낸다.
+폴더 경로 없이 파일명만 쓴 내부 wiki 링크를 유지하면서 public 지식을 OKF v0.2 호환 묶음으로 안전하게 내보낸다.
 
 **범위 외**: 검색 순위와 Quartz 화면은 다음 phase가 담당한다.
 
@@ -29,7 +29,7 @@
 
 `.agents/plugin/fos-brain/scripts/okf-export.cjs`를 추가한다.
 입력은 저장소 루트와 출력 경로이며, public `wiki/`와 `raw/`만 복사한다.
-wiki 문서의 bare-slug와 raw wikilink를 묶음 내부 상대 Markdown 링크로 바꾸고 루트 `index.md`를 만든다.
+wiki 문서에서 폴더 경로 없이 파일명만 쓴 링크와 raw 출처 링크를 묶음 내부 상대 Markdown 링크로 바꾸고 루트 `index.md`를 만든다.
 기존 frontmatter 원문을 보존하고 최상위 키의 존재만 정규식으로 감지한다.
 `concepts/`, `topics/`, `entities/` 문서에만 누락된 type, title, description, generated를 JSON 호환 YAML 값으로 삽입하며 기존 중첩 배열·객체는 재직렬화하지 않는다.
 묶음 루트 `index.md`의 frontmatter에는 `okf_version`만 기록한다.

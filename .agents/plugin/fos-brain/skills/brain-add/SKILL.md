@@ -145,11 +145,11 @@ wiki에 쓰기 전에 채팅 인라인(기록용)과 HTML 미리보기(렌더링
 
 ### 6b. HTML 미리보기 (기본, 생략 금지)
 
-페이지가 실제로 어떻게 렌더되는지, `[[wikilink]]` 백링크가 맞는지는 텍스트만으로 검토가 어렵다.
+페이지가 실제로 어떻게 보이는지, `[[파일명]]` 형태의 백링크가 맞는지는 텍스트만으로 검토하기 어렵다.
 쓸 페이지 `.md`를 임시 파일로 만들어 HTML 미리보기를 띄운다. Dooray·GitHub 미리보기와 같은 관례다.
 
 - 생성기: `scripts/generate_preview.py` (이 스킬 번들 안). 화면은 `brain-curate`와 같은 Memory Atlas 문서 템플릿을 사용한다.
-- 신규/보강을 배지로 구분하고, `[[wikilink]]` 대상이 기존 brain 또는 이번 작성 페이지에 있는지 표시한다(빨간 배지 = 어느 쪽에도 없는 대상).
+- 신규와 보강을 배지로 구분하고, `[[파일명]]` 링크의 대상이 기존 brain 또는 이번 작성 페이지에 있는지 표시한다. 어느 쪽에도 대상이 없으면 빨간 배지를 표시한다.
 
 ```bash
 python3 "<skill-dir>/scripts/generate_preview.py" \
@@ -167,7 +167,7 @@ python3 "<skill-dir>/scripts/generate_preview.py" \
 - `--ns` 가 private 면 `--known-from` 도 그 네임스페이스 wiki 로 바꾼다 (예: `~/personal/fos-brain/private/wiki`).
 - `--new` 는 새로 만들 페이지, `--update` 는 기존 보강 페이지. 보강본은 실제 brain 파일을 복사해 보강 내용을 얹은 버전을 넘긴다.
 - 주의: 본문에 `</script>` 가 있으면 생성기가 거부한다. CDN 로드라 오프라인이면 스타일이 빠진다.
-- 빨간 🔗 배지는 기존 brain 과 이번 작성 페이지 어디에도 없는 백링크 대상이다. slug 오타나 누락 페이지인지 확인한다.
+- 빨간 🔗 배지는 기존 brain과 이번 작성 페이지 어디에도 백링크 대상이 없다는 뜻이다. 파일명을 잘못 썼거나 페이지가 누락됐는지 확인한다.
 
 ### 6c. 결정 (다음 턴)
 
@@ -191,7 +191,7 @@ python3 "<skill-dir>/scripts/generate_preview.py" \
 - 검색과 교환에 구조화된 출처가 필요하면 `sources`에 필수 `resource`, 선택적 `id`, 선택적 `title`을 기록하되 본문의 `## Sources`도 유지한다.
 - 에이전트 생성 사실이 있으면 `generated.by`, `generated.at`을 기록하고, 실제 검증 이력이 있으면 `verified`의 단일 객체나 객체 배열에 검증 주체 `by`와 시각 `at`을 기록한다. 확인되지 않은 값은 추정하지 않는다.
 - 모든 페이지에 양방향 백링크
-- **wikilink 는 bare-slug 로**: 다른 wiki 페이지는 경로 없이 파일명만 — `[[work-style]]` (O), `[[topics/work-style]]`·`[[../concepts/X]]` (X). 경로형은 로컬 전체 빌드에서 prefix 누락으로 404. 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 경로형 유지(빌드 대상 아님). (CLAUDE.md 작업 원칙 3 참조)
+- **wiki 링크에는 폴더 경로를 쓰지 않음**: 다른 wiki 페이지는 `[[work-style]]`처럼 파일명만 쓴다. `[[topics/work-style]]`·`[[../concepts/X]]`처럼 폴더 경로를 쓴 링크는 로컬 전체 빌드에서 네임스페이스 폴더가 빠져 404가 발생한다. 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 빌드 대상이 아니므로 경로를 유지한다. (CLAUDE.md 작업 원칙 3 참조)
 - **링크 방향 규칙**: 공개(public) 페이지는 private 를 링크하지 않는다. 비공개 → 공개는 허용.
 
 ## 8단계: INDEX 갱신

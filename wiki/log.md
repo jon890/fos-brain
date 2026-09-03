@@ -51,7 +51,7 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 ## [2026-05-28] add | fos-claw(ai-nodes) 자동화 시스템 아키텍처
 - Source: github.com/jon890/fos-claw AGENTS.md/README.md (public repo, 경로 인용)
 - 신규 4 페이지: entity(ai-nodes), concept 3(multi-workspace-monorepo, script-skill-separation, task-run-tracking)
-- 범위: 아키텍처·패턴만(개인 워크스페이스 데이터 제외). work-style 하네스 클러스터와 cross-link.
+- 범위: 아키텍처·패턴만(개인 워크스페이스 데이터 제외). work-style 하네스 클러스터와 서로 연결.
 
 ## [2026-05-28] add | GitHub Actions AI 코드 리뷰 워크플로우 패턴
 - Source: github.com/jon890/nhncloud-cli .github/workflows/claude-code-review.yml (public repo, 경로 인용)
@@ -192,9 +192,9 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - 신규 1 page(document-parsing-quality-evaluation), 품질 평가 소분류 신설
 
 ## [2026-06-25] lint | 구조 무결성 점수 0점 감점으로 복구
-- 검사: brain_score 구조 8축 / 결과: visibility leak 0, broken backlink 0, path wikilink 0, missing Sources 0, frontmatter 0, index desync 0, orphan 0, style tilde 0
-- 수정: public→work 전용 wikilink 제거, 경로형 wikilink 2건 제거, docker-compose-config-reload Sources 보강
-- 도구 보정: `brain_score.py` 의 Sources 판정을 wikilink 필수에서 비어 있지 않은 Sources 섹션으로 변경해 외부 repo·실측 로그 출처 오탐을 제거
+- 검사: brain_score 구조 8축 / 결과: 공개 범위 누출 0, 깨진 역방향 링크 0, 경로를 포함한 wiki 링크 0, Sources 누락 0, frontmatter 오류 0, INDEX 불일치 0, 연결되지 않은 문서 0, 물결표 문체 0
+- 수정: public에서 업무 전용 문서로 향하는 wiki 링크 제거, 경로를 포함한 wiki 링크 2건 제거, docker-compose-config-reload Sources 보강
+- 도구 보정: `brain_score.py`의 Sources 판정을 wiki 링크 필수에서 비어 있지 않은 Sources 섹션으로 변경해 외부 저장소·실측 로그 출처 오탐을 제거
 
 ## [2026-06-25] add | NAVER D2 GNOSIS 에이전트 자율 성장 프레임워크
 - Source: raw/videos/2026-06-17-naver-d2-gnosis-agent-autonomous-growth.md (YouTube 자동자막 기반, 수치·실험은 발표자 자체 평가로 취급)

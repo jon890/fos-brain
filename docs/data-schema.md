@@ -48,8 +48,8 @@
 
 ## 링크 계약
 
-- 내부 wiki의 다른 페이지는 `[[bare-slug]]`로 연결한다.
-- 내부 raw 출처는 기존 상대 경로 wikilink를 유지한다.
+- 내부 wiki의 다른 페이지는 `[[파일명]]`처럼 폴더 경로 없이 파일명만 쓴 링크로 연결한다.
+- 내부 raw 출처는 기존 폴더 경로가 포함된 wiki 링크를 유지한다.
 - OKF 내보내기에서는 두 형태를 묶음 내부의 상대 Markdown 링크로 변환한다.
 - public 문서는 private slug나 경로를 참조할 수 없다.
 
@@ -115,7 +115,7 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 | `description` | 문자열 | frontmatter 설명이며 노드 상세에 사용한다. |
 | `type` | `concept`, `topic`, `entity` | 기존 정규화 결과를 사용한다. |
 | `status` | `draft`, `stable`, `deprecated` | 잘못된 값은 생략한다. |
-| `freshness` | `{ date?: string, state: current\|stale\|invalid }` | `stale_after`의 날짜와 판정 결과다. |
+| `freshness` | 객체 | `date`에는 `stale_after` 날짜를 넣고, `state`에는 `current`, `stale`, `invalid` 중 하나를 넣는다. |
 | `updated` | ISO 8601 문자열 | Quartz가 선택한 수정일을 직렬화한다. |
 | `sourceCount` | 0 이상의 정수 | 유효한 `sources` 항목 수다. |
 

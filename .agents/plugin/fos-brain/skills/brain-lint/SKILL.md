@@ -18,9 +18,9 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
 
 ## 검사 항목
 
-1. **깨진 백링크 / 경로형 wikilink** — `<ns>/wiki/**/*.md` 의 `[[...]]` 무결성.
+1. **깨진 백링크 / 폴더 경로를 쓴 wiki 링크** — `<ns>/wiki/**/*.md`의 `[[...]]` 무결성.
    - (a) 링크가 실제 페이지를 가리키는지.
-   - (b) **경로형 금지** — `[[topics/X]]`·`[[../concepts/Y]]` 처럼 경로가 붙은 링크는 bare-slug(`[[X]]`)로 고친다. 경로형은 로컬 전체 빌드에서 prefix 누락으로 404 가 된다(CLAUDE.md 작업 원칙 3). 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 예외로 유지.
+   - (b) **폴더 경로 금지** — `[[topics/X]]`·`[[../concepts/Y]]`처럼 폴더 경로가 붙은 링크는 `[[X]]`처럼 파일명만 쓴 링크로 고친다. 폴더 경로를 쓴 링크는 로컬 전체 빌드에서 네임스페이스 폴더가 빠져 404가 발생한다(CLAUDE.md 작업 원칙 3). 단 `raw/` Sources 링크(`[[../../raw/...]]`)는 예외로 유지.
    - 일괄 점검: `rg -n '\[\[(\.\./)*(topics|concepts|entities)/' <ns>/wiki/`
 2. **고아 노트** — INDEX 와 다른 어느 곳에서도 참조되지 않는 페이지
 3. **중복 개념** — 제목·정의가 거의 같은 두 페이지(병합 후보)
@@ -79,7 +79,7 @@ Karpathy 워크플로우의 lint 단계. brain 품질을 점진적으로 끌어�
 | 채점 축 | 가중 | 근거 |
 |---|---|---|
 | visibility_leak | 10 | public이 private slug를 링크함 (유출, 보안 최고) |
-| broken_backlink | 5 | `[[slug]]` 가 어느 페이지도 안 가리킴 |
+| broken_backlink | 5 | `[[파일명]]`이 어느 페이지도 가리키지 않음 |
 | path_wikilink | 4 | `[[topics/X]]` 경로형 — 로컬 빌드 404 |
 | missing_sources | 3 | concepts 페이지에 `## Sources` 없음/빔 (entities·topics 면제) |
 | frontmatter | 3 | type/created/updated 누락 |

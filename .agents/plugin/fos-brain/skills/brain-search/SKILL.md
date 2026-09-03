@@ -27,7 +27,7 @@ Karpathy 워크플로우의 Q&A 단계. brain 지식 기반만으로 답하고, 
    - `BRAIN_QMD_URL`이 있으면 `"<plugin-root>/scripts/brain-search-http.cjs" "<질문>" '["brain-wiki"]' <후보-수>` 또는 `"<plugin-root>/scripts/brain-search-http.cjs" "<질문>" '["brain-private"]' <후보-수>`를 먼저 실행한다.
    - HTTP client가 실패하면 public은 `~/.local/bin-pinned/qmd query -c brain-wiki "<질문>" -n <후보-수>`, private은 `~/.local/bin-pinned/qmd query -c brain-private "<질문>" -n <후보-수>`를 사용한다.
    - 고정 실행 파일이나 해당 collection을 쓸 수 없으면, 같은 네임스페이스의 `wiki/INDEX.md`로 후보를 좁힌 뒤 `rg`로 wiki 본문만 검색한다.
-3. **후보와 관계 정독** — 각 네임스페이스에서 상위 후보만 정독하고, 관련 `[[bare-slug]]` wikilink를 한 단계만 따라 읽는다. 질문에 답할 근거가 충분해지면 후보를 더 늘리지 않는다. public에서는 private 링크를 따라가지 않는다.
+3. **후보와 관계 정독** — 각 네임스페이스에서 상위 후보만 정독하고, 폴더 경로 없이 파일명만 쓴 관련 wiki 링크를 한 단계만 따라 읽는다. 질문에 답할 근거가 충분해지면 후보를 더 늘리지 않는다. public에서는 private 링크를 따라가지 않는다.
 4. **부족할 때만 raw로 하강** — wiki와 한 단계 관계 문서만으로 근거가 부족할 때, 같은 네임스페이스의 후보 문서 `Sources`를 따라 raw를 읽거나 해당 raw를 검색한다. raw를 1차 검색으로 사용하지 않는다.
 5. **답변 작성**
    - 출처와 **네임스페이스 태그**를 함께 명시한다(예: `[public] [[ai-harness-pattern]]`, `[private] [[개념명]]`).

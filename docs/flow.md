@@ -110,10 +110,10 @@ public 저장소는 질문 API와 UI의 일반 계약만 검증한다.
 
 1. 명령이 public `wiki/`와 `raw/`만 읽는다.
 2. concept, topic, entity 문서의 제목과 첫 설명 문단으로 누락된 교환용 메타데이터를 보완한다.
-3. raw Markdown 사본에는 누락된 `type: Reference`만 추가하고 원본 본문과 wikilink는 보존한다.
+3. raw Markdown 사본에는 누락된 `type: Reference`만 추가하고 원본 본문과 wiki 링크는 보존한다.
 4. Markdown 이외 raw 파일은 내용 변경 없이 복사한다.
 5. 내부 `wiki/INDEX.md`는 `wiki/index.md`로 내보내고 `wiki/log.md`와 함께 예약 문서로 보존한다.
-6. wiki의 bare-slug 링크를 내보내기 묶음 안의 상대 Markdown 링크로 바꾼다.
+6. wiki에서 폴더 경로 없이 파일명만 쓴 링크를 내보내기 묶음 안의 상대 Markdown 링크로 바꾼다.
 7. 묶음 루트에 `okf_version`만 frontmatter로 가진 `index.md`를 만든다.
 8. 해석할 수 없는 wiki 링크가 있으면 성공으로 숨기지 않고 오류로 보고한다.
 

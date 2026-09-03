@@ -26,7 +26,7 @@ updated: 2026-06-01
     - blog-post-writer (민감정보 제거)
     - docs-audit (7축, Quality Loop, sub-agent 병렬)
     - resume-writer
-  - 에이전트 3개: cross-link auditor, orphan auditor, readme auditor
+  - 에이전트 3개: 문서 간 연결 검사, 연결되지 않은 문서 검사, README 검사
 
 ## 특이점
 

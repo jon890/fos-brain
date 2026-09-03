@@ -1,4 +1,4 @@
-# Phase 04 — 대표 문서 적용과 통합 검증
+# Phase 04: 대표 문서 적용과 통합 검증
 
 **Execution profile**: standard
 
@@ -17,7 +17,7 @@
 ### 1. 대표 문서 메타데이터 보강
 
 `wiki/concepts/build-with-teams-rules.md`와 `wiki/topics/rag-system-architecture-strategies.md`에 title, description, tags, status, stale_after, sources를 추가한다.
-본문의 H1, bare-slug 링크, Sources 섹션은 유지한다.
+본문의 H1, 폴더 경로 없이 파일명만 쓴 wiki 링크와 Sources 섹션은 유지한다.
 OpenClaw wiki 제거와 독립적으로 검색 회귀를 측정하도록 `.agents/plugin/fos-brain/tests/fixtures/retrieval-public.json`의 OpenClaw 질문을 `tech-stack-preferences` 대표 질문으로 교체한다.
 
 ### 2. 문서 계약 최종 대조
@@ -35,7 +35,7 @@ OKF 내보내기는 임시 디렉터리에 실행하고 public wiki와 raw만 �
 concept, topic, entity 문서에는 필요한 메타데이터 보완과 링크 변환이 적용되어야 한다.
 raw Markdown 사본에는 `type: Reference`가 있고 내부 raw 원본은 바뀌지 않아야 한다.
 실제 내보내기를 막는 `wiki/concepts/pitfalls-file-per-pattern.md`의 placeholder `[[slug]]`는 의미 링크가 아닌 리터럴 예시로 고친다.
-내보내기는 inline code와 fenced code 안의 wikilink 예시를 변환하지 않으며, 일반 본문의 wikilink와 unresolved 오류 계약은 유지한다.
+내보내기는 코드 안의 wiki 링크 예시를 변환하지 않으며, 일반 본문의 wiki 링크와 해석할 수 없는 링크를 오류로 처리하는 계약은 유지한다.
 
 ### 4. task 완료 상태 기록
 
