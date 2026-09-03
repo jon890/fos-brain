@@ -56,6 +56,8 @@ gh pr view $PR_NUMBER --repo $REPO --json title,body,additions,deletions,files,b
 gh pr diff $PR_NUMBER --repo $REPO
 
 checkout된 파일은 `Read`, `Grep`, `Glob`으로만 확인합니다.
+수동 실행에서는 기본 브랜치가 checkout될 수 있으므로 PR 변경은 `gh pr diff`를 기준으로 판단합니다.
+변경된 파일의 전체 내용이 필요하면 PR의 `headRefName`을 ref로 지정해 `gh api` raw 응답을 읽습니다.
 테스트, 빌드와 프로젝트 script를 실행하지 않습니다.
 
 additions와 deletions가 커서 전체를 끝까지 검토하기 어렵다면 요약 첫 부분에 다음 한계를 명시합니다.
