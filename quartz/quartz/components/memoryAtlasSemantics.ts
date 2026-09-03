@@ -43,6 +43,10 @@ export type MemoryAtlasSemanticsParseResult =
   | { ok: true; artifact: MemoryAtlasSemanticsArtifact }
   | { ok: false; errors: MemoryAtlasSemanticsParseError[] }
 
+export type PublishedMemoryAtlasSemanticsParseResult =
+  | { ok: true; artifact: PublishedMemoryAtlasSemantics }
+  | { ok: false; errors: MemoryAtlasSemanticsParseError[] }
+
 type UnknownRecord = Record<string, unknown>
 
 const emptyGeneratedAt = "1970-01-01T00:00:00.000Z"
@@ -118,6 +122,51 @@ export function parseMemoryAtlasSemantics(input: unknown): MemoryAtlasSemanticsP
   }
 }
 
+export function parsePublishedMemoryAtlasSemantics(
+  input: unknown,
+): PublishedMemoryAtlasSemanticsParseResult {
+  const errors: MemoryAtlasSemanticsParseError[] = []
+
+  if (!isRecord(input)) {
+    return { ok: false, errors: [{ code: "not_object" }] }
+  }
+
+  if (input.schemaVersion !== MEMORY_ATLAS_SEMANTICS_SCHEMA_VERSION) {
+    errors.push({ code: "invalid_schema_version" })
+  }
+
+  if (typeof input.generatedAt !== "string" || !isValidIsoDate(input.generatedAt)) {
+    errors.push({ code: "invalid_generated_at" })
+  }
+
+  if (input.source !== MEMORY_ATLAS_SEMANTICS_SOURCE) {
+    errors.push({ code: "invalid_source" })
+  }
+
+  if (!Array.isArray(input.edges)) {
+    errors.push({ code: "invalid_edges" })
+  }
+
+  if (errors.length > 0) {
+    return { ok: false, errors }
+  }
+
+  const normalized = normalizeSemanticEdges(input.edges as unknown[], errors)
+  if (errors.length > 0) {
+    return { ok: false, errors }
+  }
+
+  return {
+    ok: true,
+    artifact: {
+      schemaVersion: MEMORY_ATLAS_SEMANTICS_SCHEMA_VERSION,
+      generatedAt: input.generatedAt as string,
+      source: MEMORY_ATLAS_SEMANTICS_SOURCE,
+      edges: normalized,
+    },
+  }
+}
+
 export function restrictMemoryAtlasSemanticsToSlugs(
   artifact: MemoryAtlasSemanticsArtifact,
   currentSlugs: Iterable<FullSlug>,
@@ -144,6 +193,40 @@ export function restrictMemoryAtlasSemanticsToSlugs(
     source: MEMORY_ATLAS_SEMANTICS_SOURCE,
     edges: [...edgeByKey.values()].sort(compareSemanticEdges),
   }
+}
+
+export function restrictPublishedMemoryAtlasSemanticsToSlugs(
+  artifact: PublishedMemoryAtlasSemantics,
+  currentSlugs: Iterable<FullSlug>,
+  options: { allowPrivate?: boolean } = {},
+): PublishedMemoryAtlasSemantics {
+  return restrictMemoryAtlasSemanticsToSlugs(
+    { ...artifact, scope: options.allowPrivate ? "protected" : "public" },
+    currentSlugs,
+    options,
+  )
+}
+
+function normalizeSemanticEdges(
+  edges: unknown[],
+  errors: MemoryAtlasSemanticsParseError[],
+): MemoryAtlasSemanticEdge[] {
+  const normalized = new Map<string, MemoryAtlasSemanticEdge>()
+  for (const [index, edge] of edges.entries()) {
+    const parsed = parseSemanticEdge(edge)
+    if (!parsed) {
+      errors.push({ code: "invalid_edge", index })
+      continue
+    }
+
+    const key = `${parsed.source}\u0000${parsed.target}`
+    const existing = normalized.get(key)
+    if (!existing || parsed.score > existing.score) {
+      normalized.set(key, parsed)
+    }
+  }
+
+  return [...normalized.values()].sort(compareSemanticEdges)
 }
 
 function parseSemanticEdge(input: unknown): MemoryAtlasSemanticEdge | undefined {

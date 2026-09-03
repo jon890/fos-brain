@@ -27,6 +27,11 @@ Quartz는 Preact 서버 렌더와 SPA 전환을 이미 사용하므로 관계 �
 - 기존 Preact를 유지하고 React나 client hydration 계층을 추가하지 않는다.
   Preact는 역할이 작은 서버 렌더 컴포넌트를 조합하고, 브라우저 controller는 최소 사용자 상태만 보관한다.
   graph 계산은 DOM에 의존하지 않는 TypeScript로 분리하고 2D와 3D 렌더러는 같은 제거 가능한 생명주기 계약을 구현한다.
+- 브라우저 회귀는 `browser-driver`만 사용한다.
+  Orca에서 상호작용과 worktree 경계를 판정하고, 비활성 탭이라 `shot`만 실패하면 상호작용 판정과 분리해 headless backend로 화면 증거를 만든다.
+  headless 결과로 Orca 상호작용 실패를 성공 처리하지 않는다.
+- 현재 driver에는 실제 key 입력 명령이 없으므로 접근성 검사는 native `button`, tab order와 key handler를 확인한다.
+  synthetic key event와 `.click()`은 별도 단계로 실행해 실제 키 입력으로 오인하지 않는다.
 
 ## 검토한 대안
 

@@ -4,7 +4,9 @@ import type { FullSlug } from "../util/path"
 import {
   createEmptyPublishedMemoryAtlasSemantics,
   parseMemoryAtlasSemantics,
+  parsePublishedMemoryAtlasSemantics,
   restrictMemoryAtlasSemanticsToSlugs,
+  restrictPublishedMemoryAtlasSemanticsToSlugs,
   type MemoryAtlasSemanticsArtifact,
 } from "./memoryAtlasSemantics"
 
@@ -83,6 +85,49 @@ describe("memory atlas semantics", () => {
       source: "qmd-vector",
       edges: [],
     })
+  })
+
+  test("accepts scope-less published semantics for the browser runtime", () => {
+    const result = parsePublishedMemoryAtlasSemantics({
+      schemaVersion: 1,
+      generatedAt: "2026-09-02T00:00:00.000Z",
+      source: "qmd-vector",
+      edges: [
+        { source: "concepts/b", target: "concepts/a", score: 0.4 },
+        { source: "concepts/a", target: "concepts/b", score: 0.9 },
+      ],
+    })
+
+    assert.strictEqual(result.ok, true)
+    assert.deepStrictEqual(result.ok ? result.artifact.edges : [], [
+      { source: slug("concepts/a"), target: slug("concepts/b"), score: 0.9 },
+    ])
+  })
+
+  test("keeps published semantics scoped to currently rendered slugs", () => {
+    const parsed = parsePublishedMemoryAtlasSemantics({
+      schemaVersion: 1,
+      generatedAt: "2026-09-02T00:00:00.000Z",
+      source: "qmd-vector",
+      edges: [
+        { source: "concepts/rag", target: "concepts/graph-rag", score: 0.82 },
+        { source: "concepts/rag", target: "_private/entities/work", score: 0.64 },
+      ],
+    })
+
+    assert.strictEqual(parsed.ok, true)
+    const result = parsed.ok
+      ? restrictPublishedMemoryAtlasSemanticsToSlugs(parsed.artifact, [
+          slug("concepts/rag"),
+          slug("concepts/graph-rag"),
+          slug("_private/entities/work"),
+        ])
+      : createEmptyPublishedMemoryAtlasSemantics()
+
+    assert.strictEqual(JSON.stringify(result).includes("_private/"), false)
+    assert.deepStrictEqual(result.edges, [
+      { source: slug("concepts/graph-rag"), target: slug("concepts/rag"), score: 0.82 },
+    ])
   })
 
   test("keeps only edges whose endpoints are in the current content set", () => {

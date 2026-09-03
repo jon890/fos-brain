@@ -290,6 +290,76 @@
   gap: 0.5rem;
 }
 
+.memory-atlas__entrypoints {
+  border-block: 1px solid rgba(154, 201, 186, 0.045);
+  display: grid;
+  gap: 0.48rem;
+  padding-block: 0.58rem;
+
+  h2 {
+    color: var(--atlas-paper);
+    font-family: "IBM Plex Mono", var(--codeFont);
+    font-size: 0.74rem;
+    letter-spacing: 0;
+    margin: 0;
+    text-transform: uppercase;
+  }
+}
+
+.memory-atlas__entrypoint-group,
+.memory-atlas__entrypoint-auto ol {
+  display: grid;
+  gap: 0.34rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.memory-atlas__entrypoints button {
+  background: rgba(154, 201, 186, 0.09);
+  border: 1px solid rgba(154, 201, 186, 0.18);
+  border-radius: 8px;
+  color: var(--atlas-paper);
+  cursor: pointer;
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+  padding: 0.44rem 0.52rem;
+  text-align: left;
+  width: 100%;
+
+  span,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 0.78rem;
+  }
+
+  small {
+    color: var(--atlas-muted);
+    font-size: 0.64rem;
+  }
+
+  &:hover:not([disabled]) {
+    background: rgba(154, 201, 186, 0.16);
+    border-color: rgba(154, 201, 186, 0.34);
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.46;
+  }
+}
+
+.memory-atlas__entrypoint-child {
+  margin-left: 0.62rem;
+  width: calc(100% - 0.62rem) !important;
+}
+
 .memory-atlas__toggle {
   align-items: center;
   color: var(--atlas-muted);
@@ -387,6 +457,150 @@
   display: none;
 }
 
+.memory-atlas-2d {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.memory-atlas-2d__svg,
+.memory-atlas-2d__nodes {
+  inset: 0;
+  position: absolute;
+}
+
+.memory-atlas-2d__svg {
+  height: 100%;
+  width: 100%;
+}
+
+.memory-atlas-2d__link {
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.memory-atlas-2d__link--wiki {
+  stroke: var(--atlas-paper);
+  stroke-width: 1.6;
+}
+
+.memory-atlas-2d__link--semantic {
+  stroke: var(--atlas-mint);
+  stroke-dasharray: 3 8;
+  stroke-width: 0.85;
+}
+
+.memory-atlas-2d__nodes button {
+  background: rgba(2, 8, 10, 0.72);
+  border: 1px solid rgba(154, 201, 186, 0.22);
+  border-radius: 999px;
+  color: var(--atlas-paper);
+  cursor: pointer;
+  font-size: clamp(0.66rem, 0.84vw, 0.82rem);
+  line-height: 1.15;
+  max-width: min(15rem, 24vw);
+  overflow: hidden;
+  padding: 0.32rem 0.54rem;
+  position: absolute;
+  text-overflow: ellipsis;
+  transform: translate(-50%, -50%);
+  transition:
+    left 220ms ease,
+    top 220ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
+  white-space: nowrap;
+}
+
+.memory-atlas-2d__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 160ms ease;
+}
+
+.memory-atlas-2d__nodes button[data-related="true"] {
+  border-color: rgba(154, 201, 186, 0.46);
+}
+
+.memory-atlas-2d__nodes button[data-selected="true"] {
+  background: rgba(241, 201, 122, 0.2);
+  border-color: var(--atlas-focus);
+  box-shadow: 0 0 0 1px rgba(241, 201, 122, 0.28);
+  color: var(--atlas-paper);
+  font-weight: 700;
+  z-index: 3;
+}
+
+.memory-atlas-2d__nodes button[data-depth="1"] {
+  z-index: 2;
+}
+
+.memory-atlas-2d__nodes button[data-evidence="true"] {
+  border-color: #5cc8b2;
+}
+
+.memory-atlas__context {
+  align-items: center;
+  background: rgba(2, 8, 10, 0.38);
+  border: 1px solid rgba(154, 201, 186, 0.08);
+  border-radius: 999px;
+  color: var(--atlas-muted);
+  display: flex;
+  gap: 0.68rem;
+  left: max(230px, calc(50vw - 280px));
+  max-width: min(560px, calc(100vw - 660px));
+  min-height: 42px;
+  min-width: 0;
+  padding: 0.28rem 0.48rem;
+  position: absolute;
+  top: 4.1rem;
+  width: 560px;
+  z-index: 4;
+
+  button {
+    background: rgba(154, 201, 186, 0.13);
+    border: 1px solid rgba(154, 201, 186, 0.35);
+    border-radius: 999px;
+    color: var(--atlas-paper);
+    cursor: pointer;
+    min-height: 32px;
+    padding: 0.3rem 0.52rem;
+    white-space: nowrap;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  div {
+    display: grid;
+    min-width: 0;
+  }
+
+  span,
+  p {
+    font-size: 0.66rem;
+  }
+
+  strong {
+    color: var(--atlas-paper);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  p {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .memory-atlas__topbar {
   background: rgba(2, 8, 10, 0.32);
   border-color: rgba(154, 201, 186, 0.08);
@@ -427,6 +641,32 @@
 .memory-atlas__ask-toggle {
   justify-content: center;
   white-space: nowrap;
+}
+
+.memory-atlas__mode-switch {
+  background: rgba(154, 201, 186, 0.08);
+  border: 1px solid rgba(154, 201, 186, 0.16);
+  border-radius: 999px;
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.16rem;
+
+  button {
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    color: var(--atlas-muted);
+    cursor: pointer;
+    min-height: 30px;
+    padding: 0.24rem 0.48rem;
+    white-space: nowrap;
+  }
+
+  button[aria-pressed="true"] {
+    background: rgba(154, 201, 186, 0.18);
+    color: var(--atlas-paper);
+  }
 }
 
 .memory-atlas__ask {
@@ -868,6 +1108,13 @@ body.memory-atlas-doc-page {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .memory-atlas-2d__nodes button,
+  .memory-atlas-2d__label {
+    transition: none;
+  }
+}
+
 .memory-atlas-doc-nav {
   align-items: center;
   backdrop-filter: blur(16px) saturate(1.05);
@@ -920,6 +1167,20 @@ body.memory-atlas-doc-page {
     width: calc(100vw - 1.5rem);
   }
 
+  .memory-atlas__context {
+    border-radius: 8px;
+    display: grid;
+    gap: 0.32rem;
+    left: 0.75rem;
+    max-width: calc(100vw - 1.5rem);
+    top: 4.55rem;
+    width: calc(100vw - 1.5rem);
+  }
+
+  .memory-atlas-2d__nodes button {
+    max-width: min(11rem, 44vw);
+  }
+
   .memory-atlas__ask-toggle {
     min-height: 44px;
   }
@@ -943,7 +1204,7 @@ body.memory-atlas-doc-page {
   .memory-atlas__error {
     left: 0.75rem;
     max-width: calc(100vw - 1.5rem);
-    top: 4.6rem;
+    top: 8.2rem;
   }
 
   .memory-atlas__backdrop {
