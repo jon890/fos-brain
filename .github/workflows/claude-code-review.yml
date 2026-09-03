@@ -126,7 +126,8 @@ jobs:
             | select(
                 (.body | length < 12) or
                 (.body | test("^(test|sample|placeholder|foo|bar|example)\\s*[0-9]*$"; "i")) or
-                ((.body | test("^(🔴|🟡) \\*\\*문제\\*\\*:.*\\*\\*수정\\*\\*:"; "s")) | not)
+                (((.body | test("^(🔴|🟡) \\*\\*문제\\*\\*:")) and
+                  (.body | test("\\*\\*수정\\*\\*:"))) | not)
               )
             | .id' > "$INVALID_COMMENTS"; then
             echo "::warning::인라인 댓글 검증을 수행하지 못했습니다."
@@ -152,5 +153,5 @@ jobs:
 
           gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
             --method POST \
-            --field content="$CONTENT" \
+            --raw-field content="$CONTENT" \
             || echo "::warning::종료 반응을 남기지 못했습니다."
