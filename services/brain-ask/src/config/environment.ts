@@ -41,6 +41,30 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   BRAIN_PRIVATE_WIKI_ROOT!: string;
 
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  BRAIN_ADMIN_PASSWORD_HASH_FILE!: string;
+
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  BRAIN_PRIVATE_CONTENT_INDEX_FILE!: string;
+
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  BRAIN_PRIVATE_MEMORY_ATLAS_SEMANTICS_FILE!: string;
+
+  @IsUrl({ protocols: ["http", "https"], require_protocol: true, require_tld: false })
+  BRAIN_ORIGIN!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(255)
+  BRAIN_TRUST_PROXY_HOPS = 0;
+
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -92,6 +116,7 @@ export function validateEnvironment(config: Record<string, unknown>): Environmen
     "MODEL_MAX_OUTPUT_TOKENS",
     "MODEL_MAX_RESPONSE_BYTES",
     "BRAIN_ASK_MAX_ANSWER_CHARS",
+    "BRAIN_TRUST_PROXY_HOPS",
   ]) {
     const value = config[key];
     if (
@@ -114,6 +139,9 @@ export function validateEnvironment(config: Record<string, unknown>): Environmen
   });
   if (errors.length > 0) {
     throw new Error(`Invalid brain-ask configuration: ${errors.join("; ")}`);
+  }
+  if (new URL(candidate.BRAIN_ORIGIN).origin !== candidate.BRAIN_ORIGIN) {
+    throw new Error("Invalid brain-ask configuration: BRAIN_ORIGIN must be an exact origin");
   }
   return candidate;
 }

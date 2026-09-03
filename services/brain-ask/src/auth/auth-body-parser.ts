@@ -1,28 +1,27 @@
 import type { NextFunction, Request, Response } from "express";
-import { InvalidQuestionError } from "./brain-ask.errors.js";
+import { authHttpException } from "./auth-errors.js";
 
-const MAX_BODY_BYTES = 4 * 1024;
+const MAX_BODY_BYTES = 1024;
 
-export function createBrainAskBodyParser(timeoutMs: number) {
-  return (request: Request, response: Response, next: NextFunction): void => {
-    if (request.method !== "POST" || request.path !== "/api/brain/ask") {
+export function createAuthBodyParser(timeoutMs: number) {
+  return (request: Request, _response: Response, next: NextFunction): void => {
+    if (request.method !== "POST" || request.path !== "/api/auth/login") {
       next();
       return;
     }
-    response.setHeader("cache-control", "private, no-store");
     const contentType = request.headers["content-type"];
     if (
       typeof contentType !== "string" ||
       contentType.split(";", 1)[0]?.trim().toLowerCase() !== "application/json"
     ) {
       request.resume();
-      next(new InvalidQuestionError());
+      next(authHttpException(400, "invalid_login"));
       return;
     }
     const declaredLength = Number.parseInt(request.headers["content-length"] ?? "0", 10);
     if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
       request.resume();
-      next(new InvalidQuestionError());
+      next(authHttpException(400, "invalid_login"));
       return;
     }
 
@@ -40,7 +39,7 @@ export function createBrainAskBodyParser(timeoutMs: number) {
       if (settled) return;
       cleanup();
       request.resume();
-      next(new InvalidQuestionError());
+      next(authHttpException(400, "invalid_login"));
     };
     const onData = (chunk: Buffer) => {
       if (settled) return;
@@ -58,7 +57,7 @@ export function createBrainAskBodyParser(timeoutMs: number) {
         request.body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
         next();
       } catch {
-        next(new InvalidQuestionError());
+        next(authHttpException(400, "invalid_login"));
       }
     };
     const onError = () => fail();

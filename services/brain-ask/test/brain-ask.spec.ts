@@ -5,6 +5,7 @@ import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AdminGuard } from "../src/auth/admin.guard.js";
 import { BrainAskError } from "../src/brain-ask/brain-ask.errors.js";
 import { BrainAskModule } from "../src/brain-ask/brain-ask.module.js";
 import { BrainAskService } from "../src/brain-ask/brain-ask.service.js";
@@ -12,7 +13,12 @@ import type { ModelClient, QmdClient } from "../src/brain-ask/contracts.js";
 import { MODEL_CLIENT, QMD_CLIENT } from "../src/brain-ask/tokens.js";
 import { AppConfigModule } from "../src/config/app-config.module.js";
 import { configureApplication } from "../src/configure-application.js";
-import { createTempBrain, setTestEnvironment, type TempBrain } from "./test-helpers.js";
+import {
+  createTempBrain,
+  setTestEnvironment,
+  TEST_BRAIN_ORIGIN,
+  type TempBrain,
+} from "./test-helpers.js";
 
 function abortableDelay(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -40,6 +46,7 @@ async function delayedPost(port: number, body: unknown, delayMs: number) {
         headers: {
           "content-type": "application/json",
           "content-length": Buffer.byteLength(data),
+          origin: TEST_BRAIN_ORIGIN,
         },
       },
       (response) => {
@@ -67,6 +74,9 @@ describe("BrainAskController", () => {
   let modelCalls: number;
   let activeQmdSignal: AbortSignal | undefined;
   let logSpy: ReturnType<typeof vi.spyOn>;
+
+  const postAsk = () =>
+    request(app!.getHttpServer()).post("/api/brain/ask").set("Origin", TEST_BRAIN_ORIGIN);
 
   beforeEach(async () => {
     brain = await createTempBrain();
@@ -107,13 +117,15 @@ describe("BrainAskController", () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppConfigModule.register(), BrainAskModule],
     })
+      .overrideGuard(AdminGuard)
+      .useValue({ canActivate: () => true })
       .overrideProvider(QMD_CLIENT)
       .useValue(qmd)
       .overrideProvider(MODEL_CLIENT)
       .useValue(model)
       .compile();
     app = moduleRef.createNestApplication({ bodyParser: false });
-    configureApplication(app, { enableBrainAskRoute: true });
+    configureApplication(app);
     await app.init();
     logSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   });
@@ -125,13 +137,12 @@ describe("BrainAskController", () => {
   });
 
   it("returns a grounded answer and preserves source shape", async () => {
-    const response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    const response = await postAsk()
       .set("content-type", "application/json; charset=utf-8")
       .send({ question: "  내 작업 방식?  " })
       .expect(200);
     expect(response.body.requestId).toEqual(expect.any(String));
-    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.headers["cache-control"]).toBe("private, no-store");
     expect(response.body.answer).toBe("근거 기반 답변");
     expect(response.body.sources).toEqual([
       {
@@ -147,8 +158,7 @@ describe("BrainAskController", () => {
 
   it("does not call the model for empty evidence", async () => {
     qmdMode = "empty";
-    const response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    const response = await postAsk()
       .send({ question: "없는 질문" })
       .expect(200);
     expect(response.body.answer).toBe("");
@@ -158,21 +168,18 @@ describe("BrainAskController", () => {
 
   it("returns the legacy validation contract for invalid input, media type and size", async () => {
     for (const send of [
-      () => request(app!.getHttpServer()).post("/api/brain/ask").send({ question: "" }),
-      () => request(app!.getHttpServer()).post("/api/brain/ask").send([]),
+      () => postAsk().send({ question: "" }),
+      () => postAsk().send([]),
       () =>
-        request(app!.getHttpServer())
-          .post("/api/brain/ask")
+        postAsk()
           .set("content-type", "application/json")
           .send("{"),
       () =>
-        request(app!.getHttpServer())
-          .post("/api/brain/ask")
+        postAsk()
           .set("content-type", "text/plain")
           .send(JSON.stringify({ question: "wrong media type" })),
       () =>
-        request(app!.getHttpServer())
-          .post("/api/brain/ask")
+        postAsk()
           .send({ question: "x".repeat(5 * 1024) }),
     ]) {
       const response = await send().expect(400);
@@ -182,7 +189,7 @@ describe("BrainAskController", () => {
         message: "Question must be a JSON string from 1 to 500 characters.",
         retryable: false,
       });
-      expect(response.headers["cache-control"]).toBe("no-store");
+      expect(response.headers["cache-control"]).toBe("private, no-store");
     }
   });
 
@@ -191,7 +198,7 @@ describe("BrainAskController", () => {
     const port = (app!.getHttpServer().address() as AddressInfo).port;
     const [slowBody, normalBody] = await Promise.all([
       delayedPost(port, { question: "느린 본문" }, 80),
-      request(app!.getHttpServer()).post("/api/brain/ask").send({ question: "정상 본문" }),
+      postAsk().send({ question: "정상 본문" }),
     ]);
     expect(slowBody.status).toBe(400);
     expect(slowBody.body.error.code).toBe("invalid_question");
@@ -201,8 +208,8 @@ describe("BrainAskController", () => {
   it("limits concurrent questions to one", async () => {
     qmdMode = "slow";
     const responses = await Promise.all([
-      request(app!.getHttpServer()).post("/api/brain/ask").send({ question: "느린 질문" }),
-      request(app!.getHttpServer()).post("/api/brain/ask").send({ question: "동시 질문" }),
+      postAsk().send({ question: "느린 질문" }),
+      postAsk().send({ question: "동시 질문" }),
     ]);
     expect(responses.map((response) => response.status)).toContain(429);
     expect(responses.find((response) => response.status === 429)?.body.error).toMatchObject({
@@ -213,38 +220,33 @@ describe("BrainAskController", () => {
 
   it("maps retrieval, model and timeout failures", async () => {
     qmdMode = "error";
-    let response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    let response = await postAsk()
       .send({ question: "qmd 장애" })
       .expect(502);
     expect(response.body.error.code).toBe("retrieval_unavailable");
 
     qmdMode = "slow";
-    response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    response = await postAsk()
       .send({ question: "qmd 시간 초과" })
       .expect(502);
     expect(response.body.error.code).toBe("retrieval_unavailable");
 
     qmdMode = "normal";
     modelMode = "error";
-    response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    response = await postAsk()
       .send({ question: "모델 장애" })
       .expect(502);
     expect(response.body.error.code).toBe("model_unavailable");
 
     modelMode = "slow";
-    response = await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    response = await postAsk()
       .send({ question: "모델 시간 초과" })
       .expect(504);
     expect(response.body.error.code).toBe("model_timeout");
   });
 
   it("does not log questions, answers, evidence or keys", async () => {
-    await request(app!.getHttpServer())
-      .post("/api/brain/ask")
+    await postAsk()
       .send({ question: "내 작업 방식?" })
       .expect(200);
     const output = logSpy.mock.calls.map((call: unknown[]) => String(call[0])).join("");

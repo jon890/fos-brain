@@ -6,7 +6,7 @@ import { configureApplication } from "./configure-application.js";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
-  configureApplication(app, { enableBrainAskRoute: false });
+  configureApplication(app);
   app.enableShutdownHooks();
   const port = app.get(ConfigService).getOrThrow<number>("PORT");
   await app.listen(port, "0.0.0.0");
