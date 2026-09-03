@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process"
 import fs from "node:fs/promises"
+import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { assertions } from "./memory-atlas-browser-assertions.mjs"
@@ -15,7 +16,8 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const quartzDir = path.resolve(scriptDir, "..")
 const worktree = path.resolve(quartzDir, "..")
 const evidenceDir = process.env.MEMORY_ATLAS_VERIFY_LOG_DIR || "/tmp/fos-brain-memory-atlas-suite"
-const driver = process.env.BROWSER_DRIVER_BIN || "/Users/nhn/.claude/scripts/browser-driver"
+const driver =
+  process.env.BROWSER_DRIVER_BIN || path.join(os.homedir(), ".claude", "scripts", "browser-driver")
 const driverTimeoutMs = Number(process.env.MEMORY_ATLAS_DRIVER_TIMEOUT_MS || 45000)
 const env = {
   ...process.env,
@@ -301,7 +303,8 @@ try {
   await waitHarnessReadyWithSingleRecovery(driverName)
   await assertDriver("viewport-basics", assertions.viewportBasics)
   await assertDriver("local-relation-flow", assertions.localRelationFlow)
-  await assertDriver("keyboard-accessibility-contract", assertions.keyboardAccessibilityContract)
+  await assertDriver("keyboard-markup-contract", assertions.keyboardMarkupContract)
+  await assertDriver("synthetic-keyboard-navigation", assertions.syntheticKeyboardNavigation)
   await assertDriver("mode-and-lazy-load", assertions.modeAndLazyLoad)
   await assertDriver("reduced-motion", assertions.reducedMotion)
   await assertDriver("semantics-failure-and-privacy", assertions.semanticsFailureAndPrivacy)

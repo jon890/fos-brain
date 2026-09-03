@@ -3,6 +3,8 @@ import {
   calculateWikiHopDepth,
   layoutMemoryAtlasGraph,
   layoutMemoryAtlasLocalGraph,
+  type MemoryAtlasNodePosition,
+  type MemoryAtlasWeightedEdge,
 } from "../memoryAtlasGraph"
 import type {
   MemoryAtlasData,
@@ -58,6 +60,11 @@ type RenderMetrics = {
   height: number
 }
 
+type MemoryAtlas2dGlobalLayout = {
+  weightedEdges: MemoryAtlasWeightedEdge[]
+  positions: MemoryAtlasNodePosition[]
+}
+
 const SVG_NS = "http://www.w3.org/2000/svg"
 const DEFAULT_WIDTH = 1200
 const DEFAULT_HEIGHT = 800
@@ -104,11 +111,14 @@ export function buildMemoryAtlas2dScene(
   state: MemoryAtlasState,
   semanticEdges: readonly MemoryAtlasSemanticEdge[] = [],
   metrics: Partial<RenderMetrics> = {},
+  preparedLayout?: MemoryAtlas2dGlobalLayout,
 ): MemoryAtlas2dScene {
   const width = Math.max(320, Math.floor(metrics.width ?? DEFAULT_WIDTH))
   const height = Math.max(320, Math.floor(metrics.height ?? DEFAULT_HEIGHT))
-  const weightedEdges = buildMemoryAtlasWeightedEdges(data, semanticEdges)
-  const globalPositions = layoutMemoryAtlasGraph(data, weightedEdges, { width, height })
+  const weightedEdges =
+    preparedLayout?.weightedEdges ?? buildMemoryAtlasWeightedEdges(data, semanticEdges)
+  const globalPositions =
+    preparedLayout?.positions ?? layoutMemoryAtlasGraph(data, weightedEdges, { width, height })
   const localPositions = layoutMemoryAtlasLocalGraph(data, globalPositions, state.selectedSlug, {
     width,
     height,
@@ -233,8 +243,12 @@ function renderNodeLayer(scene: MemoryAtlas2dScene, onSelect: (slug: FullSlug) =
 
   for (const node of scene.nodes) {
     const button = document.createElement("button")
+    const label = document.createElement("span")
     button.type = "button"
-    button.textContent = node.title
+    label.className = "memory-atlas-2d__label"
+    label.textContent = node.title
+    label.style.opacity = String(node.labelOpacity)
+    button.append(label)
     button.dataset.slug = node.slug
     button.dataset.selected = String(node.selected)
     button.dataset.related = String(node.related)
@@ -242,7 +256,7 @@ function renderNodeLayer(scene: MemoryAtlas2dScene, onSelect: (slug: FullSlug) =
     button.dataset.namespace = node.namespace
     button.style.left = `${(node.x / scene.width) * 100}%`
     button.style.top = `${(node.y / scene.height) * 100}%`
-    button.style.opacity = String(node.labelOpacity)
+    button.style.opacity = String(node.opacity)
     button.setAttribute("aria-pressed", String(node.selected))
     button.setAttribute(
       "aria-label",
@@ -263,6 +277,11 @@ function renderScene(
   evidenceSlugs: ReadonlySet<FullSlug>,
   onSelect: (slug: FullSlug) => void,
 ) {
+  const activeSlug =
+    document.activeElement instanceof HTMLButtonElement &&
+    container.contains(document.activeElement)
+      ? document.activeElement.dataset.slug
+      : undefined
   const root = document.createElement("div")
   root.className = "memory-atlas-2d"
   root.dataset.mode = scene.mode
@@ -280,6 +299,12 @@ function renderScene(
   container.dataset.linkCount = String(scene.links.length)
   container.dataset.evidenceCount = String(evidenceSlugs.size)
   container.dataset.selectedTitle = scene.selectedTitle ?? ""
+  if (activeSlug) {
+    const activeButton = [...nodes.querySelectorAll<HTMLButtonElement>("button")].find(
+      (button) => button.dataset.slug === activeSlug,
+    )
+    activeButton?.focus({ preventScroll: true })
+  }
 }
 
 function measure(container: HTMLElement): RenderMetrics {
@@ -303,26 +328,53 @@ export function mountMemoryAtlas({
   let evidenceSlugs = new Set<FullSlug>()
   let destroyed = false
   let frame: number | undefined
-  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+  let cachedLayout:
+    | (MemoryAtlas2dGlobalLayout & {
+        data: MemoryAtlasData
+        semanticEdges: readonly MemoryAtlasSemanticEdge[]
+        width: number
+        height: number
+      })
+    | undefined
   const observer = new ResizeObserver(() => render())
+
+  const prepareLayout = (metrics: RenderMetrics): MemoryAtlas2dGlobalLayout => {
+    const semanticEdges = currentContext.semanticEdges ?? []
+    if (
+      cachedLayout?.data === currentData &&
+      cachedLayout.semanticEdges === semanticEdges &&
+      cachedLayout.width === metrics.width &&
+      cachedLayout.height === metrics.height
+    ) {
+      return cachedLayout
+    }
+    const weightedEdges = buildMemoryAtlasWeightedEdges(currentData, semanticEdges)
+    cachedLayout = {
+      data: currentData,
+      semanticEdges,
+      width: metrics.width,
+      height: metrics.height,
+      weightedEdges,
+      positions: layoutMemoryAtlasGraph(currentData, weightedEdges, metrics),
+    }
+    return cachedLayout
+  }
 
   const renderNow = () => {
     if (destroyed) return
+    const metrics = measure(container)
     const scene = buildMemoryAtlas2dScene(
       currentData,
       currentState,
       currentContext.semanticEdges ?? [],
-      measure(container),
+      metrics,
+      prepareLayout(metrics),
     )
     renderScene(container, scene, evidenceSlugs, onSelect)
   }
 
   const render = () => {
     if (destroyed) return
-    if (motionQuery.matches) {
-      renderNow()
-      return
-    }
     if (frame !== undefined) cancelAnimationFrame(frame)
     frame = requestAnimationFrame(() => {
       frame = undefined

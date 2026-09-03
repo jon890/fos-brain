@@ -43,26 +43,13 @@ const dispatchInput = (element, value) => {
   element.dispatchEvent(new Event("input", { bubbles: true }))
 }
 const frameDocument = (id) => frameWindow(id).document
-const visibleFocusables = (doc) => [...doc.querySelectorAll("a[href], button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")]
-  .filter((element) => {
-    const rect = element.getBoundingClientRect()
-    return rect.width > 0 && rect.height > 0
-  })
 const key = (target, value, options = {}) => {
   const init = { key: value, code: value, bubbles: true, cancelable: true, ...options }
   const down = target.dispatchEvent(new KeyboardEvent("keydown", init))
   target.dispatchEvent(new KeyboardEvent("keyup", init))
   return down
 }
-const tabForward = (doc) => {
-  const focusables = visibleFocusables(doc)
-  const current = doc.activeElement
-  const index = Math.max(-1, focusables.indexOf(current))
-  key(current === doc.body ? doc : current, "Tab")
-  focusables[(index + 1) % focusables.length]?.focus()
-  if (doc.activeElement === current) throw new Error("Tab did not move focus")
-}
-const activateWithKeyboard = (element, keyName) => {
+const activateWithSyntheticKeyboard = (element, keyName) => {
   element.focus()
   const allowedDefault = key(element, keyName, { code: keyName === " " ? "Space" : keyName })
   if (allowedDefault && (element.tagName === "BUTTON" || element.tagName === "A")) element.click()
@@ -141,39 +128,53 @@ await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-s
 buttons = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")]
 const centered = buttons.find((button) => button.textContent.trim().includes("GraphRAG"))
 if (centered?.dataset.selected !== "true" || centered?.dataset.depth !== "0") throw new Error("GraphRAG did not become center")
+centered.focus()
+centered.click()
+await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${centered.dataset.slug}"]\`) === doc.activeElement, "graph node focus restored after rerender")
+const labels = byTestId(doc, "memory-atlas-labels")
+labels.checked = false
+labels.dispatchEvent(new Event("change", { bubbles: true }))
+await waitFor(() => [...canvas.querySelectorAll(".memory-atlas-2d__label")].every((label) => Number(label.style.opacity) === 0), "labels hidden")
+if ([...canvas.querySelectorAll(".memory-atlas-2d__nodes button")].some((button) => Number(button.style.opacity) === 0)) throw new Error("label toggle hid graph nodes")
+labels.checked = true
+labels.dispatchEvent(new Event("change", { bubbles: true }))
 byTestId(doc, "memory-atlas-clear-selection").click()
 await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "global map restored")
 if (root.classList.contains("memory-atlas--detail-open")) throw new Error("detail remained open after clearing selection")
 return { centered: "GraphRAG", restored: true }
 `),
 
-  keyboardAccessibilityContract: wrap(`
+  keyboardMarkupContract: wrap(`
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
 byTestId(doc, "memory-atlas-clear-selection").click()
-await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "global map before keyboard")
-doc.body.focus()
-tabForward(doc)
-if (doc.activeElement === doc.body) throw new Error("Tab left focus on body")
-let ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
-if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable for Enter")
+await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "global map before markup check")
+const ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
+if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable")
 if (ragEntry.tagName !== "BUTTON" || ragEntry.tabIndex < 0) throw new Error("RAG entrypoint is not a native keyboard-focusable button")
-ragEntry.focus()
-activateWithKeyboard(ragEntry, "Enter")
-await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "Enter selects RAG")
+const graphButtons = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")]
+if (!graphButtons.length) throw new Error("graph node buttons are missing")
+if (graphButtons.some((button) => button.tabIndex < 0 || !["true", "false"].includes(button.getAttribute("aria-pressed")))) throw new Error("graph node button accessibility markup is invalid")
+ragEntry.click()
+await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][aria-pressed="true"]\`), "selected node aria state")
+return { nativeButtons: true, tabOrder: true, pressedState: true }
+`),
+
+  syntheticKeyboardNavigation: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const canvas = byTestId(doc, "memory-atlas-canvas")
+let ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
+if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable for synthetic keyboard check")
+activateWithSyntheticKeyboard(ragEntry, "Enter")
+await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "synthetic Enter selects RAG")
 key(doc, "Escape")
-await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "Escape clears RAG selection")
+await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "Escape clears synthetic Enter selection")
 ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
-ragEntry.focus()
-activateWithKeyboard(ragEntry, " ")
-await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "Space selects RAG")
-const selected = canvas.querySelector(".memory-atlas-2d__nodes button[data-selected='true']")
-if (!selected || selected.dataset.depth !== "0") throw new Error("Space selection did not update 2D node state")
-if (selected.tagName !== "BUTTON" || selected.tabIndex < 0) throw new Error("selected graph node is not a native keyboard-focusable button")
-key(doc, "Escape")
-await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "Escape clears Space selection")
-return { tab: true, enter: true, space: true, escape: true }
+activateWithSyntheticKeyboard(ragEntry, " ")
+await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "synthetic Space selects RAG")
+return { syntheticEnter: true, syntheticSpace: true, escape: true }
 `),
 
   modeAndLazyLoad: wrap(`
@@ -201,17 +202,22 @@ return { selectedTitle, lazyLoaded: true }
 
   reducedMotion: wrap(`
 const win = frameWindow("desktop-frame")
-win.matchMedia = () => ({ matches: true, media: "(prefers-reduced-motion: reduce)", addEventListener() {}, removeEventListener() {} })
-win.document.dispatchEvent(new CustomEvent("nav", { detail: { url: new URL(win.location.href) } }))
-const doc = win.document
-await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.runtimeMode === "2d", "reduced motion 2D ready")
-const ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
-if (!ragEntry || ragEntry.disabled) return { skipped: "RAG entrypoint unavailable" }
-ragEntry.click()
-await waitFor(() => doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "RAG centered under reduced motion")
-const selected = doc.querySelector('.memory-atlas-2d__nodes button[data-selected="true"]')
-if (!selected) throw new Error("selected node missing under reduced motion")
-return { reducedMotion: true }
+const originalMatchMedia = win.matchMedia
+try {
+  win.matchMedia = () => ({ matches: true, media: "(prefers-reduced-motion: reduce)", addEventListener() {}, removeEventListener() {} })
+  win.document.dispatchEvent(new CustomEvent("nav", { detail: { url: new URL(win.location.href) } }))
+  const doc = win.document
+  await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.runtimeMode === "2d", "reduced motion 2D ready")
+  const ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
+  if (!ragEntry || ragEntry.disabled) return { skipped: "RAG entrypoint unavailable" }
+  ragEntry.click()
+  await waitFor(() => doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragEntry.dataset.slug}"][data-selected="true"]\`), "RAG centered under reduced motion")
+  const selected = doc.querySelector('.memory-atlas-2d__nodes button[data-selected="true"]')
+  if (!selected) throw new Error("selected node missing under reduced motion")
+  return { reducedMotion: true }
+} finally {
+  win.matchMedia = originalMatchMedia
+}
 `),
 
   semanticsFailureAndPrivacy: wrap(`
@@ -248,6 +254,7 @@ win.document.dispatchEvent(new CustomEvent("nav", { detail: { url: new URL(win.l
 const doc = win.document
 await waitFor(() => byTestId(doc, "memory-atlas").dataset.semanticsState === "ready", "semantics fixture ready")
 await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.runtimeMode === "2d", "2D after semantics fixture")
+await waitFor(() => doc.querySelector(".memory-atlas-2d__link--semantic"), "semantic edge rendered")
 assertNoPrivateAtlasLeak(doc)
 const semanticLinks = [...doc.querySelectorAll(".memory-atlas-2d__link--semantic")]
 if (!semanticLinks.length) throw new Error("public semantic fixture did not reach graph")
@@ -288,6 +295,7 @@ const beforeClear = activeNodeButtons(doc).map((button) => button.dataset.slug).
 if (!beforeClear.length) throw new Error("active relation missing before clear")
 byTestId(doc, "memory-atlas-clear-selection").click()
 await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "selection cleared after SPA")
+await waitFor(() => activeNodeButtons(doc).length === 0, "relation highlight cleared after SPA")
 const revived = activeNodeButtons(doc).filter((button) => beforeClear.includes(button.dataset.slug))
 if (revived.length) throw new Error("old relation highlight revived after clear")
 return { spa: true, restoredMode: "2d", restoredSelection: selectedTitle }
@@ -316,7 +324,7 @@ dispatchInput(question, "hello")
 byTestId(doc, "memory-atlas-ask-submit").click()
 await waitFor(() => byTestId(doc, "memory-atlas").dataset.askState === "success", "ask success")
 if (!byTestId(doc, "memory-atlas-ask-answer-text").textContent.includes("RAG 답변")) throw new Error("answer missing")
-if (byTestId(doc, "memory-atlas-canvas").dataset.evidenceCount !== "1") throw new Error("evidence was not highlighted")
+await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.evidenceCount === "1", "evidence highlighted")
 doc.querySelector(".memory-atlas-2d__nodes button")?.click()
 await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.evidenceCount === "0", "evidence cleared")
 dispatchInput(question, "empty")

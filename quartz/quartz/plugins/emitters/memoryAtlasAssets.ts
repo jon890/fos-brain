@@ -39,6 +39,7 @@ export const MemoryAtlasAssets: QuartzEmitterPlugin = () => ({
       write: false,
     })
 
+    let emittedRuntimeCount = 0
     for (const output of result.outputFiles) {
       const name = path.basename(output.path, ".js")
       if (name !== "memory-atlas-2d" && name !== "memory-atlas-3d") continue
@@ -48,6 +49,10 @@ export const MemoryAtlasAssets: QuartzEmitterPlugin = () => ({
         ext: ".js",
         content: Buffer.from(output.contents),
       })
+      emittedRuntimeCount += 1
+    }
+    if (emittedRuntimeCount !== 2) {
+      throw new Error(`expected 2 Memory Atlas runtime bundles, emitted ${emittedRuntimeCount}`)
     }
 
     const semantics = await readPublishedSemantics(

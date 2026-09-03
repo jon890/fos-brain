@@ -35,7 +35,6 @@ type ContentIndexRecord = Record<string, ContentDetails>
 type ContentIndexLoader = () => Promise<ContentIndexRecord>
 type RuntimeLoader = (mode: MemoryAtlasMode) => Promise<MemoryAtlasRuntimeModule>
 type SemanticsLoader = () => Promise<unknown>
-type RuntimeHandle = MemoryAtlasRuntimeHandle
 type InitMemoryAtlasOptions = {
   root?: HTMLElement | null
   loadContentIndex?: ContentIndexLoader
@@ -652,7 +651,6 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   updateDetail(root, { nodes: [], links: [] })
 
   let destroyed = false
-  let renderHandle: RuntimeHandle | undefined
   const runtimeLifecycle = createMemoryAtlasRuntimeLifecycle(runtimeLoader)
   let state = createDefaultMemoryAtlasState()
   let askState: AskState = "idle"
@@ -669,7 +667,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   const mountRuntime = async () => {
     setRuntimeState(root, "loading")
     setStatus(`${state.mode === "3d" ? "3D" : "2D"} 탐색 엔진을 불러오는 중입니다.`)
-    renderHandle = await runtimeLifecycle.mount(state.mode, {
+    await runtimeLifecycle.mount(state.mode, {
       container: canvas,
       data: visibleData,
       state,
@@ -682,6 +680,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   }
 
   const openEntrypoint = (slug: FullSlug) => {
+    const previousMode = state.mode
     state = { ...selectMemoryAtlasNode(state, slug), mode: "2d" }
     syncControls(root, state)
     visibleData = filterMemoryAtlas(fullData, state)
@@ -690,11 +689,17 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     updateDetail(root, visibleData, state.selectedSlug)
     updateContextBar(root, visibleData, state)
     storeState(state)
-    void mountRuntime().catch((error) => {
-      if (destroyed) return
-      console.error(error)
-      setRuntimeState(root, "error")
-    })
+    runtimeLifecycle.setEvidenceSlugs(new Set())
+    if (previousMode === "2d") {
+      runtimeLifecycle.update(visibleData, state, { semanticEdges })
+      runtimeLifecycle.select(slug)
+    } else {
+      void mountRuntime().catch((error) => {
+        if (destroyed) return
+        console.error(error)
+        setRuntimeState(root, "error")
+      })
+    }
   }
 
   const cleanup = () => {
@@ -708,7 +713,6 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     setFiltersOpen(root, false)
     document.body.classList.remove(BODY_CLASS)
     runtimeLifecycle.destroy()
-    renderHandle = undefined
     askController?.abort()
     askController = undefined
     lastQuestion = ""
@@ -718,18 +722,18 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   window.addCleanup(cleanup)
 
   const selectNode = (slug?: FullSlug) => {
-    renderHandle?.setEvidenceSlugs(new Set())
+    runtimeLifecycle.setEvidenceSlugs(new Set())
     const hadQuery = Boolean(state.query.trim())
     state = selectMemoryAtlasNode(state, slug)
     if (slug && hadQuery) {
       syncSearchInputs(root, "")
       visibleData = filterMemoryAtlas(fullData, state)
       updateStats(root, visibleData)
-      renderHandle?.update(visibleData, state, { semanticEdges })
+      runtimeLifecycle.update(visibleData, state, { semanticEdges })
       setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
     }
     storeState(state)
-    renderHandle?.select(slug)
+    runtimeLifecycle.select(slug)
     updateDetail(root, visibleData, slug)
     updateResults(root, visibleData, state, selectNode)
     updateContextBar(root, visibleData, state)
@@ -747,7 +751,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   }
 
   const clearAskResult = () => {
-    renderHandle?.setEvidenceSlugs(new Set())
+    runtimeLifecycle.setEvidenceSlugs(new Set())
     const answer = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-answer"]')
     const answerText = root.querySelector<HTMLElement>(
       '[data-testid="memory-atlas-ask-answer-text"]',
@@ -821,7 +825,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         }),
       )
     }
-    renderHandle?.setEvidenceSlugs(new Set(sources.map(({ slug }) => slug)))
+    runtimeLifecycle.setEvidenceSlugs(new Set(sources.map(({ slug }) => slug)))
   }
 
   const submitQuestion = async () => {
@@ -889,12 +893,12 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         setRuntimeState(root, "error")
       })
     } else {
-      renderHandle?.update(visibleData, state, { semanticEdges })
+      runtimeLifecycle.update(visibleData, state, { semanticEdges })
     }
     if (state.selectedSlug && !visibleData.nodes.some((node) => node.slug === state.selectedSlug)) {
       selectNode(undefined)
     }
-    renderHandle?.setEvidenceSlugs(new Set())
+    runtimeLifecycle.setEvidenceSlugs(new Set())
     updateContextBar(root, visibleData, state)
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
   }
@@ -951,7 +955,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       .then((semantics) => {
         semanticEdges = semantics.edges
         updateEntrypoints(root, fullData, semanticEdges, openEntrypoint)
-        renderHandle?.update(visibleData, state, { semanticEdges })
+        runtimeLifecycle.update(visibleData, state, { semanticEdges })
       })
 
     await mountRuntime()
@@ -963,6 +967,8 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     if (message) message.textContent = error instanceof Error ? error.message : String(error)
     setRuntimeState(root, "error")
   }
+
+  if (destroyed) return
 
   const bind = <T extends Event>(
     element: EventTarget | null,
@@ -1010,7 +1016,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   )
 
   bind(root.querySelector('[data-testid="memory-atlas-recenter"]'), "click", () =>
-    renderHandle?.recenter(),
+    runtimeLifecycle.recenter(),
   )
   bind(root.querySelector('[data-testid="memory-atlas-clear-selection"]'), "click", () =>
     selectNode(undefined),

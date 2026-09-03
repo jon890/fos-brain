@@ -115,4 +115,43 @@ describe("memory atlas controller", () => {
       "destroy:3d",
     ])
   })
+
+  test("keeps the latest renderer when an older runtime load finishes late", async () => {
+    const events: string[] = []
+    let release3d: (() => void) | undefined
+    const lifecycle = createMemoryAtlasRuntimeLifecycle(
+      (mode) =>
+        new Promise((resolve) => {
+          const finish = () =>
+            resolve({
+              mountMemoryAtlas() {
+                events.push(`mount:${mode}`)
+                return {
+                  update: () => events.push(`update:${mode}`),
+                  select: () => undefined,
+                  recenter: () => undefined,
+                  setEvidenceSlugs: () => undefined,
+                  destroy: () => events.push(`destroy:${mode}`),
+                }
+              },
+            })
+          if (mode === "3d") release3d = finish
+          else finish()
+        }),
+    )
+    const mountOptions = {
+      container: {} as HTMLElement,
+      data: { nodes: [], links: [] },
+      state: createDefaultMemoryAtlasState(),
+      onSelect: () => undefined,
+    }
+
+    const staleMount = lifecycle.mount("3d", mountOptions)
+    await lifecycle.mount("2d", mountOptions)
+    release3d?.()
+    await staleMount
+    lifecycle.update(mountOptions.data, mountOptions.state)
+
+    assert.deepStrictEqual(events, ["mount:2d", "update:2d"])
+  })
 })

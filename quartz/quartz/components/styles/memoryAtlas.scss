@@ -514,6 +514,13 @@
   white-space: nowrap;
 }
 
+.memory-atlas-2d__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 160ms ease;
+}
+
 .memory-atlas-2d__nodes button[data-related="true"] {
   border-color: rgba(154, 201, 186, 0.46);
 }
@@ -1102,7 +1109,8 @@ body.memory-atlas-doc-page {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .memory-atlas-2d__nodes button {
+  .memory-atlas-2d__nodes button,
+  .memory-atlas-2d__label {
     transition: none;
   }
 }

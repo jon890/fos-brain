@@ -131,6 +131,17 @@ describe("memory atlas 2D runtime scene", () => {
     assert.ok(scene.nodes.every((node) => node.x <= 390 - 390 * 0.22))
   })
 
+  test("hides labels without hiding the graph nodes", () => {
+    const scene = buildMemoryAtlas2dScene(sampleData(), {
+      ...createDefaultMemoryAtlasState(),
+      labels: false,
+      selectedSlug: slug("concepts/rag"),
+    })
+
+    assert.ok(scene.nodes.every((node) => node.labelOpacity === 0))
+    assert.ok(scene.nodes.every((node) => node.opacity > 0))
+  })
+
   test("keeps the 2D bundle free from 3D runtime imports", () => {
     const source = readFileSync(
       new URL("./scripts/memoryAtlas2dRuntime.ts", import.meta.url),
