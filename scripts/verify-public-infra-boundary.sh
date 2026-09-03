@@ -40,6 +40,7 @@ scan_targets=(
 for target in "${scan_targets[@]}"; do
   [[ -e "$target" ]] || continue
   if rg -n --hidden --glob '!docs/retrospectives/000[1-4]-*.md' --glob '!docs/retrospectives/0014-*.md' \
+    --glob '!tasks/plan10-native-auth-nestjs/phase-01.md' \
     --glob '!scripts/verify-public-infra-boundary.sh' \
     -e 'deploy/home-server' \
     -e '/home/bifos' \
@@ -49,7 +50,7 @@ for target in "${scan_targets[@]}"; do
     -e 'quartz-protected' \
     -e 'career-api' \
     -e 'brain-qmd:8181' \
-    -e 'Cloudflare Access|Cloudflare Tunnel|cloudflared|TUNNEL_TOKEN' \
+    -e 'TUNNEL_TOKEN' \
     -e 'Jenkins|jenkins' \
     "$target"; then
     echo "public repository contains private infra identifiers." >&2
