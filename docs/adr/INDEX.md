@@ -28,3 +28,4 @@ ls docs/adr/[0-9]*.md | grep -oE '/[0-9]+' | tr -d '/' | sort | uniq -d
 - [ADR-006](006-private-infrastructure-boundary.md) — 운영 구성은 private 인프라 저장소가 소유하고 공개 저장소는 코드와 일반 계약만 둔다.
 - [ADR-007](007-knowledge-admission-policy.md) — 지식 유입 정책을 플러그인의 공용 참조 문서 하나에 두고 모든 brain 스킬이 같은 계약을 쓴다.
 - [ADR-008](008-memory-atlas-2d-semantic-navigation.md) — 기본 탐색은 2D 혼합 관계 지도와 선택 중심 지역 관계를 사용하고 3D는 조망 모드로 유지한다.
+- [ADR-009](009-claude-code-review-boundary.md) — Claude 코드 리뷰는 GitHub Actions의 읽기 전용 단일 리뷰로 실행하고 별도 GitHub App은 두지 않는다.

@@ -1,0 +1,157 @@
+name: Claude 코드 리뷰
+
+on:
+  pull_request:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    if: |
+      !endsWith(github.actor, '[bot]') && (
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.head.repo.full_name == github.repository) ||
+        (github.event_name == 'issue_comment' &&
+         github.event.issue.pull_request != null &&
+         github.event.comment.body == '/review')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+
+    steps:
+      - name: PR 병합 기준 체크아웃
+        uses: actions/checkout@v6
+        with:
+          ref: refs/pull/${{ env.PR_NUMBER }}/merge
+          fetch-depth: 1
+
+      - name: 수동 리뷰 시작 표시
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            --method POST \
+            --field content=eyes \
+            || echo "::warning::시작 반응을 남기지 못했지만 리뷰는 계속합니다."
+
+      - name: 이전 Claude 리뷰 정리
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          REVIEW_NODES=$(mktemp)
+          INLINE_COMMENTS=$(mktemp)
+          trap 'rm -f "$REVIEW_NODES" "$INLINE_COMMENTS"' EXIT
+
+          if ! gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/reviews?per_page=100" \
+            --jq '.[]
+              | select(.user.login == "github-actions[bot]")
+              | select(.body | startswith("## 코드 리뷰"))
+              | .node_id' > "$REVIEW_NODES"; then
+            echo "::warning::이전 리뷰 목록을 읽지 못했습니다."
+          fi
+
+          while read -r review_node_id; do
+            [ -z "$review_node_id" ] && continue
+            # shellcheck disable=SC2016
+            gh api graphql -f query='
+              mutation($id: ID!) {
+                minimizeComment(input: {subjectId: $id, classifier: OUTDATED}) {
+                  minimizedComment { isMinimized }
+                }
+              }' -F id="$review_node_id" >/dev/null \
+              || echo "::warning::이전 리뷰를 접지 못했습니다: $review_node_id"
+          done < "$REVIEW_NODES"
+
+          if ! gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/comments?per_page=100" \
+            --jq '.[]
+              | select(.user.login == "github-actions[bot]")
+              | select(.body | contains("<!-- fos-brain-claude-review -->"))
+              | .id' > "$INLINE_COMMENTS"; then
+            echo "::warning::이전 인라인 댓글 목록을 읽지 못했습니다."
+          fi
+
+          while read -r comment_id; do
+            [ -z "$comment_id" ] && continue
+            gh api "repos/$REPO/pulls/comments/$comment_id" --method DELETE >/dev/null \
+              || echo "::warning::이전 인라인 댓글을 삭제하지 못했습니다: $comment_id"
+          done < "$INLINE_COMMENTS"
+
+      - name: 리뷰 프롬프트 준비
+        id: prompt
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          # shellcheck disable=SC2016
+          {
+            echo 'text<<CLAUDE_REVIEW_PROMPT'
+            envsubst '$PR_NUMBER $REPO' < .github/claude-review-prompt.txt
+            echo 'CLAUDE_REVIEW_PROMPT'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Claude 코드 리뷰 실행
+        uses: anthropics/claude-code-action@v1.0.214
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: >-
+            --model opus
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Read,Grep,Glob"
+            --disallowedTools "Agent,Write,Edit"
+
+      - name: 잘못된 인라인 댓글 정리
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          INVALID_COMMENTS=$(mktemp)
+          trap 'rm -f "$INVALID_COMMENTS"' EXIT
+
+          if ! gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/comments?per_page=100" --jq '
+            .[]
+            | select(.user.login == "github-actions[bot]")
+            | select(.body | contains("<!-- fos-brain-claude-review -->"))
+            | select(
+                (.body | length < 12) or
+                (.body | test("^(test|sample|placeholder|foo|bar|example)\\s*[0-9]*$"; "i")) or
+                ((.body | test("^(🔴|🟡) \\*\\*문제\\*\\*:.*\\*\\*수정\\*\\*:"; "s")) | not)
+              )
+            | .id' > "$INVALID_COMMENTS"; then
+            echo "::warning::인라인 댓글 검증을 수행하지 못했습니다."
+          fi
+
+          while read -r comment_id; do
+            [ -z "$comment_id" ] && continue
+            gh api "repos/$REPO/pulls/comments/$comment_id" --method DELETE >/dev/null \
+              || echo "::warning::잘못된 인라인 댓글을 삭제하지 못했습니다: $comment_id"
+          done < "$INVALID_COMMENTS"
+
+      - name: 수동 리뷰 종료 표시
+        if: github.event_name == 'issue_comment' && always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then
+            CONTENT="+1"
+          else
+            CONTENT="-1"
+          fi
+
+          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            --method POST \
+            --field content="$CONTENT" \
+            || echo "::warning::종료 반응을 남기지 못했습니다."
