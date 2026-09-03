@@ -360,7 +360,10 @@ header가 없거나 값이 다르면 `origin_rejected`로 거부하고 `Referer`
 
 private 인프라 계획이 배포할 target platform은 `linux/amd64`다.
 Phase 04 image 검사는 이 platform으로 image를 빌드하고 image architecture가 `amd64`인지 확인한다.
-배포 저장소는 검증한 image를 registry digest로 고정하며 public 저장소는 registry 주소와 digest 값을 기록하지 않는다.
+public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`를 공개 계약으로 기록한다.
+발행 workflow는 push 결과의 digest를 검증하고 image 이름, digest, source commit과 workflow URL을 실행 summary에 기록한다.
+실제 digest는 public 저장소 소스에 고정하지 않으며 배포 저장소가 검증된 `image@digest`를 배포 입력으로 사용한다.
+첫 package의 Public 전환과 인증 정보가 없는 환경의 동일 digest pull은 `main` merge 뒤 private 인프라 계획에서 운영 검증한다.
 
 ## 관리자 콘텐츠 API
 

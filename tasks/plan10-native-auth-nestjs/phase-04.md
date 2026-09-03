@@ -33,9 +33,14 @@ public Quartz 산출물의 HTML, 콘텐츠 색인, 관계 JSON, sitemap과 RSS�
 ### 3. image와 계약 검증
 
 Docker image를 private 인프라의 target platform인 `linux/amd64`로 빌드하고 image architecture, non-root 실행, health, 필수 설정 누락 실패와 graceful shutdown을 검사한다.
+`main`의 `services/brain-ask/**` 변경만 `ghcr.io/jon890/brain-ask`에 `linux/amd64` image를 발행한다.
+발행 workflow는 job 권한을 `contents: read`와 `packages: write`로 제한하고 모든 `docker/*` action을 승인한 full SHA로 고정한다.
+push 결과 digest를 `docker buildx imagetools inspect`로 검증하고 image 이름, digest, source commit과 workflow URL을 실행 summary에 기록한다.
+PR, fork와 다른 workflow의 발행 경로, `load`, build secret과 private 입력은 허용하지 않는다.
 private 인프라 저장소가 mount할 password hash, 병합 색인, 관계 파일과 wiki root의 환경 변수 이름을 문서 계약과 대조한다.
 운영 경로, host 이름, 내부 주소와 비밀값은 public image와 Git diff에 포함하지 않는다.
 private 인프라 계획에는 `/_private` 비로그인 요청 `401`, 관리자 요청 성공과 rollback 검증을 입력 계약으로 전달한다.
+첫 package의 Public 전환과 인증 정보가 없는 환경의 동일 digest pull은 `main` merge 뒤 운영 검증으로 수행하며 이 phase에서는 시도하지 않는다.
 
 ### 4. 전체 회귀와 완료 상태
 
@@ -51,6 +56,8 @@ BFF test·lint·build, Quartz test·check·build, Memory Atlas browser 회귀와
 | `services/brain-ask/test/security.e2e-spec.ts` | cookie, origin, header와 로그 누출 검사 |
 | `services/brain-ask/Dockerfile` | production image 계약 최종 확인 |
 | `scripts/verify-brain-ask-image.sh` | `linux/amd64` image, 실행 사용자, HEALTHCHECK와 종료 회귀 |
+| `.github/workflows/publish-brain-ask-image.yml` | `main` push의 GHCR image 발행과 digest 검증 |
+| `scripts/verify-brain-ask-publish-workflow.sh` | 발행 trigger, 최소 권한, action SHA와 private 입력 부재 검사 |
 | `quartz/scripts/verify-memory-atlas.sh` | 권한 전환을 포함한 단일 browser 회귀 진입점 |
 | `scripts/verify-public-infra-boundary.sh` | 운영 정보와 private fixture 누출 검사 |
 | `docs/code-architecture.md` | 실제 구현과 다른 계약이 있으면 함께 교정 |
@@ -77,12 +84,15 @@ scripts/verify-memory-atlas.sh
 ```bash
 # cwd: <worktree>/
 scripts/verify-brain-ask-image.sh
+scripts/verify-brain-ask-publish-workflow.sh
 bash scripts/verify-public-infra-boundary.test.sh
 scripts/verify-public-infra-boundary.sh
 git diff --check
 ```
 
 완료 보고에는 public·admin 상태별 BFF HTTP 결과, 두 viewport browser 결과, image 실행 사용자, private href 계약과 public 누출 검사 결과를 포함한다.
+GHCR 발행 완료 조건은 `main`의 허용 경로 push, `linux/amd64` push digest 검사와 실행 summary의 image 이름, digest, source commit, workflow URL 기록이다.
+첫 package의 Public 전환과 anonymous pull은 `main` merge 뒤 운영 완료 조건이며 이 phase의 로컬 완료 조건에 포함하지 않는다.
 운영 전환은 이 phase의 성공 commit을 private 인프라 계획에 입력한 뒤 시작하며 실제 `/_private` 접근 제어 결과는 그 계획에서 보고한다.
 
 ## 의도 메모 (왜)
