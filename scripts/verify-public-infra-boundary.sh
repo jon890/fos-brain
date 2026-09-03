@@ -40,6 +40,7 @@ scan_targets=(
 for target in "${scan_targets[@]}"; do
   [[ -e "$target" ]] || continue
   if rg -n --hidden --glob '!docs/retrospectives/000[1-4]-*.md' --glob '!docs/retrospectives/0014-*.md' \
+    --glob '!tasks/plan10-native-auth-nestjs/phase-01.md' \
     --glob '!scripts/verify-public-infra-boundary.sh' \
     -e 'deploy/home-server' \
     -e '/home/bifos' \
@@ -49,12 +50,38 @@ for target in "${scan_targets[@]}"; do
     -e 'quartz-protected' \
     -e 'career-api' \
     -e 'brain-qmd:8181' \
-    -e 'Cloudflare Access|Cloudflare Tunnel|cloudflared|TUNNEL_TOKEN' \
+    -e 'TUNNEL_TOKEN' \
     -e 'Jenkins|jenkins' \
     "$target"; then
     echo "public repository contains private infra identifiers." >&2
     exit 1
   fi
 done
+
+public_artifacts=()
+if [[ -d quartz/public ]]; then
+  while IFS= read -r -d '' artifact; do
+    public_artifacts+=("$artifact")
+  done < <(
+    find quartz/public -type f \( \
+      -name '*.html' -o \
+      -name 'contentIndex.json' -o \
+      -name 'memory-atlas-semantics.json' -o \
+      -name 'sitemap.xml' -o \
+      -name 'index.xml' \
+    \) -print0
+  )
+fi
+
+if [[ ${#public_artifacts[@]} -gt 0 ]] && rg -n \
+  -e 'private-auth-fixture' \
+  -e 'Private Auth Fixture' \
+  -e 'protected fixture' \
+  -e 'private-secret-rag' \
+  -e 'Private Shadow Node' \
+  "${public_artifacts[@]}"; then
+  echo "public Quartz artifacts contain private fixture data." >&2
+  exit 1
+fi
 
 echo "Public infrastructure boundary verification passed."

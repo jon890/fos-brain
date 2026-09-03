@@ -35,21 +35,18 @@
 - `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다.
 - `quartz/quartz/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
 - `quartz/quartz/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 현재는 SPA 진입, 브라우저 상태, 사용자 event와 3D runtime 생명 주기를 함께 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasRuntime.ts` — 현재 Three.js 렌더러와 카메라, 3D 배치, 선택 경로 강조를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 브라우저 상태, 사용자 event, 파생 데이터 계산과 2D·3D renderer 생명 주기를 조정한다.
+- `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D renderer가 함께 구현하는 생성·갱신·제거 계약을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
-- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 현재 3D runtime을 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
+- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
 - `quartz/scripts/generate-memory-atlas-semantics.mjs` — qmd HTTP vector 검색을 slug 관계 임시 산출물로 바꾸며 실패 시 오래된 산출물을 제거한다.
 
-Plan 9에서는 화면과 브라우저 책임을 다음 파일로 분리한다.
+화면의 작은 SSR 조각은 `quartz/quartz/components/memoryAtlasView.tsx`가 소유한다.
+브라우저 controller와 2D·3D runtime은 위 경계를 유지하며 `memoryAtlas.inline.ts`에 상태나 renderer 책임을 다시 넣지 않는다.
 
-- `quartz/quartz/components/memoryAtlasView.tsx` — 모드 전환, 시작점, 지역 관계 문맥과 범례의 작은 Preact SSR 조각을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 최소 브라우저 상태, 사용자 event, 파생 데이터 계산과 현재 렌더러 교체를 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D 렌더러가 함께 구현하는 생명 주기 계약을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — 기존 3D runtime 책임을 이어받는다.
-
-이 분리 뒤 `memoryAtlas.inline.ts`는 SPA 진입점만 남기고, emitter는 2D와 3D runtime을 별도 ESM 파일로 묶는다.
 
 표시 컴포넌트는 frontmatter가 일부만 있어도 동작해야 한다.
 OKF 내보내기 로직을 Quartz에 넣지 않고 교환 경계를 별도 스크립트로 유지한다.
@@ -63,17 +60,36 @@ Quartz의 기존 SPA와 서버 렌더 대체 목록을 유지하기 위해 별�
 
 ### Brain 근거 질문
 
-- `services/brain-ask/server.mjs` — 질문 검증, 동시 실행 제한, qmd 검색, wiki 본문 읽기, 모델 호출과 응답 변환을 소유한다.
-- `services/brain-ask/Dockerfile` — Node.js 24 실행 환경과 공용 qmd HTTP client를 묶는다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — 기존 qmd 요청·응답 계약을 서버에서도 재사용한다.
+- `services/brain-ask/src/main.ts` — NestJS bootstrap, 보안 middleware, 전역 입력 검사와 종료 처리를 담당한다.
+- `services/brain-ask/src/auth/` — password hash 검사, 제한된 메모리 session 저장소와 관리자 Guard를 담당한다.
+- `services/brain-ask/src/brain-ask/` — 질문 검증, 동시 실행 제한, qmd 검색, wiki 본문 읽기, 모델 호출과 응답 변환을 담당한다.
+- `services/brain-ask/src/private-content/` — 관리자용 콘텐츠 색인과 관계 데이터 파일의 read-only 응답을 담당한다.
+- `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build를 만들고 UID 1000으로 실행하며 HTTP health 검사를 제공한다.
+- `services/brain-ask/src/brain-ask/qmd.client.ts` — BFF가 사용하는 qmd `/query` 요청과 응답 collection 검사를 구현한다.
+- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — agent와 CLI 검색에서 사용하는 qmd HTTP client를 구현한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
-- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — 단일 요청 상태와 닫기·취소·출처 이동을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasRuntime.ts` — 질문 출처 노드의 일시 강조를 적용하고 제거한다.
+- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 데스크톱 하단 패널과 모바일 아래 시트의 경계를 소유한다.
 
-`brain-ask`는 공개 인터넷에 직접 연결하지 않는 같은 출처 중계 계층이다.
-브라우저 인증은 외부 인증 계층에 맡기고, 이 계층은 모델 key 은닉, 입력 제한, 근거 경로 검증과 응답 형태 고정을 담당한다.
+`brain-ask`는 공개 인터넷에 직접 연결하지 않는 같은 출처 NestJS BFF다.
+BFF는 관리자 인증과 권한 판정, 모델 key 은닉, 입력 제한, 근거 경로 검증과 응답 형태 고정을 담당한다.
 질문 한 건은 `brain-ask` 안의 메모리 잠금 하나를 사용하며 서버 재시작 뒤 복원할 상태는 없다.
+
+### Brain 로그인과 private 콘텐츠
+
+- NestJS `AuthModule`은 단일 관리자 password hash를 secret 파일에서 읽고 opaque session을 발급한다.
+- `AuthModule`의 제한된 메모리 provider는 client별 로그인 시도를 15분에 5회로 제한하고 최대 1,024개 client만 유지한다.
+- `OriginGuard`는 모든 `POST`의 `Origin`이 설정한 Brain origin과 정확히 같은지 검사하고 누락도 거부하며 `Referer`를 대신 읽지 않는다.
+- `AdminGuard`는 controller가 private 색인, 관계 데이터와 질문 기능을 실행하기 전에 session의 `admin` 역할을 검사한다.
+- session ID는 브라우저 cookie에만 두고 역할과 만료 시각은 최대 8개로 제한한 서버 메모리 저장소에 둔다.
+- Nginx는 private HTML을 보내기 전에 BFF의 내부 권한 확인 endpoint를 `auth_request`로 호출한다.
+- Quartz의 public HTML과 정적 콘텐츠 색인은 로그인 없이 제공한다.
+- Memory Atlas는 session 역할이 `admin`일 때만 보호 API의 관리자 색인과 관계 데이터를 읽고 그래프를 다시 만든다.
+
+클라이언트가 보낸 역할, namespace 또는 private 요청 여부는 권한 근거로 사용하지 않는다.
+public build를 기본 document root로 사용하고 private 포함 build에서는 `/_private/` 문서와 보호 데이터 파일만 읽는다.
+관리자 응답에는 `Cache-Control: private, no-store`를 적용한다.
 
 ## 의존성
 
@@ -92,8 +108,12 @@ Quartz 일반 빌드는 qmd를 필수 의존성으로 삼지 않으며 임시 �
 임시 산출물은 gitignore 대상이고 emitter가 현재 빌드의 slug로 다시 제한하므로 protected 생성 결과가 남아 있어도 public 산출물에 private 관계가 포함되지 않는다.
 자동 시작점은 정제된 graph에서 브라우저가 계산하고 wiki, 콘텐츠 색인과 임시 의미 산출물에 저장하지 않는다.
 
-질문 API는 Node.js 24의 `http`, `fetch`, `fs`만 사용한다.
-별도 웹 프레임워크, 데이터베이스, 큐와 외부 벡터 저장소를 추가하지 않는다.
+질문 BFF는 Node.js 24.15.0과 NestJS 12의 기본 Express adapter를 사용한다.
+NestJS module, controller, provider와 Guard로 HTTP 경계와 도메인 로직을 분리한다.
+입력 검사는 전역 `ValidationPipe`, 로그인 시도 제한은 `AuthModule`의 메모리 provider, HTTP 보안 header는 Helmet을 사용한다.
+NestJS 12의 peer 범위와 맞지 않는 외부 throttling package는 추가하지 않는다.
+`services/brain-ask/package.json`은 `packageManager: pnpm@10.33.0`을 선언하고 BFF의 설치·검사·빌드는 `corepack pnpm@10.33.0`으로 실행한다.
+별도 데이터베이스, queue, Passport, JWT와 외부 벡터 저장소를 추가하지 않는다.
 `brain-ask`는 qmd 결과의 URI를 직접 신뢰하지 않고 허용 collection과 mount 경계를 검사한 뒤 wiki 본문을 읽는다.
 모델 API에는 `store: false`와 `brain` 모델 별칭을 전달하며 이전 응답 식별자나 대화 식별자를 보내지 않는다.
 
@@ -109,7 +129,7 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
 - public 저장소는 Compose, reverse proxy, 모델 profile과 호스트 경로를 소유하지 않는다.
 - private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 게시를 수행한다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs`는 public qmd HTTP client 계약을 계속 소유한다.
+- BFF의 `qmd.client.ts`와 agent용 `brain-search-http.cjs`는 `docs/data-schema.md`의 qmd 요청·응답 계약을 각각 구현한다.
 
 ## 검증 경계
 
@@ -123,4 +143,6 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - Memory Atlas 브라우저 회귀 — `browser-driver`를 통해 1440px와 390px 화면, 키보드, 움직임 줄이기, 전체 지도와 지역 관계 전환을 검증한다.
 - Brain 질문 — 입력 제한, 동시 요청, qmd URI 경계, 근거 크기, 빈 결과의 모델 API 미호출, 모델 오류 변환과 로그 비노출을 단위·통합 검사한다.
 - Brain 질문 UI — 질문 상태, 답변 평문 렌더, 출처 이동, 그래프 강조 해제, 1440px와 390px의 넘침을 브라우저에서 검사한다.
+- Brain 인증 — 정상·실패·제한 로그인, cookie 속성, session 만료·로그아웃·재시작과 관리자 Guard를 단위·통합 검사한다.
+- private 공개 범위 — 비로그인 BFF 응답과 public 산출물에 private slug와 본문이 없으며 private 출처 href가 같은 origin의 `/_private/<slug>` 형식인지 검사한다. 실제 `/_private` 요청의 `401`은 private 인프라 저장소에서 검증한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.

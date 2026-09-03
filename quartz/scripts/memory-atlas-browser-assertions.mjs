@@ -77,6 +77,12 @@ ${body}
 export const assertions = {
   waitHarnessReady: `Array.from(document.querySelectorAll("iframe")).every((frame) => frame.contentDocument?.querySelector('[data-testid="memory-atlas"]')?.dataset.runtimeState === "ready")`,
 
+  ragEntrypointSelected: `(() => {
+    const doc = document.getElementById("desktop-frame")?.contentDocument
+    const slug = doc?.querySelector('[data-memory-atlas-entrypoint="rag"]')?.dataset.slug
+    return Boolean(slug && doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${slug}"][data-selected="true"]\`))
+  })()`,
+
   viewportBasics: wrap(`
 const results = {}
 for (const id of ["desktop-frame", "mobile-frame"]) {
@@ -86,6 +92,7 @@ for (const id of ["desktop-frame", "mobile-frame"]) {
   const root = byTestId(doc, "memory-atlas")
   const canvas = byTestId(doc, "memory-atlas-canvas")
   if (root.dataset.runtimeState !== "ready") throw new Error(\`\${id} runtime not ready\`)
+  await waitFor(() => root.dataset.authState === "public", \`\${id} public auth ready\`)
   if (canvas.dataset.runtimeMode !== "2d") throw new Error(\`\${id} did not start in 2D\`)
   for (const text of ["커리어", "건강", "AI", "RAG"]) {
     if (!doc.body.textContent.includes(text)) throw new Error(\`\${id} missing \${text}\`)
@@ -98,9 +105,26 @@ for (const id of ["desktop-frame", "mobile-frame"]) {
   if (!buttons.length) throw new Error(\`\${id} missing node buttons\`)
   if (buttons.some((button) => !button.textContent.trim())) throw new Error(\`\${id} has empty node label\`)
   noHorizontalOverflow(doc)
+  const login = byTestId(doc, "memory-atlas-login-open")
+  login.click()
+  const dialog = byTestId(doc, "memory-atlas-login-dialog")
+  if (!dialog.open) throw new Error(\`\${id} login dialog did not open\`)
+  const dialogRect = dialog.getBoundingClientRect()
+  if (dialogRect.left < -2 || dialogRect.right > doc.documentElement.clientWidth + 2 || dialogRect.top < -2 || dialogRect.bottom > doc.documentElement.clientHeight + 2) throw new Error(\`\${id} login dialog overflow\`)
+  if (byTestId(doc, "memory-atlas-login-password").type !== "password") throw new Error(\`\${id} login input is not a password field\`)
+  byTestId(doc, "memory-atlas-login-cancel").click()
   results[id] = { nodes: buttons.length, links: canvas.querySelectorAll(".memory-atlas-2d__link").length }
 }
 return results
+`),
+
+  selectRagEntrypoint: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
+if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable")
+ragEntry.click()
+return { selected: ragEntry.dataset.slug }
 `),
 
   localRelationFlow: wrap(`
@@ -109,11 +133,8 @@ const doc = win.document
 const root = byTestId(doc, "memory-atlas")
 const canvas = byTestId(doc, "memory-atlas-canvas")
 const globalNodeCount = canvas.querySelectorAll(".memory-atlas-2d__nodes button").length
-const ragEntry = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')
-if (!ragEntry || ragEntry.disabled) throw new Error("RAG entrypoint unavailable")
-const ragSlug = ragEntry.dataset.slug
-ragEntry.click()
-await waitFor(() => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${ragSlug}"][data-selected="true"]\`), "RAG centered")
+const ragSlug = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')?.dataset.slug
+if (!ragSlug) throw new Error("RAG entrypoint unavailable")
 let buttons = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")]
 const rag = buttons.find((button) => button.dataset.slug === ragSlug)
 const graphRag = buttons.find((button) => button.textContent.trim().includes("GraphRAG"))
@@ -301,6 +322,165 @@ if (revived.length) throw new Error("old relation highlight revived after clear"
 return { spa: true, restoredMode: "2d", restoredSelection: selectedTitle }
 `),
 
+  authAndProtectedDataLifecycle: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const root = byTestId(doc, "memory-atlas")
+const originalFetch = win.fetch.bind(win)
+await waitFor(() => root.dataset.authState === "public", "initial public auth state")
+assertNoPrivateAtlasLeak(doc)
+if (root.dataset.availableNamespaces !== "public") throw new Error("public namespaces were not fixed before login")
+if (!byTestId(doc, "memory-atlas-ask-toggle").hidden) throw new Error("question UI was visible before protected data")
+
+const publicIndexResponse = await originalFetch("/static/contentIndex.json")
+const publicIndexText = await publicIndexResponse.text()
+if (publicIndexText.includes("private-auth-fixture")) throw new Error("private fixture reached the public content index")
+const publicIndex = JSON.parse(publicIndexText)
+const publicSemantics = await originalFetch("/static/memory-atlas-semantics.json")
+  .then((response) => response.ok ? response.json() : ({ schemaVersion: 1, generatedAt: "2026-09-03T00:00:00.000Z", source: "qmd-vector", edges: [] }))
+const privateSlug = "_private/concepts/private-auth-fixture"
+const privateTitle = "Private Auth Fixture"
+const protectedIndex = {
+  ...publicIndex,
+  [privateSlug]: {
+    slug: privateSlug,
+    filePath: "concepts/private-auth-fixture.md",
+    title: privateTitle,
+    links: [],
+    tags: ["private-only"],
+    content: "protected fixture",
+    type: "concept",
+    sourceCount: 1,
+  },
+}
+let loginMode = "public"
+let protectedRequests = 0
+const json = (value, init = {}) => new Response(JSON.stringify(value), { status: 200, headers: { "content-type": "application/json" }, ...init })
+win.fetch = (input, init) => {
+  const url = String(typeof input === "string" ? input : input?.url ?? "")
+  if (url.includes("/api/auth/session")) return Promise.resolve(json({ role: "public", expiresAt: null }))
+  if (url.includes("/api/auth/login")) {
+    const password = JSON.parse(init?.body ?? "{}").password
+    if (password === "wrong-password") return Promise.resolve(json({ error: { code: "invalid_credentials" } }, { status: 401 }))
+    if (password === "limited-password") return Promise.resolve(json({ error: { code: "login_rate_limited" } }, { status: 429, headers: { "content-type": "application/json", "retry-after": "60" } }))
+    loginMode = password === "private-fail-password" ? "private-fail" : password === "expiring-password" ? "expiring" : "admin"
+    const expiresAt = new Date(Date.now() + (loginMode === "expiring" ? 700 : 60_000)).toISOString()
+    return Promise.resolve(json({ role: "admin", expiresAt }))
+  }
+  if (url.includes("/api/auth/logout")) {
+    loginMode = "public"
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
+  if (url.includes("/api/private/content-index")) {
+    protectedRequests += 1
+    if (loginMode === "private-fail") return Promise.resolve(json({ error: { code: "private_content_unavailable" } }, { status: 503 }))
+    return Promise.resolve(json(protectedIndex))
+  }
+  if (url.includes("/api/private/memory-atlas-semantics")) {
+    protectedRequests += 1
+    return Promise.resolve(json(publicSemantics))
+  }
+  return originalFetch(input, init)
+}
+
+win.document.dispatchEvent(new CustomEvent("nav", { detail: { url: new URL(win.location.href) } }))
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "public", "mocked public session")
+if (protectedRequests !== 0) throw new Error("protected data was requested for a public session")
+
+const openLogin = () => {
+  byTestId(doc, "memory-atlas-login-open").click()
+  const dialog = byTestId(doc, "memory-atlas-login-dialog")
+  if (!dialog.open) throw new Error("login dialog did not open")
+  return byTestId(doc, "memory-atlas-login-password")
+}
+let password = openLogin()
+dispatchInput(password, "wrong-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas-login-status").textContent.includes("확인할 수 없습니다"), "generic login failure")
+if (password.value) throw new Error("failed password remained in the input")
+dispatchInput(password, "limited-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas-login-status").textContent.includes("이후 다시 시도하세요"), "rate limit retry guidance")
+if (byTestId(doc, "memory-atlas-login-status").textContent.includes("15분 뒤")) throw new Error("rate limit response ignored Retry-After")
+if (password.value) throw new Error("limited password remained in the input")
+
+dispatchInput(password, "correct-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "admin", "admin protected data")
+await waitFor(() => doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`), "private node rendered")
+const namespaceValues = [...doc.querySelectorAll('input[name="memory-atlas-namespace"]')].map((input) => input.value)
+if (namespaceValues.join(",") !== "public,private") throw new Error(\`admin namespace controls mismatch: \${namespaceValues}\`)
+if (root.dataset.availableNamespaces !== "public,private") throw new Error("admin namespace dataset mismatch")
+if (byTestId(doc, "memory-atlas-ask-toggle").hidden) throw new Error("question UI remained hidden after protected data")
+const storedAdmin = JSON.parse(win.sessionStorage.getItem("memoryAtlasState") || "{}")
+const effectiveAdminNamespaces = storedAdmin.namespaces?.length ? storedAdmin.namespaces : root.dataset.availableNamespaces.split(",")
+if (!effectiveAdminNamespaces.includes("private")) throw new Error("admin storage and namespace DOM disagree")
+if ([...doc.querySelectorAll("input")].some((input) => input.value === "correct-password")) throw new Error("successful password remained in the DOM")
+for (const storage of [win.localStorage, win.sessionStorage]) {
+  for (let index = 0; index < storage.length; index += 1) {
+    const value = storage.getItem(storage.key(index)) || ""
+    if (["wrong-password", "limited-password", "correct-password"].some((secret) => value.includes(secret))) throw new Error("password reached browser storage")
+  }
+}
+
+doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`).click()
+await waitFor(() => byTestId(doc, "memory-atlas-detail-title").textContent.trim() === privateTitle, "private detail selected")
+byTestId(doc, "memory-atlas-logout").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "public", "logout public state")
+await waitFor(() => !doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`), "private node removed after logout")
+if (root.dataset.availableNamespaces !== "public") throw new Error("logout namespace dataset retained private")
+if (doc.querySelector('input[name="memory-atlas-namespace"][value="private"]')) throw new Error("logout retained private checkbox")
+if (!byTestId(doc, "memory-atlas-ask-toggle").hidden || !byTestId(doc, "memory-atlas-ask-panel").hidden) throw new Error("logout retained question UI")
+if (byTestId(doc, "memory-atlas-detail-title").textContent.includes(privateTitle)) throw new Error("logout retained private detail")
+const storedAfterLogout = win.sessionStorage.getItem("memoryAtlasState") || ""
+if (storedAfterLogout.includes("private") || storedAfterLogout.includes(privateSlug) || storedAfterLogout.includes("private-only")) throw new Error("logout retained private session state")
+assertNoPrivateAtlasLeak(doc)
+
+password = openLogin()
+dispatchInput(password, "private-fail-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "error", "private API failure")
+if (!byTestId(doc, "memory-atlas-login-status").textContent.includes("관리자 데이터를 불러오지 못했습니다")) throw new Error("private API failure guidance missing")
+if (root.dataset.availableNamespaces !== "public" || doc.body.innerHTML.includes(privateSlug)) throw new Error("private API failure partially retained protected data")
+byTestId(doc, "memory-atlas-login-cancel").click()
+
+password = openLogin()
+dispatchInput(password, "expiring-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "admin", "expiring admin session")
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "public", "automatic session expiry", 4000)
+await waitFor(() => !doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`), "session expiry private graph cleanup")
+if (root.dataset.availableNamespaces !== "public" || doc.body.innerHTML.includes(privateSlug)) throw new Error("session expiry retained private data")
+
+password = openLogin()
+dispatchInput(password, "correct-password")
+byTestId(doc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "admin", "admin restored for question regression")
+
+const mobileWin = frameWindow("mobile-frame")
+const mobileDoc = mobileWin.document
+const mobileOriginalFetch = mobileWin.fetch.bind(mobileWin)
+mobileWin.fetch = (input, init) => {
+  const url = String(typeof input === "string" ? input : input?.url ?? "")
+  if (url.includes("/api/auth/session")) return Promise.resolve(json({ role: "public", expiresAt: null }))
+  if (url.includes("/api/auth/login")) return Promise.resolve(json({ role: "admin", expiresAt: new Date(Date.now() + 60_000).toISOString() }))
+  if (url.includes("/api/private/content-index")) return Promise.resolve(json(protectedIndex))
+  if (url.includes("/api/private/memory-atlas-semantics")) return Promise.resolve(json(publicSemantics))
+  return mobileOriginalFetch(input, init)
+}
+mobileWin.document.dispatchEvent(new CustomEvent("nav", { detail: { url: new URL(mobileWin.location.href) } }))
+await waitFor(() => byTestId(mobileDoc, "memory-atlas").dataset.authState === "public", "mobile public session")
+byTestId(mobileDoc, "memory-atlas-login-open").click()
+const mobilePassword = byTestId(mobileDoc, "memory-atlas-login-password")
+dispatchInput(mobilePassword, "correct-password")
+byTestId(mobileDoc, "memory-atlas-login-submit").click()
+await waitFor(() => byTestId(mobileDoc, "memory-atlas").dataset.authState === "admin", "mobile admin protected data")
+await waitFor(() => mobileDoc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`), "mobile private graph")
+noHorizontalOverflow(mobileDoc)
+if (byTestId(mobileDoc, "memory-atlas-auth-status").textContent.trim() !== "관리자") throw new Error("mobile administrator status missing")
+return { publicFirst: true, loginFailure: true, limited: true, admin: true, logout: true, expired: true, privateFailure: true, protectedRequests, mobileAdmin: true }
+`),
+
   brainAskRegression: wrap(`
 const win = frameWindow("desktop-frame")
 const doc = win.document
@@ -310,12 +490,20 @@ mode2d?.click()
 await waitFor(() => byTestId(doc, "memory-atlas-canvas").dataset.runtimeMode === "2d", "2D before ask regression")
 const askRagSlug = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')?.dataset.slug
 if (!askRagSlug) throw new Error("RAG entrypoint unavailable for ask fixture")
+const privateSlug = doc.querySelector('.memory-atlas-2d__nodes button[data-slug^="_private/"]')?.dataset.slug
+if (!privateSlug) throw new Error("private node unavailable for ask fixture")
 win.fetch = (input, init) => {
   const url = String(typeof input === "string" ? input : input?.url ?? "")
   if (!url.includes("/api/brain/ask")) return originalFetch(input, init)
   const body = JSON.parse(init?.body ?? "{}")
   if (body.question === "empty") return Promise.resolve(new Response(JSON.stringify({ requestId: "2", answer: "", sources: [] }), { status: 200, headers: { "content-type": "application/json" } }))
   if (body.question === "error") return Promise.resolve(new Response(JSON.stringify({ error: { message: "boom", retryable: true } }), { status: 503, headers: { "content-type": "application/json" } }))
+  if (body.question === "private-sources") return Promise.resolve(new Response(JSON.stringify({ requestId: "3", answer: "비공개 근거", sources: [
+    { title: "허용", slug: privateSlug, namespace: "private", score: 0.95, excerpt: "허용 근거", href: \`/\${privateSlug}\` },
+    { title: "경로 위조", slug: privateSlug, namespace: "private", score: 0.9, excerpt: "차단", href: \`/\${askRagSlug}\` },
+    { title: "외부 위조", slug: privateSlug, namespace: "private", score: 0.85, excerpt: "차단", href: "https://attacker.example/_private/stolen" }
+  ] }), { status: 200, headers: { "content-type": "application/json" } }))
+  if (body.question === "expired") return Promise.resolve(new Response(JSON.stringify({ error: { code: "authentication_required" } }), { status: 401, headers: { "content-type": "application/json" } }))
   return Promise.resolve(new Response(JSON.stringify({ requestId: "1", answer: "RAG 답변", sources: [{ title: "RAG", slug: askRagSlug, namespace: "public", score: 0.9, excerpt: "근거", href: \`/\${askRagSlug}\` }] }), { status: 200, headers: { "content-type": "application/json" } }))
 }
 byTestId(doc, "memory-atlas-ask-toggle").click()
@@ -334,8 +522,18 @@ dispatchInput(question, "error")
 byTestId(doc, "memory-atlas-ask-submit").click()
 await waitFor(() => byTestId(doc, "memory-atlas").dataset.askState === "error", "ask error")
 if (byTestId(doc, "memory-atlas-ask-retry").hidden) throw new Error("retry not shown")
-byTestId(doc, "memory-atlas-ask-close").click()
-await waitFor(() => byTestId(doc, "memory-atlas-ask-panel").hidden, "ask panel closed")
-return { ask: true }
+dispatchInput(question, "private-sources")
+byTestId(doc, "memory-atlas-ask-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.askState === "success", "private source answer")
+const sources = [...byTestId(doc, "memory-atlas-ask-source-list").querySelectorAll("li")]
+const acceptedSource = sources[0]?.querySelector("a")
+if (sources.length !== 1 || acceptedSource?.dataset.slug !== privateSlug || acceptedSource?.getAttribute("href") !== \`/\${privateSlug}\`) throw new Error(\`unsafe private source href was accepted: count=\${sources.length}, href=\${acceptedSource?.getAttribute("href")}\`)
+dispatchInput(question, "expired")
+byTestId(doc, "memory-atlas-ask-submit").click()
+await waitFor(() => byTestId(doc, "memory-atlas").dataset.authState === "public", "question 401 public fallback")
+if (!byTestId(doc, "memory-atlas-ask-panel").hidden || byTestId(doc, "memory-atlas-ask-answer-text").textContent) throw new Error("question 401 retained question UI or answer")
+await waitFor(() => !doc.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${privateSlug}"]\`), "question 401 private graph cleanup")
+if (doc.body.innerHTML.includes(privateSlug) || byTestId(doc, "memory-atlas").dataset.availableNamespaces !== "public") throw new Error("question 401 retained protected data")
+return { ask: true, privateHref: true, unauthorizedCleanup: true }
 `),
 }

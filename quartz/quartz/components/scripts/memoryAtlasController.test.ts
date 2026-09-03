@@ -6,6 +6,7 @@ import {
   createMemoryAtlasRuntimeLifecycle,
   loadMemoryAtlasDataWithFallback,
   memoryAtlasRuntimeSrcForMode,
+  removePrivateMemoryAtlasState,
   restoreStoredMemoryAtlasState,
 } from "./memoryAtlasController"
 
@@ -78,6 +79,37 @@ describe("memory atlas controller", () => {
       [[slug("concepts/rag"), "RAG"]],
     )
     assert.deepStrictEqual(result.data.links, [])
+  })
+
+  test("removes private selections, tags and detail state when returning to public data", () => {
+    const fallback = createDefaultMemoryAtlasState()
+    const current = {
+      ...fallback,
+      namespaces: ["private" as const],
+      tags: ["private-only", "shared"],
+      selectedSlug: slug("_private/concepts/work"),
+    }
+    const publicData = {
+      nodes: [
+        {
+          id: slug("concepts/rag"),
+          slug: slug("concepts/rag"),
+          title: "RAG",
+          tags: ["shared"],
+          namespace: "public" as const,
+          degree: 0,
+          sourceCount: 0,
+        },
+      ],
+      links: [],
+    }
+
+    assert.deepStrictEqual(removePrivateMemoryAtlasState(current, publicData), {
+      ...current,
+      namespaces: [],
+      tags: ["shared"],
+      selectedSlug: undefined,
+    })
   })
 
   test("destroys the previous renderer on mode switch and ignores updates after destroy", async () => {

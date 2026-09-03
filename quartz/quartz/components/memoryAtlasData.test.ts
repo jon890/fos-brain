@@ -9,6 +9,7 @@ import {
   deriveMemoryAtlasFacets,
   filterMemoryAtlas,
   inferMemoryNamespace,
+  restrictMemoryAtlasDataToNamespaces,
   selectMemoryAtlasNode,
   shouldShowMemoryAtlasResults,
   type MemoryAtlasState,
@@ -303,5 +304,23 @@ describe("memory atlas data", () => {
     const facets = deriveMemoryAtlasFacets(data)
     assert.strictEqual(facets.namespaces.private, 0)
     assert.strictEqual(facets.total, 1)
+  })
+
+  test("removes private nodes and links at the public data boundary", () => {
+    const data = buildMemoryAtlasData({
+      "concepts/public": content("concepts/public", {
+        links: [simpleSlug("_private/concepts/private")],
+      }),
+      "_private/concepts/private": content("_private/concepts/private"),
+    })
+
+    const publicData = restrictMemoryAtlasDataToNamespaces(data, ["public"])
+
+    assert.deepStrictEqual(
+      publicData.nodes.map((node) => node.slug),
+      [slug("concepts/public")],
+    )
+    assert.deepStrictEqual(publicData.links, [])
+    assert.strictEqual(publicData.nodes[0].degree, 0)
   })
 })

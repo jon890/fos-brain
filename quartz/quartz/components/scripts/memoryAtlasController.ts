@@ -4,10 +4,12 @@ import {
   createDefaultMemoryAtlasState,
   deriveMemoryAtlasFacets,
   filterMemoryAtlas,
+  restrictMemoryAtlasDataToNamespaces,
   selectMemoryAtlasNode,
   shouldShowMemoryAtlasResults,
   type MemoryAtlasData,
   type MemoryAtlasMode,
+  type MemoryAtlasNamespace,
   type MemoryAtlasState,
 } from "../memoryAtlasData"
 import {
@@ -30,16 +32,35 @@ import type {
   MemoryAtlasRuntimeModule,
   MemoryAtlasRuntimeMountOptions,
 } from "./memoryAtlasRuntimeTypes"
+import {
+  getMemoryAtlasAuthSession,
+  isMemoryAtlasUnauthorized,
+  loadProtectedMemoryAtlasData,
+  loginMemoryAtlasAdmin,
+  logoutMemoryAtlasAdmin,
+  MemoryAtlasAuthError,
+  type MemoryAtlasAuthRole,
+  type MemoryAtlasAuthSession,
+  type ProtectedMemoryAtlasData,
+} from "./memoryAtlasAuth"
 
 type ContentIndexRecord = Record<string, ContentDetails>
 type ContentIndexLoader = () => Promise<ContentIndexRecord>
 type RuntimeLoader = (mode: MemoryAtlasMode) => Promise<MemoryAtlasRuntimeModule>
 type SemanticsLoader = () => Promise<unknown>
+type AuthSessionLoader = () => Promise<MemoryAtlasAuthSession>
+type AdminLogin = (password: string) => Promise<MemoryAtlasAuthSession>
+type AdminLogout = () => Promise<void>
+type ProtectedDataLoader = () => Promise<ProtectedMemoryAtlasData>
 type InitMemoryAtlasOptions = {
   root?: HTMLElement | null
   loadContentIndex?: ContentIndexLoader
   loadRuntime?: RuntimeLoader
   loadSemantics?: SemanticsLoader
+  loadAuthSession?: AuthSessionLoader
+  loginAdmin?: AdminLogin
+  logoutAdmin?: AdminLogout
+  loadProtectedData?: ProtectedDataLoader
 }
 type AskState = "idle" | "retrieving" | "generating" | "success" | "empty" | "error"
 type BrainSource = {
@@ -73,6 +94,7 @@ const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
 const NAMESPACE_OPTIONS = ["public", "private"] as const
 const DEFAULT_TAGS: string[] = []
 const STATE_STORAGE_KEY = "memoryAtlasState"
+const LOGIN_RATE_LIMIT_MINUTES = 15
 
 declare const fetchData: Promise<ContentIndexRecord>
 
@@ -101,9 +123,29 @@ function availableNamespaces(root: HTMLElement): readonly (typeof NAMESPACE_OPTI
   const fromDataset = root.dataset.availableNamespaces
     ?.split(",")
     .filter((value) => NAMESPACE_OPTIONS.includes(value as (typeof NAMESPACE_OPTIONS)[number]))
-  return fromDataset?.length
-    ? (fromDataset as (typeof NAMESPACE_OPTIONS)[number][])
-    : NAMESPACE_OPTIONS
+  return fromDataset?.length ? (fromDataset as (typeof NAMESPACE_OPTIONS)[number][]) : ["public"]
+}
+
+function setAvailableNamespaces(root: HTMLElement, namespaces: readonly MemoryAtlasNamespace[]) {
+  root.dataset.availableNamespaces = namespaces.join(",")
+  const fieldset = root.querySelector<HTMLFieldSetElement>(
+    '[data-testid="memory-atlas-namespace-filter"]',
+  )
+  if (!fieldset) return
+  const legend = fieldset.querySelector("legend")
+  const labels = namespaces.map((namespace) => {
+    const label = document.createElement("label")
+    const input = document.createElement("input")
+    const text = document.createElement("span")
+    input.type = "checkbox"
+    input.name = "memory-atlas-namespace"
+    input.value = namespace
+    input.checked = true
+    text.textContent = namespace === "private" ? "비공개" : "공개"
+    label.append(input, text)
+    return label
+  })
+  fieldset.replaceChildren(...(legend ? [legend] : []), ...labels)
 }
 
 function selectedOptions(select: HTMLSelectElement | null): string[] {
@@ -157,13 +199,36 @@ function normalizeSourceSlug(source: BrainSource): FullSlug {
   ) as FullSlug
 }
 
-function sourceHref(source: BrainSource): string | undefined {
+export function sourceHref(
+  source: BrainSource,
+  slug = normalizeSourceSlug(source),
+): string | undefined {
   try {
     const url = new URL(source.href, window.location.origin)
     if (url.origin !== window.location.origin) return undefined
+    if (source.namespace === "private") {
+      if (!slug.startsWith("_private/")) return undefined
+      if (!url.pathname.startsWith("/_private/")) return undefined
+      if (decodeURIComponent(url.pathname) !== `/${slug}`) return undefined
+    }
     return `${url.pathname}${url.search}${url.hash}`
   } catch {
     return undefined
+  }
+}
+
+export function removePrivateMemoryAtlasState(
+  state: MemoryAtlasState,
+  publicData: MemoryAtlasData,
+): MemoryAtlasState {
+  const publicSlugs = new Set(publicData.nodes.map((node) => node.slug))
+  const publicTags = new Set(publicData.nodes.flatMap((node) => node.tags))
+  return {
+    ...state,
+    namespaces: state.namespaces?.filter((namespace) => namespace !== "private"),
+    tags: state.tags?.filter((tag) => publicTags.has(tag)),
+    selectedSlug:
+      state.selectedSlug && publicSlugs.has(state.selectedSlug) ? state.selectedSlug : undefined,
   }
 }
 
@@ -176,6 +241,12 @@ export async function askBrain(question: string, signal: AbortSignal): Promise<B
   })
   const payload = (await response.json().catch(() => ({}))) as BrainAnswer & BrainError
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new MemoryAtlasAuthError(
+        response.status,
+        payload.error?.code || "authentication_required",
+      )
+    }
     const error = new Error(
       payload.error?.message || `Brain question failed with HTTP ${response.status}`,
     )
@@ -359,6 +430,8 @@ function updateDetail(root: HTMLElement, data: MemoryAtlasData, slug?: FullSlug)
     root
       .querySelector<HTMLAnchorElement>('[data-testid="memory-atlas-detail-link"]')
       ?.setAttribute("href", "#")
+    const link = root.querySelector<HTMLAnchorElement>('[data-testid="memory-atlas-detail-link"]')
+    if (link) link.onclick = null
     return
   }
 
@@ -492,6 +565,76 @@ function setAskHidden(root: HTMLElement, hidden: boolean) {
   if (panel) panel.hidden = hidden
   toggle?.setAttribute("aria-expanded", String(!hidden))
   root.classList.toggle("memory-atlas--ask-open", !hidden)
+}
+
+function setQuestionAvailable(root: HTMLElement, available: boolean) {
+  const toggle = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-ask-toggle"]')
+  if (toggle) toggle.hidden = !available
+  if (!available) setAskHidden(root, true)
+}
+
+function setAuthControls(
+  root: HTMLElement,
+  state: "checking" | "public" | "loading" | "admin" | "error",
+  message: string,
+) {
+  root.dataset.authState = state
+  const status = root.querySelector<HTMLElement>('[data-testid="memory-atlas-auth-status"]')
+  const login = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-login-open"]')
+  const logout = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-logout"]')
+  if (status) status.textContent = message
+  if (login) login.hidden = state === "admin" || state === "loading" || state === "checking"
+  if (logout) logout.hidden = state !== "admin"
+}
+
+function loginDialog(root: HTMLElement): HTMLDialogElement | null {
+  return root.querySelector<HTMLDialogElement>('[data-testid="memory-atlas-login-dialog"]')
+}
+
+function openLoginDialog(root: HTMLElement) {
+  const dialog = loginDialog(root)
+  const input = root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-login-password"]')
+  const status = root.querySelector<HTMLElement>('[data-testid="memory-atlas-login-status"]')
+  if (!dialog) return
+  if (status) status.textContent = "관리자 비밀번호를 입력하세요."
+  if (typeof dialog.showModal === "function") dialog.showModal()
+  else dialog.setAttribute("open", "")
+  input?.focus()
+}
+
+function closeLoginDialog(root: HTMLElement) {
+  const dialog = loginDialog(root)
+  const input = root.querySelector<HTMLInputElement>('[data-testid="memory-atlas-login-password"]')
+  if (input) input.value = ""
+  if (!dialog) return
+  if (typeof dialog.close === "function") dialog.close()
+  else dialog.removeAttribute("open")
+}
+
+function setLoginStatus(root: HTMLElement, message: string, submitting = false) {
+  const status = root.querySelector<HTMLElement>('[data-testid="memory-atlas-login-status"]')
+  const submit = root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-login-submit"]')
+  if (status) status.textContent = message
+  if (submit) submit.disabled = submitting
+}
+
+function loginErrorMessage(error: unknown): string {
+  if (error instanceof MemoryAtlasAuthError && error.code === "login_rate_limited") {
+    if (error.retryAt) {
+      return `로그인 시도가 제한되었습니다. ${error.retryAt.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} 이후 다시 시도하세요.`
+    }
+    return `로그인 시도가 제한되었습니다. ${LOGIN_RATE_LIMIT_MINUTES}분 뒤 다시 시도하세요.`
+  }
+  if (
+    error instanceof MemoryAtlasAuthError &&
+    (error.code === "invalid_credentials" || error.code === "invalid_login")
+  ) {
+    return "로그인 정보를 확인할 수 없습니다. 다시 입력하세요."
+  }
+  return "로그인 요청을 처리하지 못했습니다. 잠시 뒤 다시 시도하세요."
 }
 
 function focusFirstInAskPanel(root: HTMLElement) {
@@ -645,10 +788,17 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   const runtimeLoader = options.loadRuntime ?? loadRuntimeFromDom(root)
   const contentIndexLoader = options.loadContentIndex ?? loadContentIndex
   const semanticsLoader = options.loadSemantics ?? loadPublishedSemantics
+  const authSessionLoader = options.loadAuthSession ?? getMemoryAtlasAuthSession
+  const adminLogin = options.loginAdmin ?? loginMemoryAtlasAdmin
+  const adminLogout = options.logoutAdmin ?? logoutMemoryAtlasAdmin
+  const protectedDataLoader = options.loadProtectedData ?? loadProtectedMemoryAtlasData
 
   setRuntimeState(root, "loading")
   root.classList.remove("memory-atlas--filters-open", "memory-atlas--detail-open")
   updateDetail(root, { nodes: [], links: [] })
+  setAvailableNamespaces(root, ["public"])
+  setQuestionAvailable(root, false)
+  setAuthControls(root, "checking", "로그인 상태 확인 중")
 
   let destroyed = false
   const runtimeLifecycle = createMemoryAtlasRuntimeLifecycle(runtimeLoader)
@@ -657,9 +807,14 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   let fullData: MemoryAtlasData = { nodes: [], links: [] }
   let visibleData: MemoryAtlasData = fullData
   let semanticEdges: MemoryAtlasSemanticEdge[] = []
+  let publicData: MemoryAtlasData = fullData
+  let publicSemanticEdges: MemoryAtlasSemanticEdge[] = []
+  let dataScope: MemoryAtlasAuthRole = "public"
   const cleanups: (() => void)[] = []
   let askController: AbortController | undefined
   let lastQuestion = ""
+  let authGeneration = 0
+  let sessionExpiryTimer: number | undefined
   const setStatus = (message: string) => {
     if (status) status.textContent = message
   }
@@ -716,6 +871,10 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     askController?.abort()
     askController = undefined
     lastQuestion = ""
+    authGeneration += 1
+    if (sessionExpiryTimer !== undefined) window.clearTimeout(sessionExpiryTimer)
+    sessionExpiryTimer = undefined
+    closeLoginDialog(root)
     for (const fn of cleanups.splice(0)) fn()
   }
   memoryAtlasState.cleanup = cleanup
@@ -784,7 +943,10 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   const validSources = (sources: BrainSource[]) => {
     const known = new Map(fullData.nodes.map((node) => [node.slug, node]))
     return sources
-      .map((source) => ({ source, slug: normalizeSourceSlug(source), href: sourceHref(source) }))
+      .map((source) => {
+        const slug = normalizeSourceSlug(source)
+        return { source, slug, href: sourceHref(source, slug) }
+      })
       .filter(({ source, slug, href }) => {
         const node = known.get(slug)
         return Boolean(node && href && node.namespace === source.namespace)
@@ -811,16 +973,19 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       sourceList.replaceChildren(
         ...sources.map(({ source, slug, href }) => {
           const item = document.createElement("li")
-          const button = document.createElement("button")
+          const link = document.createElement("a")
           const meta = document.createElement("span")
           const excerpt = document.createElement("p")
-          button.type = "button"
-          button.textContent = source.title || slug
-          button.dataset.slug = slug
-          button.addEventListener("click", () => navigateToSlug(slug))
+          link.href = href!
+          link.textContent = source.title || slug
+          link.dataset.slug = slug
+          link.addEventListener("click", (event) => {
+            event.preventDefault()
+            navigateToSlug(slug)
+          })
           meta.textContent = `${source.namespace}${typeof source.score === "number" ? ` · ${source.score.toFixed(3)}` : ""}`
           excerpt.textContent = source.excerpt || href || ""
-          item.append(button, meta, excerpt)
+          item.append(link, meta, excerpt)
           return item
         }),
       )
@@ -861,6 +1026,10 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       setAskState("success", `${answer.sources.length}개 근거로 답했습니다.`, false)
     } catch (error) {
       if (controller.signal.aborted) return
+      if (isMemoryAtlasUnauthorized(error)) {
+        returnToPublic("관리자 session이 만료되었습니다. 다시 로그인하세요.")
+        return
+      }
       clearAskResult()
       const retryable = Boolean((error as Error & { retryable?: boolean }).retryable)
       setAskState(
@@ -903,10 +1072,94 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
   }
 
+  const renderDataScope = () => {
+    syncControls(root, state)
+    visibleData = filterMemoryAtlas(fullData, state)
+    updateTagOptions(root, fullData)
+    updateStats(root, visibleData)
+    updateResults(root, visibleData, state, selectNode)
+    updateDetail(root, visibleData, state.selectedSlug)
+    updateContextBar(root, visibleData, state)
+    updateEntrypoints(root, fullData, semanticEdges, openEntrypoint)
+    runtimeLifecycle.setEvidenceSlugs(new Set())
+    runtimeLifecycle.update(visibleData, state, { semanticEdges })
+    storeState(state)
+    setStatus(`${visibleData.nodes.length}개 문서를 표시하고 있습니다.`)
+  }
+
+  const returnToPublic = (message: string, authState: "public" | "error" = "public") => {
+    authGeneration += 1
+    if (sessionExpiryTimer !== undefined) window.clearTimeout(sessionExpiryTimer)
+    sessionExpiryTimer = undefined
+    dataScope = "public"
+    root.dataset.dataScope = dataScope
+    fullData = publicData
+    semanticEdges = publicSemanticEdges
+    state = removePrivateMemoryAtlasState(state, publicData)
+    closeAskPanel()
+    setQuestionAvailable(root, false)
+    setAvailableNamespaces(root, ["public"])
+    renderDataScope()
+    setAuthControls(root, authState, message)
+  }
+
+  const enterAdminScope = async (session: MemoryAtlasAuthSession) => {
+    const generation = ++authGeneration
+    setAuthControls(root, "loading", "관리자 데이터를 불러오는 중")
+    const protectedData = await protectedDataLoader()
+    if (destroyed || generation !== authGeneration) return
+    const parsedSemantics = parsePublishedMemoryAtlasSemantics(protectedData.semantics)
+    if (!parsedSemantics.ok) throw new Error("invalid_private_semantics")
+    const adminData = buildMemoryAtlasData(protectedData.contentIndex)
+    if (
+      !adminData.nodes.some((node) => node.namespace === "public") ||
+      !adminData.nodes.some((node) => node.namespace === "private")
+    ) {
+      throw new Error("invalid_private_content_index")
+    }
+    const adminSemantics = restrictPublishedMemoryAtlasSemanticsToSlugs(
+      parsedSemantics.artifact,
+      adminData.nodes.map((node) => node.slug),
+      { allowPrivate: true },
+    )
+
+    dataScope = "admin"
+    root.dataset.dataScope = dataScope
+    fullData = adminData
+    semanticEdges = adminSemantics.edges
+    state = {
+      ...state,
+      tags: state.tags?.filter((tag) => adminData.nodes.some((node) => node.tags.includes(tag))),
+      selectedSlug:
+        state.selectedSlug && adminData.nodes.some((node) => node.slug === state.selectedSlug)
+          ? state.selectedSlug
+          : undefined,
+    }
+    setAvailableNamespaces(root, ["public", "private"])
+    setQuestionAvailable(root, true)
+    renderDataScope()
+    setAuthControls(root, "admin", "관리자")
+
+    if (sessionExpiryTimer !== undefined) window.clearTimeout(sessionExpiryTimer)
+    const expiresAt = session.expiresAt ? Date.parse(session.expiresAt) : Number.NaN
+    if (Number.isFinite(expiresAt)) {
+      sessionExpiryTimer = window.setTimeout(
+        () => {
+          if (generation !== authGeneration) return
+          returnToPublic("관리자 session이 만료되었습니다. 다시 로그인하세요.")
+        },
+        Math.max(0, expiresAt - Date.now()),
+      )
+    }
+  }
+
   try {
     setStatus("콘텐츠 색인을 읽는 중입니다.")
     const loaded = await loadMemoryAtlasDataWithFallback(root, contentIndexLoader)
-    fullData = loaded.data
+    publicData = restrictMemoryAtlasDataToNamespaces(loaded.data, ["public"])
+    fullData = publicData
+    dataScope = "public"
+    root.dataset.dataScope = dataScope
     if (destroyed) return
     if (loaded.fallback) {
       root.dataset.contentIndexState = "fallback"
@@ -914,7 +1167,10 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     } else {
       root.dataset.contentIndexState = "ready"
     }
-    state = restoreStoredMemoryAtlasState(createDefaultMemoryAtlasState(fullData))
+    state = removePrivateMemoryAtlasState(
+      restoreStoredMemoryAtlasState(createDefaultMemoryAtlasState(fullData)),
+      publicData,
+    )
     const urlSelectedSlug = new URL(window.location.toString()).searchParams.get(
       "node",
     ) as FullSlug | null
@@ -944,8 +1200,8 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         root.dataset.semanticsState = "ready"
         return restrictPublishedMemoryAtlasSemanticsToSlugs(
           parsed.artifact,
-          fullData.nodes.map((node) => node.slug),
-          { allowPrivate: fullData.nodes.some((node) => node.namespace === "private") },
+          publicData.nodes.map((node) => node.slug),
+          { allowPrivate: false },
         )
       })
       .catch(() => {
@@ -953,8 +1209,10 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
         return createEmptyPublishedMemoryAtlasSemantics()
       })
       .then((semantics) => {
-        semanticEdges = semantics.edges
-        updateEntrypoints(root, fullData, semanticEdges, openEntrypoint)
+        publicSemanticEdges = semantics.edges
+        if (dataScope !== "public") return
+        semanticEdges = publicSemanticEdges
+        updateEntrypoints(root, publicData, semanticEdges, openEntrypoint)
         runtimeLifecycle.update(visibleData, state, { semanticEdges })
       })
 
@@ -998,7 +1256,6 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   for (const selector of [
     'input[name="memory-atlas-type"]',
     'input[name="memory-atlas-freshness"]',
-    'input[name="memory-atlas-namespace"]',
     '[data-testid="memory-atlas-mode"]',
     '[data-testid="memory-atlas-layout"]',
     '[data-testid="memory-atlas-color"]',
@@ -1007,6 +1264,9 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   ]) {
     root.querySelectorAll(selector).forEach((element) => bind(element, "change", () => refresh()))
   }
+  bind(root.querySelector('[data-testid="memory-atlas-namespace-filter"]'), "change", () =>
+    refresh(),
+  )
   root.querySelectorAll<HTMLButtonElement>("[data-memory-atlas-mode-button]").forEach((button) =>
     bind(button, "click", () => {
       const mode = button.dataset.memoryAtlasModeButton === "3d" ? "3d" : "2d"
@@ -1056,6 +1316,72 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   bind(root.querySelector('[data-testid="memory-atlas-detail-close"]'), "click", () =>
     selectNode(undefined),
   )
+  bind(root.querySelector('[data-testid="memory-atlas-login-open"]'), "click", () =>
+    openLoginDialog(root),
+  )
+  for (const testid of ["memory-atlas-login-close", "memory-atlas-login-cancel"]) {
+    bind(root.querySelector(`[data-testid="${testid}"]`), "click", () => {
+      closeLoginDialog(root)
+      root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-login-open"]')?.focus()
+    })
+  }
+  bind(root.querySelector('[data-testid="memory-atlas-login-dialog"]'), "cancel", (event) => {
+    event.preventDefault()
+    closeLoginDialog(root)
+    root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-login-open"]')?.focus()
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-login-form"]'), "submit", (event) => {
+    event.preventDefault()
+    const input = root.querySelector<HTMLInputElement>(
+      '[data-testid="memory-atlas-login-password"]',
+    )
+    const password = input?.value ?? ""
+    if (input) input.value = ""
+    if (!password) {
+      setLoginStatus(root, "관리자 비밀번호를 입력하세요.")
+      return
+    }
+    setLoginStatus(root, "로그인 정보를 확인하고 있습니다.", true)
+    setAuthControls(root, "loading", "로그인 중")
+    void (async () => {
+      let authenticated = false
+      try {
+        const session = await adminLogin(password)
+        authenticated = true
+        if (destroyed) return
+        await enterAdminScope(session)
+        if (destroyed || root.dataset.authState !== "admin") return
+        setLoginStatus(root, "로그인했습니다.")
+        closeLoginDialog(root)
+      } catch (error) {
+        if (destroyed) return
+        if (authenticated) {
+          const message = isMemoryAtlasUnauthorized(error)
+            ? "관리자 session이 만료되었습니다. 다시 로그인하세요."
+            : "관리자 데이터를 불러오지 못했습니다. 다시 로그인하세요."
+          returnToPublic(message, "error")
+          setLoginStatus(root, message)
+        } else {
+          setAuthControls(root, "public", "비로그인")
+          setLoginStatus(root, loginErrorMessage(error))
+        }
+      } finally {
+        setLoginStatus(
+          root,
+          root.querySelector<HTMLElement>('[data-testid="memory-atlas-login-status"]')
+            ?.textContent || "관리자 비밀번호를 입력하세요.",
+          false,
+        )
+      }
+    })()
+  })
+  bind(root.querySelector('[data-testid="memory-atlas-logout"]'), "click", () => {
+    returnToPublic("비로그인")
+    void adminLogout().catch(() => {
+      if (destroyed) return
+      setAuthControls(root, "error", "서버 로그아웃을 확인하지 못했습니다. 다시 로그인하세요.")
+    })
+  })
   bind(root.querySelector('[data-testid="memory-atlas-filter-toggle"]'), "click", (event) => {
     const button = event.currentTarget as HTMLButtonElement
     setFiltersOpen(root, button.getAttribute("aria-expanded") !== "true")
@@ -1065,6 +1391,13 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   )
   bind(document as unknown as EventTarget, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return
+    const dialog = loginDialog(root)
+    if (dialog?.hasAttribute("open")) {
+      event.preventDefault()
+      closeLoginDialog(root)
+      root.querySelector<HTMLButtonElement>('[data-testid="memory-atlas-login-open"]')?.focus()
+      return
+    }
     const askPanel = root.querySelector<HTMLElement>('[data-testid="memory-atlas-ask-panel"]')
     if (askPanel && !askPanel.hidden) {
       closeAskPanel()
@@ -1104,4 +1437,28 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
       first.focus()
     }
   })
+
+  void authSessionLoader()
+    .then(async (session) => {
+      if (destroyed) return
+      if (session.role !== "admin") {
+        setAuthControls(root, "public", "비로그인")
+        return
+      }
+      try {
+        await enterAdminScope(session)
+      } catch (error) {
+        if (destroyed) return
+        returnToPublic(
+          isMemoryAtlasUnauthorized(error)
+            ? "관리자 session이 만료되었습니다. 다시 로그인하세요."
+            : "관리자 데이터를 불러오지 못했습니다. 다시 로그인하세요.",
+          "error",
+        )
+      }
+    })
+    .catch(() => {
+      if (destroyed) return
+      setAuthControls(root, "public", "비로그인")
+    })
 }

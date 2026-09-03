@@ -213,6 +213,16 @@ export function filterMemoryAtlas(data: MemoryAtlasData, state: MemoryAtlasState
   }
 }
 
+export function restrictMemoryAtlasDataToNamespaces(
+  data: MemoryAtlasData,
+  namespaces: readonly MemoryAtlasNamespace[],
+): MemoryAtlasData {
+  return filterMemoryAtlas(data, {
+    ...createDefaultMemoryAtlasState(),
+    namespaces: [...namespaces],
+  })
+}
+
 export function deriveMemoryAtlasFacets(data: MemoryAtlasData): MemoryAtlasFacets {
   const facets: MemoryAtlasFacets = {
     total: data.nodes.length,
