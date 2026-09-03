@@ -402,6 +402,8 @@
 
 .memory-atlas__button,
 .memory-atlas__ask-toggle,
+.memory-atlas__auth button,
+.memory-atlas__login button,
 .memory-atlas__ask button,
 .memory-atlas__mobile-toggle,
 .memory-atlas__empty button,
@@ -425,6 +427,8 @@
 
 .memory-atlas__button:hover,
 .memory-atlas__ask-toggle:hover,
+.memory-atlas__auth button:hover,
+.memory-atlas__login button:hover,
 .memory-atlas__ask button:hover,
 .memory-atlas__mobile-toggle:hover,
 .memory-atlas__empty button:hover,
@@ -643,6 +647,100 @@
   white-space: nowrap;
 }
 
+.memory-atlas__auth {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.35rem;
+  min-width: 0;
+
+  span {
+    color: var(--atlas-muted);
+    font-family: "IBM Plex Mono", var(--codeFont);
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  button {
+    justify-content: center;
+    min-height: 32px;
+    padding: 0.3rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  button[hidden] {
+    display: none;
+  }
+}
+
+.memory-atlas__login {
+  background: rgba(3, 9, 11, 0.98);
+  border: 1px solid rgba(154, 201, 186, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.58);
+  color: var(--atlas-paper);
+  margin: auto;
+  max-height: calc(100dvh - 2rem);
+  max-width: calc(100vw - 2rem);
+  padding: 0;
+  width: min(25rem, calc(100vw - 2rem));
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(3px);
+  }
+
+  form {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    color: var(--atlas-paper);
+    font-family: "Gowun Batang", var(--headerFont);
+    font-size: 1.25rem;
+  }
+
+  > form > p,
+  .memory-atlas__login-head p {
+    color: var(--atlas-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  input {
+    background: rgba(2, 8, 9, 0.9);
+    border: 1px solid rgba(154, 201, 186, 0.28);
+    border-radius: 8px;
+  }
+}
+
+.memory-atlas__login-head,
+.memory-atlas__login-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.memory-atlas__login-head button {
+  flex: 0 0 auto;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.memory-atlas__login-actions {
+  justify-content: flex-start;
+}
+
 .memory-atlas__mode-switch {
   background: rgba(154, 201, 186, 0.08);
   border: 1px solid rgba(154, 201, 186, 0.16);
@@ -775,6 +873,7 @@
 .memory-atlas__ask-answer p,
 .memory-atlas__ask-sources p,
 .memory-atlas__ask-sources span,
+.memory-atlas__ask-sources a,
 .memory-atlas__ask-sources button {
   overflow-wrap: anywhere;
   white-space: normal;
@@ -801,13 +900,16 @@
   min-width: 0;
   padding: 0.5rem;
 
+  a,
   button {
     background: none;
     border: 0;
     border-radius: 0;
     color: var(--atlas-paper);
+    display: inline-flex;
     min-height: 32px;
     padding: 0;
+    text-decoration: none;
   }
 
   span,
@@ -1161,10 +1263,24 @@ body.memory-atlas-doc-page {
   }
 
   .memory-atlas__topbar {
+    align-items: stretch;
+    border-radius: 8px;
+    flex-wrap: wrap;
     left: 0.75rem;
     max-width: calc(100vw - 1.5rem);
     top: 0.75rem;
     width: calc(100vw - 1.5rem);
+
+    > .memory-atlas__field {
+      flex-basis: 100%;
+      order: 5;
+    }
+  }
+
+  .memory-atlas__auth {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    order: 4;
   }
 
   .memory-atlas__context {
@@ -1173,7 +1289,7 @@ body.memory-atlas-doc-page {
     gap: 0.32rem;
     left: 0.75rem;
     max-width: calc(100vw - 1.5rem);
-    top: 4.55rem;
+    top: 9.6rem;
     width: calc(100vw - 1.5rem);
   }
 
@@ -1204,7 +1320,7 @@ body.memory-atlas-doc-page {
   .memory-atlas__error {
     left: 0.75rem;
     max-width: calc(100vw - 1.5rem);
-    top: 8.2rem;
+    top: 13.25rem;
   }
 
   .memory-atlas__backdrop {

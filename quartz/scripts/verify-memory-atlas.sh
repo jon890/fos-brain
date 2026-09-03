@@ -67,11 +67,15 @@ pnpm exec prettier --check \
   scripts/verify-memory-atlas-browser.mjs \
   quartz.layout.ts \
   quartz/components/MemoryAtlas.tsx \
+  quartz/components/memoryAtlasData.test.ts \
+  quartz/components/memoryAtlasData.ts \
   quartz/components/memoryAtlasView.test.tsx \
   quartz/components/memoryAtlasView.tsx \
   quartz/components/memoryAtlas2dRuntime.test.ts \
   quartz/components/renderPage.tsx \
   quartz/components/scripts/memoryAtlas.inline.ts \
+  quartz/components/scripts/memoryAtlasAuth.test.ts \
+  quartz/components/scripts/memoryAtlasAuth.ts \
   quartz/components/scripts/memoryAtlasController.ts \
   quartz/components/scripts/memoryAtlasController.test.ts \
   quartz/components/scripts/memoryAtlasRuntimeTypes.ts \

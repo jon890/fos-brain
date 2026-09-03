@@ -13,7 +13,7 @@ function file(slug: string, title: string) {
 }
 
 describe("MemoryAtlasView", () => {
-  test("renders accessible SSR fallback and split runtime boundaries", () => {
+  test("renders a public-only accessible SSR fallback and split runtime boundaries", () => {
     const props = {
       allFiles: [file("concepts/rag", "RAG"), file("_private/concepts/work", "Work")],
       fileData: { slug: "index" as FullSlug },
@@ -24,8 +24,13 @@ describe("MemoryAtlasView", () => {
     assert.match(html, /data-runtime-3d-src="\/static\/memory-atlas-3d\.js"/)
     assert.match(html, /data-testid="memory-atlas-mode"/)
     assert.match(html, /2D 관계 지도/)
-    assert.match(html, /Brain에게 묻기/)
+    assert.match(html, /data-auth-state="checking"/)
+    assert.match(html, /관리자 로그인/)
+    assert.match(html, /type="password"/)
     assert.match(html, /RAG/)
-    assert.match(html, /Work/)
+    assert.doesNotMatch(html, /Work/)
+    assert.doesNotMatch(html, /_private/)
+    assert.doesNotMatch(html, /value="private"/)
+    assert.match(html, /data-testid="memory-atlas-ask-toggle"[^>]*hidden/)
   })
 })

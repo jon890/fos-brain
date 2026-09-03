@@ -112,6 +112,29 @@ async function assertDriver(name, expression) {
   }
 }
 
+async function assertDriverPoll(name, condition, timeout = 12000) {
+  const started = Date.now()
+  let result = { code: 1, stdout: "", stderr: `timed out after ${timeout}ms` }
+  while (Date.now() - started < timeout) {
+    result = await runDriver(["js", handle, condition], { allowFailure: true })
+    if (result.code === 0 && result.stdout.trim() === "true") break
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  const passed = result.code === 0 && result.stdout.trim() === "true"
+  const record = {
+    name,
+    status: passed ? "passed" : "failed",
+    output: passed ? result.stdout.trim() : result.stderr.trim() || result.stdout.trim(),
+  }
+  await fs.appendFile(path.join(evidenceDir, "assertions.jsonl"), `${JSON.stringify(record)}\n`)
+  await writeEvidence(`assert-${name}.stdout`, result.stdout)
+  await writeEvidence(`assert-${name}.stderr`, result.stderr)
+  if (!passed) {
+    failures += 1
+    console.error(`FAIL ${name}: ${record.output}`)
+  }
+}
+
 async function captureScreenshot(driverName) {
   const result = await runDriver(
     ["shot", handle, path.join(evidenceDir, "memory-atlas-1440-390-harness.png")],
@@ -302,6 +325,8 @@ try {
   await openHarnessAndVerifyWorktree(driverName)
   await waitHarnessReadyWithSingleRecovery(driverName)
   await assertDriver("viewport-basics", assertions.viewportBasics)
+  await assertDriver("select-rag-entrypoint", assertions.selectRagEntrypoint)
+  await assertDriverPoll("rag-entrypoint-selected", assertions.ragEntrypointSelected)
   await assertDriver("local-relation-flow", assertions.localRelationFlow)
   await assertDriver("keyboard-markup-contract", assertions.keyboardMarkupContract)
   await assertDriver("synthetic-keyboard-navigation", assertions.syntheticKeyboardNavigation)
@@ -309,6 +334,7 @@ try {
   await assertDriver("reduced-motion", assertions.reducedMotion)
   await assertDriver("semantics-failure-and-privacy", assertions.semanticsFailureAndPrivacy)
   await assertDriver("spa-navigation-and-cleanup", assertions.spaNavigationAndCleanup)
+  await assertDriver("auth-and-protected-data-lifecycle", assertions.authAndProtectedDataLifecycle)
   await assertDriver("brain-ask-regression", assertions.brainAskRegression)
   await assertNoBrowserErrors()
   await captureScreenshot(driverName)

@@ -3,7 +3,6 @@ import { FullSlug, resolveRelative } from "../util/path"
 
 const TYPE_OPTIONS = ["concept", "topic", "entity"] as const
 const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
-const NAMESPACE_OPTIONS = ["public", "private"] as const
 const LAYOUT_OPTIONS = ["constellation", "cluster", "orbit"] as const
 const COLOR_OPTIONS = ["type", "freshness", "namespace"] as const
 const SPACING_OPTIONS = ["compact", "normal", "wide"] as const
@@ -32,18 +31,67 @@ function label(value: string): string {
   return OPTION_LABELS[value] ?? value
 }
 
-function availableNamespaces(files: QuartzComponentProps["allFiles"]) {
-  const namespaces = new Set(["public"])
-  if (files.some((file) => file.slug?.startsWith("_private/"))) {
-    namespaces.add("private")
-  }
-  return NAMESPACE_OPTIONS.filter((namespace) => namespaces.has(namespace))
-}
+export const MemoryAtlasAuthView = () => (
+  <>
+    <div class="memory-atlas__auth" data-testid="memory-atlas-auth">
+      <span data-testid="memory-atlas-auth-status" aria-live="polite">
+        비로그인
+      </span>
+      <button type="button" data-testid="memory-atlas-login-open">
+        관리자 로그인
+      </button>
+      <button type="button" data-testid="memory-atlas-logout" hidden>
+        로그아웃
+      </button>
+    </div>
+    <dialog
+      class="memory-atlas__login"
+      data-testid="memory-atlas-login-dialog"
+      aria-labelledby="memory-atlas-login-title"
+    >
+      <form data-testid="memory-atlas-login-form">
+        <div class="memory-atlas__login-head">
+          <div>
+            <p>FOS / ADMIN</p>
+            <h2 id="memory-atlas-login-title">관리자 로그인</h2>
+          </div>
+          <button type="button" data-testid="memory-atlas-login-close" aria-label="로그인 닫기">
+            ×
+          </button>
+        </div>
+        <label class="memory-atlas__field" for="memory-atlas-admin-password">
+          <span>비밀번호</span>
+          <input
+            id="memory-atlas-admin-password"
+            data-testid="memory-atlas-login-password"
+            type="password"
+            autocomplete="current-password"
+            maxlength={256}
+            required
+          />
+        </label>
+        <p data-testid="memory-atlas-login-status" aria-live="polite">
+          관리자 비밀번호를 입력하세요.
+        </p>
+        <div class="memory-atlas__login-actions">
+          <button type="submit" data-testid="memory-atlas-login-submit">
+            로그인
+          </button>
+          <button type="button" data-testid="memory-atlas-login-cancel">
+            취소
+          </button>
+        </div>
+      </form>
+    </dialog>
+  </>
+)
 
 export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) => {
-  const namespaces = availableNamespaces(allFiles)
   const fallbackFiles = allFiles
-    .filter((file) => file.slug && file.slug.toLowerCase() !== "index")
+    .filter(
+      (file) =>
+        file.slug && file.slug.toLowerCase() !== "index" && !file.slug.startsWith("_private/"),
+    )
     .sort((a, b) =>
       (a.frontmatter?.title ?? a.slug ?? "").localeCompare(b.frontmatter?.title ?? b.slug ?? ""),
     )
@@ -55,7 +103,8 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
       data-runtime-2d-src="/static/memory-atlas-2d.js"
       data-runtime-3d-src="/static/memory-atlas-3d.js"
       data-runtime-state="loading"
-      data-available-namespaces={namespaces.join(",")}
+      data-available-namespaces="public"
+      data-auth-state="checking"
       aria-label="기억의 항해도"
     >
       <button
@@ -152,12 +201,10 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
 
           <fieldset class="memory-atlas__chips" data-testid="memory-atlas-namespace-filter">
             <legend>공개 범위</legend>
-            {namespaces.map((namespace) => (
-              <label>
-                <input type="checkbox" name="memory-atlas-namespace" value={namespace} checked />
-                <span>{label(namespace)}</span>
-              </label>
-            ))}
+            <label>
+              <input type="checkbox" name="memory-atlas-namespace" value="public" checked />
+              <span>{label("public")}</span>
+            </label>
           </fieldset>
         </details>
 
@@ -264,6 +311,7 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
             data-testid="memory-atlas-ask-toggle"
             aria-expanded="false"
             aria-controls="memory-atlas-ask-panel"
+            hidden
           >
             Brain에게 묻기
           </button>
@@ -295,6 +343,7 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
               </button>
             </div>
           </label>
+          <MemoryAtlasAuthView />
         </div>
 
         <div class="memory-atlas__context" data-testid="memory-atlas-context" aria-live="polite">
