@@ -58,4 +58,30 @@ for target in "${scan_targets[@]}"; do
   fi
 done
 
+public_artifacts=()
+if [[ -d quartz/public ]]; then
+  while IFS= read -r -d '' artifact; do
+    public_artifacts+=("$artifact")
+  done < <(
+    find quartz/public -type f \( \
+      -name '*.html' -o \
+      -name 'contentIndex.json' -o \
+      -name 'memory-atlas-semantics.json' -o \
+      -name 'sitemap.xml' -o \
+      -name 'index.xml' \
+    \) -print0
+  )
+fi
+
+if [[ ${#public_artifacts[@]} -gt 0 ]] && rg -n \
+  -e 'private-auth-fixture' \
+  -e 'Private Auth Fixture' \
+  -e 'protected fixture' \
+  -e 'private-secret-rag' \
+  -e 'Private Shadow Node' \
+  "${public_artifacts[@]}"; then
+  echo "public Quartz artifacts contain private fixture data." >&2
+  exit 1
+fi
+
 echo "Public infrastructure boundary verification passed."

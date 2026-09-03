@@ -12,6 +12,9 @@ describe("LoginAttemptLimiter", () => {
       expect(limiter.consume("client")).toBe(true);
     }
     expect(limiter.consume("client")).toBe(false);
+    expect(limiter.retryAfterSeconds("client")).toBe(15 * 60);
+    vi.advanceTimersByTime(1_001);
+    expect(limiter.retryAfterSeconds("client")).toBe(15 * 60 - 1);
     vi.advanceTimersByTime(15 * 60 * 1000);
     expect(limiter.consume("client")).toBe(true);
   });

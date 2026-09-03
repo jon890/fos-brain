@@ -51,7 +51,11 @@ export class AuthController {
   ): Promise<{ role: "admin"; expiresAt: string }> {
     const body = validateLoginBody(unvalidatedBody);
     const client = request.ip || request.socket.remoteAddress || "unknown";
-    if (!this.limiter.consume(client)) throw authHttpException(429, "login_rate_limited");
+    if (!this.limiter.consume(client)) {
+      const retryAfter = this.limiter.retryAfterSeconds(client) ?? 1;
+      response.setHeader("Retry-After", String(retryAfter));
+      throw authHttpException(429, "login_rate_limited");
+    }
     if (!(await this.passwordHash.verify(body.password))) {
       throw authHttpException(401, "invalid_credentials");
     }

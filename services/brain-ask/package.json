@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "tsc -p tsconfig.json --noEmit && eslint src test",
     "start": "node dist/main.js",
-    "test": "vitest run"
+    "test": "corepack pnpm@10.33.0 run build && vitest run"
   },
   "engines": {
     "node": "24.15.0"

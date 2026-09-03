@@ -29,6 +29,14 @@ export class LoginAttemptLimiter {
     return true;
   }
 
+  retryAfterSeconds(client: string): number | undefined {
+    const now = Date.now();
+    this.removeExpired(now);
+    const attempt = this.clients.get(client);
+    if (!attempt || attempt.count < MAX_ATTEMPTS) return undefined;
+    return Math.max(1, Math.ceil((attempt.windowStartedAt + WINDOW_MS - now) / 1_000));
+  }
+
   get size(): number {
     this.removeExpired(Date.now());
     return this.clients.size;

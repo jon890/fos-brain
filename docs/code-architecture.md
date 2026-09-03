@@ -64,8 +64,9 @@ Quartz의 기존 SPA와 서버 렌더 대체 목록을 유지하기 위해 별�
 - `services/brain-ask/src/auth/` — password hash 검사, 제한된 메모리 session 저장소와 관리자 Guard를 담당한다.
 - `services/brain-ask/src/brain-ask/` — 질문 검증, 동시 실행 제한, qmd 검색, wiki 본문 읽기, 모델 호출과 응답 변환을 담당한다.
 - `services/brain-ask/src/private-content/` — 관리자용 콘텐츠 색인과 관계 데이터 파일의 read-only 응답을 담당한다.
-- `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build와 공용 qmd HTTP client를 묶는다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — 기존 qmd 요청·응답 계약을 서버에서도 재사용한다.
+- `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build를 만들고 UID 1000으로 실행하며 HTTP health 검사를 제공한다.
+- `services/brain-ask/src/brain-ask/qmd.client.ts` — BFF가 사용하는 qmd `/query` 요청과 응답 collection 검사를 구현한다.
+- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — agent와 CLI 검색에서 사용하는 qmd HTTP client를 구현한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
 - `quartz/quartz/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
@@ -128,7 +129,7 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
 - public 저장소는 Compose, reverse proxy, 모델 profile과 호스트 경로를 소유하지 않는다.
 - private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 게시를 수행한다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs`는 public qmd HTTP client 계약을 계속 소유한다.
+- BFF의 `qmd.client.ts`와 agent용 `brain-search-http.cjs`는 `docs/data-schema.md`의 qmd 요청·응답 계약을 각각 구현한다.
 
 ## 검증 경계
 

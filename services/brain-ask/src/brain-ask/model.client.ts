@@ -70,10 +70,16 @@ export class HttpModelClient implements ModelClient, OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.apiKey = (
-      await fs.readFile(this.config.getOrThrow<string>("MODEL_API_KEY_FILE"), "utf8")
-    ).trim();
-    if (!this.apiKey) throw new Error("MODEL_API_KEY_FILE must contain a key");
+    const contents = await fs.readFile(
+      this.config.getOrThrow<string>("MODEL_API_KEY_FILE"),
+      "utf8",
+    );
+    const line = contents.endsWith("\n") ? contents.slice(0, -1) : contents;
+    if (!line || line.includes("\n") || line.includes("\r")) {
+      throw new Error("MODEL_API_KEY_FILE must contain exactly one line");
+    }
+    this.apiKey = line.trim();
+    if (!this.apiKey) throw new Error("MODEL_API_KEY_FILE must contain exactly one line");
   }
 
   async answer({ question, context, signal }: ModelAnswerRequest): Promise<string> {

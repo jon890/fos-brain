@@ -271,6 +271,22 @@ qmd의 `qmd://brain-wiki/<path>`는 public wiki 읽기 전용 mount로, `qmd://b
 public 문서는 변수의 역할만 정의하며 실제 주소, port, host 경로와 profile 전환 규칙을 기록하지 않는다.
 질문, 답변과 출처 본문은 영구 데이터가 아니며 서버 재시작 뒤 복원하지 않는다.
 
+private 인프라 저장소는 다음 이름으로 파일과 디렉터리를 image에 read-only mount하고 proxy 설정을 전달한다.
+
+| 환경 변수 | 계약 |
+| --- | --- |
+| `MODEL_API_KEY_FILE` | 모델 API key 한 줄을 담은 파일이다. 파일 끝의 LF 한 개만 허용하며 다른 줄바꿈은 거부한다. |
+| `BRAIN_ADMIN_PASSWORD_HASH_FILE` | mode `600`인 일반 파일이며 `scrypt$131072$8$1$<salt>$<derived-key>` 한 줄을 담는다. |
+| `BRAIN_PUBLIC_WIKI_ROOT` | public wiki root 디렉터리다. |
+| `BRAIN_PRIVATE_WIKI_ROOT` | private wiki root 디렉터리다. |
+| `BRAIN_PRIVATE_CONTENT_INDEX_FILE` | public과 private을 합친 Memory Atlas 콘텐츠 색인 JSON 파일이다. |
+| `BRAIN_PRIVATE_MEMORY_ATLAS_SEMANTICS_FILE` | public과 private을 합친 Memory Atlas 관계 JSON 파일이다. |
+| `BRAIN_TRUST_PROXY_HOPS` | Express가 신뢰할 reverse proxy hop 수인 0 이상 255 이하 정수다. 실제 값은 private 인프라의 운영 경로 검증으로 정한다. |
+
+`BRAIN_QMD_URL`, `MODEL_API_BASE_URL`, `BRAIN_ORIGIN`은 URL만 전달한다.
+`BRAIN_ORIGIN`은 경로가 없는 정확한 origin이어야 한다.
+public 저장소는 각 변수의 실제 값과 mount 경로를 정하지 않는다.
+
 ## Brain 역할과 관리자 session
 
 권한 역할은 `public`과 `admin` 두 값만 사용한다.
@@ -293,6 +309,7 @@ BFF가 종료되면 모든 session을 삭제하며 영구 저장하거나 다른
 로그인 시도 제한 provider는 client 주소를 key로 삼아 15분 구간의 시도 횟수와 마지막 시각을 메모리에 저장한다.
 만료 항목을 먼저 삭제하고 최대 1,024개 client를 유지하며 한도를 넘으면 가장 오래된 항목을 삭제한다.
 이 상태도 BFF가 종료되면 모두 삭제하며 외부 throttling package에 의존하지 않는다.
+제한 응답은 현재 구간이 끝날 때까지 남은 초를 `Retry-After` header로 반환한다.
 
 브라우저에는 32바이트 원문 session ID를 base64url로 인코딩해 `__Host-brain_session` cookie로 전달한다.
 cookie는 `Path=/`, `Secure`, `HttpOnly`, `SameSite=Strict`를 사용하고 `Domain`을 지정하지 않는다.
@@ -336,6 +353,14 @@ header가 없거나 값이 다르면 `origin_rejected`로 거부하고 `Referer`
 | 401 | `authentication_required` | private 기능에 유효한 session이 없다. |
 | 403 | `origin_rejected` | `Origin`이 없거나 설정한 Brain origin과 정확히 다르다. |
 | 429 | `login_rate_limited` | 같은 client의 로그인 시도가 15분에 5회를 넘었다. |
+
+`login_rate_limited` 응답은 현재 제한 구간이 끝날 때까지 남은 초를 `Retry-After` header에 담는다.
+
+## Brain Ask image 계약
+
+private 인프라 계획이 배포할 target platform은 `linux/amd64`다.
+Phase 04 image 검사는 이 platform으로 image를 빌드하고 image architecture가 `amd64`인지 확인한다.
+배포 저장소는 검증한 image를 registry digest로 고정하며 public 저장소는 registry 주소와 digest 값을 기록하지 않는다.
 
 ## 관리자 콘텐츠 API
 

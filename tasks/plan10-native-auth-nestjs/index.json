@@ -1,10 +1,10 @@
 {
   "name": "plan10-native-auth-nestjs",
   "description": "기존 Brain 질문 BFF를 NestJS 12로 전환하고, 단일 Brain 화면에 로컬 관리자 로그인과 private 지식 권한 경계를 추가한다.",
-  "status": "pending",
+  "status": "completed",
   "created_at": "2026-09-03",
   "total_phases": 4,
-  "current_phases": 1,
+  "current_phases": 4,
   "phases": [
     {
       "number": 1,

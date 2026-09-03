@@ -108,14 +108,16 @@ describe("upstream clients", () => {
     }
   });
 
-  it("fails initialization when the key file is empty", async () => {
+  it("fails initialization when the key file is empty or has multiple lines", async () => {
     brain = await createTempBrain();
-    await fs.writeFile(brain.keyFile, "\n");
     const client = new HttpModelClient(
       new ConfigService({ MODEL_API_KEY_FILE: brain.keyFile }),
       async () => Response.json({}),
     );
-    await expect(client.onModuleInit()).rejects.toThrow(/must contain a key/);
+    for (const invalidKey of ["\n", "first-key\nsecond-key\n", "first-key\r\nsecond-key\r\n"]) {
+      await fs.writeFile(brain.keyFile, invalidKey);
+      await expect(client.onModuleInit()).rejects.toThrow(/must contain exactly one line/);
+    }
   });
 
   it("uses the public model error code for HTTP failures", async () => {

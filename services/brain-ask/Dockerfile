@@ -21,5 +21,7 @@ COPY --from=build --chown=1000:1000 /app/dist ./dist
 
 USER 1000:1000
 EXPOSE 8787
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD ["node", "-e", "fetch(`http://127.0.0.1:${process.env.PORT || 8787}/api/health`).then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
 
 CMD ["node", "/app/dist/main.js"]

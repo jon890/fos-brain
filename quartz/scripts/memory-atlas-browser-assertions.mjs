@@ -362,7 +362,7 @@ win.fetch = (input, init) => {
   if (url.includes("/api/auth/login")) {
     const password = JSON.parse(init?.body ?? "{}").password
     if (password === "wrong-password") return Promise.resolve(json({ error: { code: "invalid_credentials" } }, { status: 401 }))
-    if (password === "limited-password") return Promise.resolve(json({ error: { code: "login_rate_limited" } }, { status: 429 }))
+    if (password === "limited-password") return Promise.resolve(json({ error: { code: "login_rate_limited" } }, { status: 429, headers: { "content-type": "application/json", "retry-after": "60" } }))
     loginMode = password === "private-fail-password" ? "private-fail" : password === "expiring-password" ? "expiring" : "admin"
     const expiresAt = new Date(Date.now() + (loginMode === "expiring" ? 700 : 60_000)).toISOString()
     return Promise.resolve(json({ role: "admin", expiresAt }))
@@ -400,7 +400,8 @@ await waitFor(() => byTestId(doc, "memory-atlas-login-status").textContent.inclu
 if (password.value) throw new Error("failed password remained in the input")
 dispatchInput(password, "limited-password")
 byTestId(doc, "memory-atlas-login-submit").click()
-await waitFor(() => byTestId(doc, "memory-atlas-login-status").textContent.includes("15분 뒤"), "rate limit retry guidance")
+await waitFor(() => byTestId(doc, "memory-atlas-login-status").textContent.includes("이후 다시 시도하세요"), "rate limit retry guidance")
+if (byTestId(doc, "memory-atlas-login-status").textContent.includes("15분 뒤")) throw new Error("rate limit response ignored Retry-After")
 if (password.value) throw new Error("limited password remained in the input")
 
 dispatchInput(password, "correct-password")

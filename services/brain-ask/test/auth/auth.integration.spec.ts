@@ -204,12 +204,14 @@ describe("administrator authentication boundary", () => {
         .send({ password: "wrong" })
         .expect(401);
     }
-    await request(app!.getHttpServer())
+    const limited = await request(app!.getHttpServer())
       .post("/api/auth/login")
       .set("Origin", TEST_BRAIN_ORIGIN)
       .set("X-Forwarded-For", "203.0.113.20")
       .send({ password: "wrong" })
       .expect(429, { error: { code: "login_rate_limited" } });
+    expect(Number(limited.headers["retry-after"])).toBeGreaterThan(0);
+    expect(Number(limited.headers["retry-after"])).toBeLessThanOrEqual(15 * 60);
   });
 
   it("fails closed when a configured private file disappears", async () => {
