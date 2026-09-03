@@ -43,6 +43,8 @@ fos-brain은 TypeScript 화면, shell script, 플러그인과 공개 지식 문�
 ## 운영 조건
 
 - 기본 브랜치에 workflow가 있어야 `issue_comment` 이벤트를 처리할 수 있다.
+- 수동 실행은 기본 브랜치의 prompt를 읽고 PR 변경은 GitHub diff API로 조회한다.
+  오래된 PR merge ref에 새 workflow 설정이 없을 수 있으므로 checkout ref를 고정하지 않는다.
 - repository secret이 없으면 workflow를 실행하지 못한다.
 - workflow 자체를 추가하는 bootstrap PR은 기존 자동 리뷰 대상이 아니다.
   머지한 뒤 기존 PR에 `/review`를 남겨 첫 실행을 확인한다.

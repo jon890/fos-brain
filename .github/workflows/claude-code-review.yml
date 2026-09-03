@@ -29,10 +29,9 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
 
     steps:
-      - name: PR 병합 기준 체크아웃
+      - name: 저장소 체크아웃
         uses: actions/checkout@v6
         with:
-          ref: refs/pull/${{ env.PR_NUMBER }}/merge
           fetch-depth: 1
 
       - name: 수동 리뷰 시작 표시
