@@ -1,10 +1,10 @@
 {
   "name": "plan11-atlas-navigation-nodes",
   "description": "목차와 활동 기록처럼 항해가 목적인 문서를 frontmatter role로 표시해 Memory Atlas 그래프의 노드와 연결에서 제외한다.",
-  "status": "pending",
+  "status": "completed",
   "created_at": "2026-09-04",
   "total_phases": 2,
-  "current_phases": 1,
+  "current_phases": 2,
   "phases": [
     {
       "number": 1,

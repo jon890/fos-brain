@@ -54,7 +54,7 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 - `wiki/concepts/` — 개념 단위 페이지. 백링크 의무.
 - `wiki/topics/` — 여러 개념을 묶는 상위 narrative 페이지.
 - `wiki/entities/` — 사람·프로젝트·목표 같은 개체 페이지(개인 brain 용).
-- `wiki/log.md` — append-only 활동 연대기.
+- `wiki/log.md` — append-only 활동 연대기. 기존 항목을 고치거나 지우지 않는다는 뜻이며, 파일 맨 앞 frontmatter 블록을 두는 것은 여기 걸리지 않는다.
 
 ## 작업 원칙
 
@@ -121,6 +121,7 @@ tags: ["주제"]
 
 문서 성격에 따라 아래 필드를 점진적으로 추가한다.
 
+- `role` — 목차와 활동 기록처럼 항해가 목적인 문서에 `navigation`을 기록한다. 일반 지식 문서에는 쓰지 않는다.
 - `status` — 지식 수명 상태가 필요할 때 `draft`, `stable`, `deprecated` 중 하나를 기록한다.
 - `stale_after` — 시간이 지나면 재검토해야 하는 사실에 `YYYY-MM-DD` 날짜를 기록한다.
 - `sources` — 검색과 교환에 필요한 출처를 필수 `resource`, 선택적 `id`, 선택적 `title`을 가진 객체 배열로 기록한다.
@@ -129,6 +130,10 @@ tags: ["주제"]
 
 `sources`는 본문의 `## Sources`를 대체하지 않는다.
 `generated`와 `verified`는 확인되지 않은 주체나 시각을 추정해서 채우지 않는다.
+
+`role: navigation`을 가진 문서는 Memory Atlas 그래프의 노드와 연결 계산에서 빠진다.
+목차와 활동 기록의 링크는 주제가 이어진다는 뜻이 아니라 그 문서가 존재한다는 뜻이기 때문이다.
+페이지 렌더와 검색은 그대로 유지된다. 판정 근거는 `docs/adr/011-atlas-navigation-document-exclusion.md`에 있다.
 
 ### `wiki/topics/<주제명>.md`
 

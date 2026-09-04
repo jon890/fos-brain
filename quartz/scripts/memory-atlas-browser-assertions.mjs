@@ -133,6 +133,9 @@ const doc = win.document
 const root = byTestId(doc, "memory-atlas")
 const canvas = byTestId(doc, "memory-atlas-canvas")
 const globalNodeCount = canvas.querySelectorAll(".memory-atlas-2d__nodes button").length
+const navigationSlugs = ["INDEX", "log"]
+const navigationNodes = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
+if (navigationNodes.length) throw new Error(\`navigation documents reached the graph: \${navigationNodes.join(", ")}\`)
 const ragSlug = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')?.dataset.slug
 if (!ragSlug) throw new Error("RAG entrypoint unavailable")
 let buttons = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")]
