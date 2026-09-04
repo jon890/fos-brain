@@ -28,9 +28,19 @@ plan11 과 plan12 가 이 파일들을 함께 고치므로 두 plan 이 main 에
 아래 파일을 `git mv` 로 옮긴다. 내용은 바꾸지 않고 import 경로만 맞춘다.
 
 - `quartz/quartz/components/` 의 `MemoryAtlas.tsx`, `KnowledgeMeta.tsx`, `memoryAtlasView.tsx`, `memoryAtlasData.ts`, `memoryAtlasGraph.ts`, `memoryAtlasSemantics.ts`, `knowledgeMetaData.ts` 와 각각의 `.test.ts`
-- `quartz/quartz/components/scripts/` 의 `memoryAtlas.inline.ts`, `memoryAtlasController.ts`, `memoryAtlasRuntimeTypes.ts`, `memoryAtlas2dRuntime.ts`, `memoryAtlas3dRuntime.ts` 와 각각의 `.test.ts`
+- `quartz/quartz/components/scripts/` 의 `memoryAtlas.inline.ts`, `memoryAtlasController.ts`, `memoryAtlasRuntimeTypes.ts`, `memoryAtlas2dRuntime.ts`, `memoryAtlas3dRuntime.ts`, `memoryAtlasAuth.ts` 와 각각의 `.test.ts`
 - `quartz/quartz/components/styles/` 의 `memoryAtlas.scss`, `knowledgeMeta.scss`
 - `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts`
+
+옮길 대상은 옮기기 전에 목록으로 확인한다. 업스트림 복사 시점 커밋 `d25a6eab` 에 없는 파일이 이 저장소가 만든 코드다.
+
+```bash
+# cwd: <worktree>/quartz
+git ls-tree -r --name-only d25a6eab > /tmp/upstream-files.txt
+git ls-files quartz | while read f; do grep -qxF "${f#quartz/}" /tmp/upstream-files.txt || echo "$f"; done
+```
+
+이 출력이 위 목록과 다르면 목록을 고치지 말고 차이를 결과에 적는다.
 
 옮긴 뒤 디렉터리 구조는 `quartz/custom/components/`, `quartz/custom/components/scripts/`, `quartz/custom/components/styles/`, `quartz/custom/emitters/` 로 둔다.
 업스트림의 구조를 그대로 따라야 상대 경로 import 수정이 최소가 된다.

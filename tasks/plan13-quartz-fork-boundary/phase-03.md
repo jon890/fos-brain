@@ -16,7 +16,7 @@
 
 ---
 
-## 작업 항목 (4)
+## 작업 항목 (5)
 
 ### 1. 업스트림을 remote 로 연결한다
 
@@ -68,7 +68,15 @@ git checkout quartz-upstream/v4 -- <경로>
 
 `.npmrc`, `.prettierignore`, `package.json` 은 이 저장소의 도구 설정이라 예외 목록에 함께 넣는다.
 
-### 4. 검증 문서에 이 검사를 등록한다
+### 4. ADR-012 의 실측값을 다시 맞춘다
+
+`docs/adr/012-quartz-fork-boundary.md` 는 수정 줄 수를 실측값으로 적고 있다.
+plan11 이 콘텐츠 색인에 `role` 을 더해 그 값이 달라졌다.
+
+원복과 이동을 마친 뒤 남은 수정을 다시 세어 그 문서의 숫자를 현재 값으로 고친다.
+경계가 성립하면 남는 것은 설정 파일뿐이므로, 그 사실을 반영해 문장을 다시 쓴다.
+
+### 5. 검증 문서에 이 검사를 등록한다
 
 `docs/code-architecture.md` 의 `검증 경계` 절에 이 스크립트를 한 줄 더한다.
 스크립트가 무엇을 막는지 한 문장으로 적는다.
@@ -85,6 +93,7 @@ git checkout quartz-upstream/v4 -- <경로>
 | `quartz/UPSTREAM.md` | 신규 |
 | `quartz/scripts/verify-upstream-untouched.sh` | 신규 |
 | `docs/code-architecture.md` | 수정 |
+| `docs/adr/012-quartz-fork-boundary.md` | 수정 |
 | `tasks/plan13-quartz-fork-boundary/index.json` | 수정 |
 
 ## 검증
