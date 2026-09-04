@@ -1,6 +1,10 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { normalizeKnowledgeMetaData, normalizeKnowledgeType } from "./knowledgeMetaData"
+import {
+  normalizeKnowledgeMetaData,
+  normalizeKnowledgeRole,
+  normalizeKnowledgeType,
+} from "./knowledgeMetaData"
 
 describe("knowledge metadata normalization", () => {
   test("normalizes supported metadata without losing valid provenance entries", () => {
@@ -27,6 +31,7 @@ describe("knowledge metadata normalization", () => {
     assert.deepStrictEqual(normalized, {
       description: "에이전트 검색의 범위와 근거를 설명한다.",
       type: "topic",
+      role: undefined,
       status: "stable",
       staleAfter: { date: "2026-08-17", state: "stale" },
       sources: [
@@ -36,6 +41,15 @@ describe("knowledge metadata normalization", () => {
       generated: { by: "brain-add", at: "2026-08-01T03:00:00.000Z" },
       verified: [{ by: "human", at: "2026-08-15" }],
     })
+  })
+
+  test("reads the navigation role regardless of case and drops unknown roles", () => {
+    assert.strictEqual(normalizeKnowledgeRole(" NAVIGATION "), "navigation")
+    assert.strictEqual(normalizeKnowledgeRole("navigation"), "navigation")
+    assert.strictEqual(normalizeKnowledgeRole("hub"), undefined)
+    assert.strictEqual(normalizeKnowledgeRole(42), undefined)
+    assert.strictEqual(normalizeKnowledgeMetaData({ role: "Navigation" }).role, "navigation")
+    assert.strictEqual(normalizeKnowledgeMetaData({ role: "hub" }).role, undefined)
   })
 
   test("normalizes bare verified mapping as a single attribution", () => {
@@ -59,6 +73,7 @@ describe("knowledge metadata normalization", () => {
     assert.deepStrictEqual(normalized, {
       description: undefined,
       type: undefined,
+      role: undefined,
       status: undefined,
       staleAfter: undefined,
       sources: [],

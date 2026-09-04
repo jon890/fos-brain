@@ -1,5 +1,6 @@
 import { QuartzComponentProps } from "./types"
 import { FullSlug, resolveRelative } from "../util/path"
+import { normalizeKnowledgeRole } from "./knowledgeMetaData"
 
 const TYPE_OPTIONS = ["concept", "topic", "entity"] as const
 const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
@@ -90,7 +91,10 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
   const fallbackFiles = allFiles
     .filter(
       (file) =>
-        file.slug && file.slug.toLowerCase() !== "index" && !file.slug.startsWith("_private/"),
+        file.slug &&
+        file.slug.toLowerCase() !== "index" &&
+        !file.slug.startsWith("_private/") &&
+        normalizeKnowledgeRole(file.frontmatter?.role) !== "navigation",
     )
     .sort((a, b) =>
       (a.frontmatter?.title ?? a.slug ?? "").localeCompare(b.frontmatter?.title ?? b.slug ?? ""),

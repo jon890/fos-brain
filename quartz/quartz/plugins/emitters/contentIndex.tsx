@@ -9,6 +9,7 @@ import { write } from "./helpers"
 import { i18n } from "../../i18n"
 import type {
   KnowledgeFreshness,
+  KnowledgeRole,
   KnowledgeStatus,
   KnowledgeType,
 } from "../../components/knowledgeMetaData"
@@ -27,6 +28,7 @@ export type ContentDetails = {
   date?: Date
   description?: string
   type?: KnowledgeType
+  role?: KnowledgeRole
   status?: KnowledgeStatus
   freshness?: KnowledgeFreshness
   updated?: string
@@ -131,6 +133,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
             date: date,
             description: metadata.description,
             type: metadata.type,
+            role: metadata.role,
             status: metadata.status,
             freshness: metadata.staleAfter,
             updated: updatedDate?.toISOString(),

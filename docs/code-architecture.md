@@ -28,11 +28,11 @@
 ### 사람용 렌더링
 
 - `quartz/quartz/components/KnowledgeMeta.tsx` — 페이지 frontmatter를 사람이 읽는 설명·신뢰·최신성 표시로 바꾼다.
-- `quartz/quartz/plugins/emitters/contentIndex.tsx` — 그래프가 사용할 문서 유형, 설명, 상태, 최신성, 수정일을 콘텐츠 색인에 포함한다.
+- `quartz/quartz/plugins/emitters/contentIndex.tsx` — 그래프가 사용할 문서 유형, 문서 성격(`role`), 설명, 상태, 최신성, 수정일과 출처 개수를 콘텐츠 색인에 포함한다.
 - `quartz/quartz/components/Graph.tsx` — 유형 범례를 렌더한다.
 - `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
-- `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다.
+- `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role`이 `navigation`인 문서를 이 계산에서 뺀다.
 - `quartz/quartz/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
 - `quartz/quartz/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
@@ -123,6 +123,24 @@ NestJS 12의 peer 범위와 맞지 않는 외부 throttling package는 추가하
 `title`, `description`, `generated` 보완은 concept, topic, entity 문서에만 적용한다.
 묶음의 `index.md`와 `log.md`는 예약 문서로 별도 처리한다.
 raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 원본 본문을 유지한다.
+
+## Quartz fork 경계
+
+`quartz/`는 업스트림 Quartz를 복사해 담고 있으며 별도 upstream 이력이 없었다.
+업스트림 파일을 직접 고치면 갱신할 때마다 내 코드와 업스트림 변경이 같은 파일에서 만난다.
+
+- `quartz/quartz/**`는 업스트림 원본만 담으며 이 저장소에서 수정하지 않는다.
+- `quartz/custom/**`는 이 저장소가 만든 컴포넌트, 렌더러, emitter와 스타일을 담는다.
+- `quartz.config.ts`, `quartz.layout.ts`, `quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
+- 커스텀 컴포넌트와 emitter는 업스트림의 재수출 목록에 등록하지 않고 설정 파일이 경로로 직접 불러온다.
+- 화면에 얹는 요소는 `renderPage`를 고치지 않고 layout의 컴포넌트 자리로 넣는다.
+- Memory Atlas가 쓰는 확장 색인은 업스트림 `contentIndex`를 고치지 않고 커스텀 emitter가 자체 파일로 내보낸다.
+
+이 경계는 아직 적용 전이다. `quartz/custom/`이 없고 `quartz-upstream` remote도 붙어 있지 않으며, 업스트림 파일 10개의 수정이 그대로 남아 있다. 이전은 plan13이 수행하며 이 문장을 쓴 시점에 그 plan은 아직 만들어지지 않았다.
+위 목록은 이전이 끝난 뒤의 상태를 적은 것이라 지금 코드와는 다르다.
+
+업스트림은 `quartz-upstream` remote로 연결하고 복사 시점 커밋을 공통 조상으로 둔다.
+이 경계가 유지되면 갱신은 설정 파일 충돌만 확인하면 되고, 나중에 Quartz를 자체 구현으로 교체할 때 갈아끼울 표면이 색인 파일과 layout 하나로 드러난다.
 
 ## 운영 구성 저장 경계
 
