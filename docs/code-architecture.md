@@ -156,6 +156,7 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - 검색 벤치마크 — 대표 질문마다 기대 slug의 상위 순위를 검사한다.
 - OKF 내보내기 — 임시 fixture를 내보내고 메타데이터, raw Reference, 예약 문서, 링크, private 제외를 검사한다.
 - Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
+- Quartz fork 경계 — `verify-upstream-untouched.sh`로 예외 파일을 뺀 업스트림 파일이 복사 시점 커밋과 같은지, `quartz/quartz/` 아래 새 파일이 없는지 검사한다.
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
 - Memory Atlas 관계 계산 — 의미 산출물 형식과 namespace 제한, 혼합 점수 우선순위, 결정적 좌표, hop depth, 재중심화와 고정·자동 시작점을 DOM 없는 단위 검사로 검증한다.
 - Memory Atlas 생명주기 — 2D와 3D 전환, SPA 재탐색과 컴포넌트 제거 뒤 listener, animation frame과 renderer 자원이 남지 않는지 검증한다.
