@@ -21,16 +21,44 @@ plan11 과 plan12 가 이 파일들을 함께 고치므로 두 plan 이 main 에
 
 ---
 
-## 작업 항목 (4)
+## 작업 항목 (5)
 
 ### 1. `quartz/custom/` 디렉터리를 만들고 자체 파일을 옮긴다
 
-아래 파일을 `git mv` 로 옮긴다. 내용은 바꾸지 않고 import 경로만 맞춘다.
+아래 24개 파일을 `git mv` 로 옮긴다. 내용은 바꾸지 않고 import 경로만 맞춘다.
+이 목록은 아래 확인 명령의 실제 출력이다.
 
-- `quartz/quartz/components/` 의 `MemoryAtlas.tsx`, `KnowledgeMeta.tsx`, `memoryAtlasView.tsx`, `memoryAtlasData.ts`, `memoryAtlasGraph.ts`, `memoryAtlasSemantics.ts`, `knowledgeMetaData.ts` 와 각각의 `.test.ts`
-- `quartz/quartz/components/scripts/` 의 `memoryAtlas.inline.ts`, `memoryAtlasController.ts`, `memoryAtlasRuntimeTypes.ts`, `memoryAtlas2dRuntime.ts`, `memoryAtlas3dRuntime.ts`, `memoryAtlasAuth.ts` 와 각각의 `.test.ts`
-- `quartz/quartz/components/styles/` 의 `memoryAtlas.scss`, `knowledgeMeta.scss`
-- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts`
+`quartz/quartz/components/` 에서 `quartz/custom/components/` 로 (13개)
+
+- `KnowledgeMeta.tsx`
+- `MemoryAtlas.tsx`
+- `knowledgeMetaData.ts`, `knowledgeMetaData.test.ts`
+- `memoryAtlasData.ts`, `memoryAtlasData.test.ts`
+- `memoryAtlasGraph.ts`, `memoryAtlasGraph.test.ts`
+- `memoryAtlasSemantics.ts`, `memoryAtlasSemantics.test.ts`
+- `memoryAtlasView.tsx`, `memoryAtlasView.test.tsx`
+- `memoryAtlas2dRuntime.test.ts`
+
+`memoryAtlas2dRuntime.test.ts` 는 대상 코드가 `scripts/` 에 있는데도 `components/` 에 있다.
+현재 위치 그대로 `quartz/custom/components/` 로 옮기고 import 경로만 맞춘다.
+
+`quartz/quartz/components/scripts/` 에서 `quartz/custom/components/scripts/` 로 (8개)
+
+- `memoryAtlas.inline.ts`
+- `memoryAtlas2dRuntime.ts`
+- `memoryAtlas3dRuntime.ts`
+- `memoryAtlasAuth.ts`, `memoryAtlasAuth.test.ts`
+- `memoryAtlasController.ts`, `memoryAtlasController.test.ts`
+- `memoryAtlasRuntimeTypes.ts`
+
+`quartz/quartz/components/styles/` 에서 `quartz/custom/components/styles/` 로 (2개)
+
+- `knowledgeMeta.scss`
+- `memoryAtlas.scss`
+
+`quartz/quartz/plugins/emitters/` 에서 `quartz/custom/emitters/` 로 (1개)
+
+- `memoryAtlasAssets.ts`
 
 옮길 대상은 옮기기 전에 목록으로 확인한다. 업스트림 복사 시점 커밋 `d25a6eab` 에 없는 파일이 이 저장소가 만든 코드다.
 
@@ -41,6 +69,8 @@ git ls-files quartz | while read f; do grep -qxF "${f#quartz/}" /tmp/upstream-fi
 ```
 
 이 출력이 위 목록과 다르면 목록을 고치지 말고 차이를 결과에 적는다.
+`git ls-tree` 를 `<worktree>/quartz` 에서 실행하면 업스트림 트리의 `quartz/` 아래만 그 접두사를 뗀 채 나온다.
+그래서 `${f#quartz/}` 로 접두사를 떼어 대조하는 것이 맞다.
 
 옮긴 뒤 디렉터리 구조는 `quartz/custom/components/`, `quartz/custom/components/scripts/`, `quartz/custom/components/styles/`, `quartz/custom/emitters/` 로 둔다.
 업스트림의 구조를 그대로 따라야 상대 경로 import 수정이 최소가 된다.
@@ -63,9 +93,25 @@ git ls-files quartz | while read f; do grep -qxF "${f#quartz/}" /tmp/upstream-fi
 
 ### 4. 업스트림에서 커스텀 코드로 들어오는 참조를 끊는다
 
-`quartz/quartz/components/scripts/graph.inline.ts` 가 `knowledgeMetaData` 의 타입을 import 하고 있다.
-이 파일은 Phase 03 에서 업스트림으로 되돌릴 대상이므로, 여기서는 import 만 지우고 해당 코드가 쓰던 타입을 지역 정의로 바꾼다.
+옮기는 파일을 가리키는 업스트림 파일은 둘이다. 아래 명령으로 확인한다.
+
+```bash
+# cwd: <worktree>/quartz
+grep -rln "memoryAtlas\|knowledgeMeta" quartz/ --include=*.ts --include=*.tsx
+```
+
+`quartz/quartz/components/scripts/graph.inline.ts` 는 `knowledgeMetaData` 의 `KnowledgeType` 타입만 import 한다.
+이 파일은 Phase 03 에서 업스트림으로 되돌릴 대상이므로, 여기서는 import 만 지우고 그 타입을 지역 정의로 바꾼다.
 Phase 03 에서 파일 전체를 원복하면 이 지역 정의도 함께 사라진다.
+
+`quartz/quartz/plugins/emitters/contentIndex.tsx` 는 `knowledgeMetaData` 의 타입 넷과 함수 `normalizeKnowledgeMetaData` 를 import 한다.
+함수라서 지역 정의로 바꿀 수 없다. 여기서는 import 경로만 `../../../custom/components/knowledgeMetaData` 로 바꾼다.
+Phase 02 가 이 파일을 업스트림 상태로 되돌리면 이 import 도 함께 사라진다.
+
+### 5. 검증 스크립트의 경로 목록을 새 경로로 고친다
+
+`quartz/scripts/verify-memory-atlas.sh` 의 `prettier --check` 인자 목록이 옮기는 파일 열여덟 개를 옛 경로로 적고 있다.
+새 경로로 고친다. 고치지 않으면 이 phase 의 검증이 파일을 찾지 못해 실패한다.
 
 ---
 
@@ -79,6 +125,8 @@ Phase 03 에서 파일 전체를 원복하면 이 지역 정의도 함께 사라
 | `quartz.layout.ts` | 수정 |
 | `quartz.config.ts` | 수정 |
 | `quartz/quartz/components/scripts/graph.inline.ts` | 수정 (임시) |
+| `quartz/quartz/plugins/emitters/contentIndex.tsx` | 수정 (임시 import 경로) |
+| `quartz/scripts/verify-memory-atlas.sh` | 수정 |
 
 ## 검증
 
@@ -97,6 +145,13 @@ grep -rn "memoryAtlas\|knowledgeMeta\|MemoryAtlas\|KnowledgeMeta" quartz/compone
 ```
 
 기대값은 `0` 이다.
+
+```bash
+# cwd: <worktree>/quartz
+git diff --stat d25a6eab -- quartz/components/index.ts quartz/plugins/emitters/index.ts
+```
+
+출력이 없어야 한다. 두 파일이 업스트림과 정확히 같다는 뜻이다.
 
 ```bash
 # cwd: <worktree>/
