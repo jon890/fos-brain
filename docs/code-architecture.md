@@ -38,7 +38,7 @@
 - `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlasController.ts` — 브라우저 상태, 사용자 event, 파생 데이터 계산과 2D·3D renderer 생명 주기를 조정한다.
 - `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D renderer가 함께 구현하는 생성·갱신·제거 계약을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링과 지도의 이동·배율 상태를 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
 - `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
@@ -123,6 +123,21 @@ NestJS 12의 peer 범위와 맞지 않는 외부 throttling package는 추가하
 `title`, `description`, `generated` 보완은 concept, topic, entity 문서에만 적용한다.
 묶음의 `index.md`와 `log.md`는 예약 문서로 별도 처리한다.
 raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 원본 본문을 유지한다.
+
+## Quartz fork 경계
+
+`quartz/`는 업스트림 Quartz를 복사해 담고 있으며 별도 upstream 이력이 없었다.
+업스트림 파일을 직접 고치면 갱신할 때마다 내 코드와 업스트림 변경이 같은 파일에서 만난다.
+
+- `quartz/quartz/**`는 업스트림 원본만 담으며 이 저장소에서 수정하지 않는다.
+- `quartz/custom/**`는 이 저장소가 만든 컴포넌트, 렌더러, emitter와 스타일을 담는다.
+- `quartz.config.ts`, `quartz.layout.ts`, `quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
+- 커스텀 컴포넌트와 emitter는 업스트림의 재수출 목록에 등록하지 않고 설정 파일이 경로로 직접 불러온다.
+- 화면에 얹는 요소는 `renderPage`를 고치지 않고 layout의 컴포넌트 자리로 넣는다.
+- Memory Atlas가 쓰는 확장 색인은 업스트림 `contentIndex`를 고치지 않고 커스텀 emitter가 자체 파일로 내보낸다.
+
+업스트림은 `quartz-upstream` remote로 연결하고 복사 시점 커밋을 공통 조상으로 둔다.
+이 경계가 유지되면 갱신은 설정 파일 충돌만 확인하면 되고, 나중에 Quartz를 자체 구현으로 교체할 때 갈아끼울 표면이 색인 파일과 layout 하나로 드러난다.
 
 ## 운영 구성 저장 경계
 

@@ -32,6 +32,7 @@
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
 | `type` | `concept`, `topic`, `entity` | 필수이며 문서 유형과 일치한다. |
+| `role` | `navigation` | 선택이며 지식이 아니라 다른 문서로 가는 길을 담은 문서에만 쓴다. |
 | `created` | `YYYY-MM-DD` | 필수이며 최초 생성일이다. |
 | `updated` | `YYYY-MM-DD` | 필수이며 마지막 의미 변경일이다. |
 | `title` | 문자열 | 권장하며 H1과 같은 의미를 가진다. |
@@ -45,6 +46,10 @@
 
 `sources` frontmatter는 검색·교환용 구조 신호다.
 사람이 원문으로 이동할 수 있도록 본문의 `## Sources`도 유지한다.
+
+`role: navigation`은 목차와 활동 기록처럼 다른 문서를 가리키는 것이 목적인 문서를 표시한다.
+이 문서는 계속 렌더되고 검색되지만 Memory Atlas 그래프의 노드와 연결에서 빠진다.
+`role`이 없거나 `navigation`이 아니면 일반 지식 문서로 다룬다.
 
 ## 링크 계약
 
@@ -118,11 +123,14 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 | `freshness` | 객체 | `date`에는 `stale_after` 날짜를 넣고, `state`에는 `current`, `stale`, `invalid` 중 하나를 넣는다. |
 | `updated` | ISO 8601 문자열 | Quartz가 선택한 수정일을 직렬화한다. |
 | `sourceCount` | 0 이상의 정수 | 유효한 `sources` 항목 수다. |
+| `role` | `navigation` | frontmatter 값을 그대로 옮기며 다른 값은 생략한다. |
 
 브라우저는 slug가 `_private/`로 시작하면 private, 아니면 public 네임스페이스로 계산한다.
 공개 빌드에는 `_private/` 입력이 없으므로 private 항목과 필터가 생성되지 않는다.
 
 Memory Atlas의 연결은 기존 `links` 배열에서 대상 slug가 현재 색인에 있는 항목만 사용한다.
+`role`이 `navigation`인 항목은 노드와 연결 계산에서 모두 제외한다.
+목차 문서는 거의 모든 문서를 가리키므로 남겨두면 무관한 두 문서가 2 hop으로 이어지고 배치가 한 점으로 쏠린다.
 중복된 source와 target 쌍은 하나로 합치며 self-link는 제외한다.
 supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 근거가 없으므로 생성하지 않는다.
 
