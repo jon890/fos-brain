@@ -38,7 +38,7 @@
 - `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlasController.ts` — 브라우저 상태, 사용자 event, 파생 데이터 계산과 2D·3D renderer 생명 주기를 조정한다.
 - `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D renderer가 함께 구현하는 생성·갱신·제거 계약을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링을 소유한다.
+- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링과 지도의 이동·배율 상태를 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
 - `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
 - `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
