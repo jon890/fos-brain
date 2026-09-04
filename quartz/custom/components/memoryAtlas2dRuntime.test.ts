@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import { readFileSync } from "node:fs"
 import test, { describe } from "node:test"
-import type { FullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
 import {
   createDefaultMemoryAtlasState,
   type MemoryAtlasData,

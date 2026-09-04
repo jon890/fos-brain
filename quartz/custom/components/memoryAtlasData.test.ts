@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import type { ContentDetails } from "../plugins/emitters/contentIndex"
-import type { FilePath, FullSlug, SimpleSlug } from "../util/path"
+import type { ContentDetails } from "../../quartz/plugins/emitters/contentIndex"
+import type { FilePath, FullSlug, SimpleSlug } from "../../quartz/util/path"
 import {
   buildMemoryAtlasData,
   clearMemoryAtlasQuery,

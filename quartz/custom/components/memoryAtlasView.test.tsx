@@ -1,8 +1,8 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
 import render from "preact-render-to-string"
-import type { FullSlug } from "../util/path"
-import type { QuartzComponentProps } from "./types"
+import type { FullSlug } from "../../quartz/util/path"
+import type { QuartzComponentProps } from "../../quartz/components/types"
 import { MemoryAtlasView } from "./memoryAtlasView"
 
 function file(slug: string, title: string, role?: string) {

@@ -24,8 +24,8 @@ import {
   restrictPublishedMemoryAtlasSemanticsToSlugs,
   type MemoryAtlasSemanticEdge,
 } from "../memoryAtlasSemantics"
-import type { ContentDetails } from "../../plugins/emitters/contentIndex"
-import type { FullSlug } from "../../util/path"
+import type { ContentDetails } from "../../../quartz/plugins/emitters/contentIndex"
+import type { FullSlug } from "../../../quartz/util/path"
 import {
   MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
   type MemoryAtlasRuntimeContext,

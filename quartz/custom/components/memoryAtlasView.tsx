@@ -1,5 +1,5 @@
-import { QuartzComponentProps } from "./types"
-import { FullSlug, resolveRelative } from "../util/path"
+import { QuartzComponentProps } from "../../quartz/components/types"
+import { FullSlug, resolveRelative } from "../../quartz/util/path"
 import { normalizeKnowledgeRole } from "./knowledgeMetaData"
 
 const TYPE_OPTIONS = ["concept", "topic", "entity"] as const

@@ -1,5 +1,4 @@
 import type { ContentDetails } from "../../plugins/emitters/contentIndex"
-import type { KnowledgeType } from "../knowledgeMetaData"
 import {
   SimulationNodeDatum,
   SimulationLinkDatum,
@@ -20,6 +19,9 @@ import { Group as TweenGroup, Tween as Tweened } from "@tweenjs/tween.js"
 import { registerEscapeHandler, removeAllChildren } from "./util"
 import { FullSlug, SimpleSlug, getFullSlug, resolveRelative, simplifySlug } from "../../util/path"
 import { D3Config } from "../Graph"
+
+// Phase 03 에서 이 파일을 업스트림으로 되돌릴 때 함께 사라지는 임시 정의다.
+type KnowledgeType = "concept" | "topic" | "entity"
 
 type GraphicsInfo = {
   color: string

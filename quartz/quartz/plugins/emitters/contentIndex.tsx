@@ -12,8 +12,8 @@ import type {
   KnowledgeRole,
   KnowledgeStatus,
   KnowledgeType,
-} from "../../components/knowledgeMetaData"
-import { normalizeKnowledgeMetaData } from "../../components/knowledgeMetaData"
+} from "../../../custom/components/knowledgeMetaData"
+import { normalizeKnowledgeMetaData } from "../../../custom/components/knowledgeMetaData"
 
 export type ContentIndexMap = Map<FullSlug, ContentDetails>
 export type ContentDetails = {

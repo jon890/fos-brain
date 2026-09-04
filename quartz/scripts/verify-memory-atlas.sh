@@ -66,22 +66,22 @@ pnpm exec prettier --check \
   scripts/memory-atlas-browser-assertions.mjs \
   scripts/verify-memory-atlas-browser.mjs \
   quartz.layout.ts \
-  quartz/components/MemoryAtlas.tsx \
-  quartz/components/memoryAtlasData.test.ts \
-  quartz/components/memoryAtlasData.ts \
-  quartz/components/memoryAtlasView.test.tsx \
-  quartz/components/memoryAtlasView.tsx \
-  quartz/components/memoryAtlas2dRuntime.test.ts \
+  custom/components/MemoryAtlas.tsx \
+  custom/components/memoryAtlasData.test.ts \
+  custom/components/memoryAtlasData.ts \
+  custom/components/memoryAtlasView.test.tsx \
+  custom/components/memoryAtlasView.tsx \
+  custom/components/memoryAtlas2dRuntime.test.ts \
   quartz/components/renderPage.tsx \
-  quartz/components/scripts/memoryAtlas.inline.ts \
-  quartz/components/scripts/memoryAtlasAuth.test.ts \
-  quartz/components/scripts/memoryAtlasAuth.ts \
-  quartz/components/scripts/memoryAtlasController.ts \
-  quartz/components/scripts/memoryAtlasController.test.ts \
-  quartz/components/scripts/memoryAtlasRuntimeTypes.ts \
-  quartz/components/scripts/memoryAtlas2dRuntime.ts \
-  quartz/components/scripts/memoryAtlas3dRuntime.ts \
-  quartz/components/styles/memoryAtlas.scss
+  custom/components/scripts/memoryAtlas.inline.ts \
+  custom/components/scripts/memoryAtlasAuth.test.ts \
+  custom/components/scripts/memoryAtlasAuth.ts \
+  custom/components/scripts/memoryAtlasController.ts \
+  custom/components/scripts/memoryAtlasController.test.ts \
+  custom/components/scripts/memoryAtlasRuntimeTypes.ts \
+  custom/components/scripts/memoryAtlas2dRuntime.ts \
+  custom/components/scripts/memoryAtlas3dRuntime.ts \
+  custom/components/styles/memoryAtlas.scss
 
 echo "[2/5] Type checking"
 pnpm exec tsc --noEmit

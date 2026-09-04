@@ -1,7 +1,7 @@
-import type { ContentDetails } from "../plugins/emitters/contentIndex"
+import type { ContentDetails } from "../../quartz/plugins/emitters/contentIndex"
 import type { KnowledgeFreshness, KnowledgeStatus, KnowledgeType } from "./knowledgeMetaData"
 import { normalizeKnowledgeRole } from "./knowledgeMetaData"
-import type { FullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
 
 export type MemoryAtlasNamespace = "public" | "private"
 export type MemoryAtlasLens = "all" | "topic" | "type" | "freshness" | "namespace"
