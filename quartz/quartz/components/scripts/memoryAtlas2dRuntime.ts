@@ -73,6 +73,7 @@ const MIN_SCALE = 0.4
 const MAX_SCALE = 4
 const DRAG_THRESHOLD_PX = 4
 const WHEEL_SCALE_STEP = 0.0015
+const WHEEL_LINE_HEIGHT_PX = 16
 
 export type MemoryAtlas2dViewport = {
   x: number
@@ -80,11 +81,29 @@ export type MemoryAtlas2dViewport = {
   k: number
 }
 
-export const MEMORY_ATLAS_2D_INITIAL_VIEWPORT: MemoryAtlas2dViewport = { x: 0, y: 0, k: 1 }
+export const MEMORY_ATLAS_2D_INITIAL_VIEWPORT: Readonly<MemoryAtlas2dViewport> = Object.freeze({
+  x: 0,
+  y: 0,
+  k: 1,
+})
 
 export function clampMemoryAtlas2dScale(scale: number): number {
-  if (!Number.isFinite(scale)) return MEMORY_ATLAS_2D_INITIAL_VIEWPORT.k
+  if (Number.isNaN(scale)) return MEMORY_ATLAS_2D_INITIAL_VIEWPORT.k
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
+}
+
+/**
+ * Firefox 는 줄 단위(`deltaMode` 1)로 한 칸에 3 전후를 준다.
+ * 픽셀 단위(`deltaMode` 0)의 100 전후를 전제로 계산하면 그 브라우저에서 배율이 거의 움직이지 않는다.
+ */
+export function normalizeWheelDelta(
+  deltaY: number,
+  deltaMode: number,
+  containerHeight: number,
+): number {
+  if (deltaMode === 1) return deltaY * WHEEL_LINE_HEIGHT_PX
+  if (deltaMode === 2) return deltaY * containerHeight
+  return deltaY
 }
 
 export function memoryAtlas2dViewportTransform(viewport: MemoryAtlas2dViewport): string {
@@ -176,11 +195,19 @@ export function attachMemoryAtlas2dViewportControls({
     suppressNextClick = suppressClick
     activePointerId = undefined
     dragging = false
+    // 호환 click 은 pointerup 직후 같은 작업에서 오므로 억제가 유효하다.
+    // 다음 작업에서 풀지 않으면 키보드로 노드를 고르는 click 을 한 번 삼킨다.
+    if (suppressClick) {
+      setTimeout(() => {
+        suppressNextClick = false
+      }, 0)
+    }
   }
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button > 0) return
-    // 컨테이너 밖에서 드래그를 끝내면 click 이 오지 않는다. 다음 입력 시작에서 억제를 푼다.
+    // 진행 중인 드래그를 두 번째 포인터가 가로채면 capture 대상과 억제 상태가 어긋난다.
+    if (activePointerId !== undefined) return
     suppressNextClick = false
     activePointerId = event.pointerId
     dragging = false
@@ -192,6 +219,12 @@ export function attachMemoryAtlas2dViewportControls({
 
   const onPointerMove = (event: PointerEvent) => {
     if (activePointerId === undefined || event.pointerId !== activePointerId) return
+    // 확정 전에는 capture 가 없어 창 밖에서 손을 떼면 pointerup 이 도착하지 않는다.
+    // 마우스의 pointerId 는 세션 내내 같아, 버튼을 놓은 뒤의 이동이 드래그로 이어질 수 있다.
+    if (event.pointerType !== "touch" && event.buttons === 0) {
+      endDrag(false)
+      return
+    }
     if (!dragging) {
       const distance = Math.hypot(event.clientX - startX, event.clientY - startY)
       if (distance < DRAG_THRESHOLD_PX) return
@@ -234,7 +267,7 @@ export function attachMemoryAtlas2dViewportControls({
     setViewport(
       zoomMemoryAtlas2dViewport(
         getViewport(),
-        event.deltaY,
+        normalizeWheelDelta(event.deltaY, event.deltaMode, rect.height),
         event.clientX - rect.left,
         event.clientY - rect.top,
       ),

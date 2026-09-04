@@ -15,6 +15,7 @@ import {
   clampMemoryAtlas2dScale,
   MEMORY_ATLAS_2D_INITIAL_VIEWPORT,
   memoryAtlas2dViewportTransform,
+  normalizeWheelDelta,
   zoomMemoryAtlas2dViewport,
   type MemoryAtlas2dViewport,
 } from "./scripts/memoryAtlas2dRuntime"
@@ -327,6 +328,58 @@ describe("memory atlas 2D runtime scene", () => {
     } as unknown as HTMLElement
 
     assert.strictEqual(applyMemoryAtlas2dViewport(withoutWrapper, { x: 10, y: 10, k: 2 }), null)
+  })
+
+  test("normalizes line and page wheel units to pixels", () => {
+    assert.strictEqual(normalizeWheelDelta(100, 0, 600), 100)
+    assert.strictEqual(normalizeWheelDelta(3, 1, 600), 48)
+    assert.strictEqual(normalizeWheelDelta(1, 2, 600), 600)
+    // Firefox 의 줄 단위 한 칸이 Chrome 의 픽셀 한 칸과 같은 자리에 오는지 본다.
+    const line = zoomMemoryAtlas2dViewport(
+      { x: 0, y: 0, k: 1 },
+      normalizeWheelDelta(-3, 1, 600),
+      0,
+      0,
+    )
+    const pixel = zoomMemoryAtlas2dViewport(
+      { x: 0, y: 0, k: 1 },
+      normalizeWheelDelta(-100, 0, 600),
+      0,
+      0,
+    )
+    assert.ok(Math.abs(line.k - pixel.k) < 0.15)
+  })
+
+  test("stops a drag once the mouse button is no longer held", () => {
+    const released = attachToFakeContainer()
+
+    released.dispatch("pointerdown", pointerEvent({ clientX: 10, clientY: 10 }))
+    // 창 밖에서 손을 떼 pointerup 이 도착하지 않은 상태를 재현한다.
+    released.dispatch(
+      "pointermove",
+      pointerEvent({ clientX: 200, clientY: 200, pointerType: "mouse", buttons: 0 }),
+    )
+
+    assert.deepStrictEqual(released.viewport(), MEMORY_ATLAS_2D_INITIAL_VIEWPORT)
+
+    // 상태가 남아 있으면 이후의 단순 이동이 드래그로 이어진다.
+    released.dispatch(
+      "pointermove",
+      pointerEvent({ clientX: 260, clientY: 240, pointerType: "mouse", buttons: 0 }),
+    )
+    assert.deepStrictEqual(released.viewport(), MEMORY_ATLAS_2D_INITIAL_VIEWPORT)
+  })
+
+  test("keeps a second pointer from hijacking the drag in progress", () => {
+    const multi = attachToFakeContainer()
+
+    multi.dispatch("pointerdown", pointerEvent({ pointerId: 1, clientX: 10, clientY: 10 }))
+    multi.dispatch("pointermove", pointerEvent({ pointerId: 1, clientX: 60, clientY: 10 }))
+    multi.dispatch("pointerdown", pointerEvent({ pointerId: 2, clientX: 300, clientY: 300 }))
+    multi.dispatch("pointermove", pointerEvent({ pointerId: 2, clientX: 400, clientY: 300 }))
+
+    assert.deepStrictEqual(multi.viewport(), { x: 50, y: 0, k: 1 })
+    assert.deepStrictEqual(multi.container.captures, [1])
   })
 
   test("suppresses only the click that ends a confirmed drag", () => {

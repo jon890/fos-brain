@@ -84,6 +84,21 @@ const dragPointer = (element, points, pointerId = 7) => {
   element.dispatchEvent(new win.PointerEvent("pointerup", init(last, 0)))
   element.dispatchEvent(new win.MouseEvent("click", init(last, 0)))
 }
+const wheelAt = (element, point, deltaY) => {
+  const win = element.ownerDocument.defaultView
+  element.dispatchEvent(
+    new win.WheelEvent("wheel", {
+      deltaY,
+      deltaMode: 0,
+      clientX: point.x,
+      clientY: point.y,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      view: win,
+    }),
+  )
+}
 const viewportWrapper = (canvas) => {
   const wrapper = canvas.querySelector(".memory-atlas-2d__viewport")
   if (!wrapper) throw new Error("missing 2D viewport wrapper")
@@ -269,6 +284,24 @@ dragBy(50, 0)
 const accumulated = viewportTranslate(canvas)
 if (accumulated.x !== 50) throw new Error(\`drag distance scaled with rerenders: \${accumulated.x}\`)
 
+// 휠이 배율을 바꾸고 포인터 아래 지점이 그 자리에 남는다.
+reset.click()
+const zoomSpot = emptyMapPoint(doc, canvas)
+const canvasRect = canvas.getBoundingClientRect()
+const localZoom = { x: zoomSpot.x - canvasRect.left, y: zoomSpot.y - canvasRect.top }
+const beforeZoom = viewportTranslate(canvas)
+const sceneUnderPointer = {
+  x: (localZoom.x - beforeZoom.x) / beforeZoom.k,
+  y: (localZoom.y - beforeZoom.y) / beforeZoom.k,
+}
+wheelAt(zoomSpot.element, zoomSpot, -240)
+const afterZoom = viewportTranslate(canvas)
+if (!(afterZoom.k > beforeZoom.k)) throw new Error(\`wheel did not zoom in: \${JSON.stringify(afterZoom)}\`)
+const heldX = afterZoom.x + sceneUnderPointer.x * afterZoom.k
+const heldY = afterZoom.y + sceneUnderPointer.y * afterZoom.k
+if (Math.abs(heldX - localZoom.x) > 0.5 || Math.abs(heldY - localZoom.y) > 0.5) throw new Error(\`wheel moved the point under the pointer: \${heldX},\${heldY} vs \${localZoom.x},\${localZoom.y}\`)
+wheelAt(zoomSpot.element, zoomSpot, 240)
+
 // 노드 위에서 끌어도 지도가 움직이고 선택은 바뀌지 않는다.
 reset.click()
 const selectionBeforeNodeDrag = selectedSlug(canvas)
@@ -284,7 +317,10 @@ if (afterNodeDrag.x !== 70 || afterNodeDrag.y !== -30) throw new Error(\`node dr
 if (selectedSlug(canvas) !== selectionBeforeNodeDrag) throw new Error("node drag changed the selection")
 
 // 4px 미만의 짧은 누름은 그 노드를 선택한다.
+// 선택 전에 지도를 옮겨 두어야 선택이 시야를 초기화하는지 판정할 수 있다.
 reset.click()
+dragBy(80, 55)
+if (viewportTranslate(canvas).x !== 80) throw new Error("drag before the short press did not move the map")
 const nodeToTap = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")].find(
   (button) => button.dataset.selected !== "true",
 )
