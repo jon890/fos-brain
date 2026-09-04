@@ -38,6 +38,7 @@ INLINE_CODE = re.compile(r"`[^`]*`")
 WIKILINK = re.compile(r"\[\[([^\]]+)\]\]")
 FM = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
 HEADING = re.compile(r"^##\s+", re.MULTILINE)
+NAV_ROLE = re.compile(r"^role:\s*[\"']?navigation[\"']?\s*$", re.MULTILINE)
 
 
 def mask_code(text):
@@ -85,6 +86,12 @@ def collect_namespaces(root):
     return pages
 
 
+def is_navigation(fmtext):
+    # frontmatter 의 role: navigation 은 목차·활동 기록처럼 항해가 목적인 문서다.
+    # 지식 문서가 아니므로 type / created / updated 를 요구하지 않는다.
+    return NAV_ROLE.search(fmtext) is not None
+
+
 def is_content(p):
     return any(part in CONTENT_DIRS for part in p.parts) and p.name not in ENTRYPOINTS
 
@@ -130,8 +137,8 @@ def measure(root):
             # frontmatter
             fm = FM.match(raw)
             body = raw[fm.end():] if fm else raw
-            if p.name not in ENTRYPOINTS:
-                fmtext = fm.group(1) if fm else ""
+            fmtext = fm.group(1) if fm else ""
+            if p.name not in ENTRYPOINTS and not is_navigation(fmtext):
                 if not all(k in fmtext for k in ("type:", "created:", "updated:")):
                     axes["frontmatter"].append({"file": rel})
 
