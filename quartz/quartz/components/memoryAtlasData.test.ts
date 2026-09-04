@@ -332,9 +332,11 @@ describe("memory atlas data", () => {
     )
   })
 
-  test("keeps documents whose role is not navigation", () => {
+  test("excludes only the navigation role and keeps every other value", () => {
     const data = buildMemoryAtlasData({
       INDEX: content("INDEX", { role: "navigation" }),
+      // 정규화가 이미 미지 값을 undefined 로 만들지만, 그래프 쪽 조건이
+      // navigation 하나만 보는지를 여기서 따로 고정한다.
       hub: content("hub", { role: "hub" as unknown as ContentDetails["role"] }),
       plain: content("plain"),
     })

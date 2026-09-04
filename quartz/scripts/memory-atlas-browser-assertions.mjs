@@ -118,6 +118,18 @@ for (const id of ["desktop-frame", "mobile-frame"]) {
 return results
 `),
 
+  navigationDocumentsExcluded: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const canvas = byTestId(doc, "memory-atlas-canvas")
+const index = await win.fetch("/static/contentIndex.json").then((response) => response.json())
+const navigationSlugs = Object.entries(index).filter(([, details]) => details.role === "navigation").map(([slug]) => slug)
+if (!navigationSlugs.length) throw new Error("no navigation document in the content index; the assertion would check nothing")
+const present = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
+if (present.length) throw new Error(\`navigation documents reached the graph: \${present.join(", ")}\`)
+return { navigationSlugs, graphNodes: canvas.querySelectorAll(".memory-atlas-2d__nodes button").length }
+`),
+
   selectRagEntrypoint: wrap(`
 const win = frameWindow("desktop-frame")
 const doc = win.document
@@ -133,9 +145,6 @@ const doc = win.document
 const root = byTestId(doc, "memory-atlas")
 const canvas = byTestId(doc, "memory-atlas-canvas")
 const globalNodeCount = canvas.querySelectorAll(".memory-atlas-2d__nodes button").length
-const navigationSlugs = ["INDEX", "log"]
-const navigationNodes = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
-if (navigationNodes.length) throw new Error(\`navigation documents reached the graph: \${navigationNodes.join(", ")}\`)
 const ragSlug = doc.querySelector('[data-memory-atlas-entrypoint="rag"]')?.dataset.slug
 if (!ragSlug) throw new Error("RAG entrypoint unavailable")
 let buttons = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")]
