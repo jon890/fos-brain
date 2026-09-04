@@ -32,7 +32,7 @@
 - `quartz/quartz/components/Graph.tsx` — 유형 범례를 렌더한다.
 - `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
 - `quartz/quartz/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
-- `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role` 이 `navigation` 인 문서를 이 계산에서 뺀다.
+- `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role`이 `navigation`인 문서를 이 계산에서 뺀다.
 - `quartz/quartz/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
 - `quartz/quartz/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
 - `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
