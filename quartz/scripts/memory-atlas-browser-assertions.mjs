@@ -127,7 +127,10 @@ const navigationSlugs = Object.entries(index).filter(([, details]) => details.ro
 if (!navigationSlugs.length) throw new Error("no navigation document in the content index; the assertion would check nothing")
 const present = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
 if (present.length) throw new Error(\`navigation documents reached the graph: \${present.join(", ")}\`)
-return { navigationSlugs, graphNodes: canvas.querySelectorAll(".memory-atlas-2d__nodes button").length }
+const knowledgeSlug = Object.entries(index).find(([, details]) => details.role !== "navigation")?.[0]
+if (!knowledgeSlug) throw new Error("no knowledge document in the content index")
+if (!canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${knowledgeSlug}"]\`)) throw new Error(\`the node selector matched nothing for \${knowledgeSlug}; the absence check above proves nothing\`)
+return { navigationSlugs, knowledgeSlug, graphNodes: canvas.querySelectorAll(".memory-atlas-2d__nodes button").length }
 `),
 
   selectRagEntrypoint: wrap(`
