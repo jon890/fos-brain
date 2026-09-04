@@ -1,0 +1,22 @@
+{
+  "name": "plan12-atlas-2d-viewport",
+  "description": "2D 관계 지도를 드래그로 옮기고 휠로 배율을 바꿀 수 있게 하고 전체 보기로 처음 상태를 복원한다.",
+  "status": "pending",
+  "created_at": "2026-09-04",
+  "total_phases": 2,
+  "current_phases": 1,
+  "phases": [
+    {
+      "number": 1,
+      "title": "viewport 상태와 드래그·휠 조작",
+      "file": "phase-01.md",
+      "execution_profile": "deep"
+    },
+    {
+      "number": 2,
+      "title": "전체 보기 동작과 화면 회귀",
+      "file": "phase-02.md",
+      "execution_profile": "standard"
+    }
+  ]
+}
