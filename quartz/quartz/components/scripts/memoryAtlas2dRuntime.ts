@@ -540,6 +540,11 @@ export function mountMemoryAtlas({
       applyViewport()
     },
   })
+  const resetViewport = () => {
+    viewport = { ...MEMORY_ATLAS_2D_INITIAL_VIEWPORT }
+    applyViewport()
+  }
+
   const prepareLayout = (metrics: RenderMetrics): MemoryAtlas2dGlobalLayout => {
     const semanticEdges = currentContext.semanticEdges ?? []
     if (
@@ -601,10 +606,15 @@ export function mountMemoryAtlas({
     },
     select(slug?: FullSlug) {
       currentState = { ...currentState, selectedSlug: slug }
+      // 배치가 다시 계산되므로 이전 이동값을 남기면 새 중심이 화면 밖에 있을 수 있다.
+      resetViewport()
       render()
     },
     recenter() {
       if (!destroyed) container.querySelector<HTMLElement>("[data-selected='true']")?.focus()
+    },
+    resetViewport() {
+      if (!destroyed) resetViewport()
     },
     setEvidenceSlugs(slugs: ReadonlySet<FullSlug>) {
       evidenceSlugs = new Set(slugs)

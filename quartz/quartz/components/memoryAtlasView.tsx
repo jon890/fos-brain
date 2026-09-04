@@ -272,6 +272,14 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
           <button type="button" data-testid="memory-atlas-recenter" class="memory-atlas__button">
             중앙 정렬
           </button>
+          <button
+            type="button"
+            data-testid="memory-atlas-reset-viewport"
+            class="memory-atlas__button"
+            aria-label="지도 이동과 배율을 처음 상태로"
+          >
+            전체 보기
+          </button>
         </div>
 
         <section class="memory-atlas__results" aria-label="검색 결과">

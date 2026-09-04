@@ -308,6 +308,27 @@ describe("memory atlas 2D runtime scene", () => {
     )
   })
 
+  test("restores the initial transform when the viewport is reset", () => {
+    const container = fakeViewportContainer()
+    const host = container as unknown as HTMLElement
+
+    applyMemoryAtlas2dViewport(host, { x: 120, y: -64, k: 2.5 })
+    applyMemoryAtlas2dViewport(host, MEMORY_ATLAS_2D_INITIAL_VIEWPORT)
+
+    assert.strictEqual(container.wrapper.style.transform, "translate(0px, 0px) scale(1)")
+    assert.deepStrictEqual(MEMORY_ATLAS_2D_INITIAL_VIEWPORT, { x: 0, y: 0, k: 1 })
+  })
+
+  test("leaves the transform alone when the viewport wrapper is missing", () => {
+    const withoutWrapper = {
+      querySelector() {
+        return null
+      },
+    } as unknown as HTMLElement
+
+    assert.strictEqual(applyMemoryAtlas2dViewport(withoutWrapper, { x: 10, y: 10, k: 2 }), null)
+  })
+
   test("suppresses only the click that ends a confirmed drag", () => {
     const dragged = attachToFakeContainer()
     let stopped = 0

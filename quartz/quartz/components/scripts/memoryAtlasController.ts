@@ -385,6 +385,10 @@ export function createMemoryAtlasRuntimeLifecycle(loadRuntime: RuntimeLoader) {
       if (destroyed) return
       handle?.recenter()
     },
+    resetViewport() {
+      if (destroyed) return
+      handle?.resetViewport?.()
+    },
     setEvidenceSlugs(slugs: ReadonlySet<FullSlug>) {
       if (destroyed) return
       handle?.setEvidenceSlugs(slugs)
@@ -710,6 +714,17 @@ function readState(root: HTMLElement, current: MemoryAtlasState): MemoryAtlasSta
   }
 }
 
+/**
+ * 3D runtime 은 카메라 복원을 자체 처리해 `resetViewport` 를 구현하지 않는다.
+ * 버튼을 남기면 눌러도 아무 일도 하지 않는 컨트롤이 되므로 숨긴다.
+ */
+export function updateViewportResetVisibility(root: HTMLElement, mode: MemoryAtlasMode) {
+  const button = root.querySelector<HTMLButtonElement>(
+    '[data-testid="memory-atlas-reset-viewport"]',
+  )
+  if (button) button.hidden = mode === "3d"
+}
+
 function syncControls(root: HTMLElement, state: MemoryAtlasState) {
   syncSearchInputs(root, state.query)
   root
@@ -742,6 +757,7 @@ function syncControls(root: HTMLElement, state: MemoryAtlasState) {
     const active = button.dataset.memoryAtlasModeButton === state.mode
     button.setAttribute("aria-pressed", String(active))
   })
+  updateViewportResetVisibility(root, state.mode)
   if (layout) layout.value = state.layout
   if (color) color.value = state.colorBy
   if (spacing) spacing.value = state.spacing
@@ -1047,6 +1063,8 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     if (source) syncSearchInputs(root, source.value, source)
     state = readState(root, state)
     storeState(state)
+    // refresh 는 syncControls 를 거치지 않으므로 모드에 따른 표시를 여기서 갱신한다.
+    updateViewportResetVisibility(root, state.mode)
     visibleData = filterMemoryAtlas(fullData, state)
     updateStats(root, visibleData)
     updateResults(root, visibleData, state, selectNode)
@@ -1277,6 +1295,9 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
 
   bind(root.querySelector('[data-testid="memory-atlas-recenter"]'), "click", () =>
     runtimeLifecycle.recenter(),
+  )
+  bind(root.querySelector('[data-testid="memory-atlas-reset-viewport"]'), "click", () =>
+    runtimeLifecycle.resetViewport(),
   )
   bind(root.querySelector('[data-testid="memory-atlas-clear-selection"]'), "click", () =>
     selectNode(undefined),

@@ -54,6 +54,64 @@ const activateWithSyntheticKeyboard = (element, keyName) => {
   const allowedDefault = key(element, keyName, { code: keyName === " " ? "Space" : keyName })
   if (allowedDefault && (element.tagName === "BUTTON" || element.tagName === "A")) element.click()
 }
+/*
+ * dispatchEvent 로 만든 PointerEvent 는 브라우저의 호환 click 을 만들지 않는다.
+ * 노드 선택은 button 의 click handler 에서만 일어나므로 pointerup 뒤에 click 을 함께 보낸다.
+ * pointermove 와 pointerup 도 대상 요소에 bubbles 로 보낸다.
+ * runtime 은 이동과 종료를 window 에서 받으므로 요소에서 올라온 이벤트가 거기 닿는다.
+ * window 에 직접 보내면 아래로 전파되지 않아 요소의 handler 가 받지 못한다.
+ */
+const dragPointer = (element, points, pointerId = 7) => {
+  const win = element.ownerDocument.defaultView
+  const init = (point, buttons) => ({
+    pointerId,
+    pointerType: "mouse",
+    isPrimary: true,
+    button: 0,
+    buttons,
+    clientX: point.x,
+    clientY: point.y,
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    view: win,
+  })
+  element.dispatchEvent(new win.PointerEvent("pointerdown", init(points[0], 1)))
+  for (const point of points.slice(1)) {
+    element.dispatchEvent(new win.PointerEvent("pointermove", init(point, 1)))
+  }
+  const last = points[points.length - 1]
+  element.dispatchEvent(new win.PointerEvent("pointerup", init(last, 0)))
+  element.dispatchEvent(new win.MouseEvent("click", init(last, 0)))
+}
+const viewportWrapper = (canvas) => {
+  const wrapper = canvas.querySelector(".memory-atlas-2d__viewport")
+  if (!wrapper) throw new Error("missing 2D viewport wrapper")
+  return wrapper
+}
+const viewportTranslate = (canvas) => {
+  const match = /translate\\((-?[\\d.]+)px,\\s*(-?[\\d.]+)px\\)\\s*scale\\((-?[\\d.]+)\\)/.exec(
+    viewportWrapper(canvas).style.transform || "",
+  )
+  if (!match) throw new Error(\`unreadable viewport transform: \${viewportWrapper(canvas).style.transform}\`)
+  return { x: Number(match[1]), y: Number(match[2]), k: Number(match[3]) }
+}
+const emptyMapPoint = (doc, canvas) => {
+  const rect = canvas.getBoundingClientRect()
+  for (let ratioY = 0.2; ratioY <= 0.8; ratioY += 0.1) {
+    for (let ratioX = 0.3; ratioX <= 0.7; ratioX += 0.1) {
+      const x = rect.left + rect.width * ratioX
+      const y = rect.top + rect.height * ratioY
+      const hit = doc.elementFromPoint(x, y)
+      if (hit && canvas.contains(hit) && !hit.closest(".memory-atlas-2d__nodes button")) {
+        return { element: hit, x, y }
+      }
+    }
+  }
+  throw new Error("no empty spot on the 2D map")
+}
+const selectedSlug = (canvas) =>
+  canvas.querySelector(".memory-atlas-2d__nodes button[data-selected='true']")?.dataset.slug
 const activeNodeButtons = (doc) => [...doc.querySelectorAll(".memory-atlas-2d__nodes button[data-selected='true'], .memory-atlas-2d__nodes button[data-related='true']")]
 const assertNoPrivateAtlasLeak = (doc) => {
   const html = doc.body.innerHTML
@@ -163,6 +221,118 @@ byTestId(doc, "memory-atlas-clear-selection").click()
 await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "global map restored")
 if (root.classList.contains("memory-atlas--detail-open")) throw new Error("detail remained open after clearing selection")
 return { centered: "GraphRAG", restored: true }
+`),
+
+  twoDimensionalViewportControls: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const canvas = byTestId(doc, "memory-atlas-canvas")
+const reset = byTestId(doc, "memory-atlas-reset-viewport")
+if (reset.hidden) throw new Error("전체 보기 is hidden in 2D")
+const labels = byTestId(doc, "memory-atlas-labels")
+const rerender = async (checked) => {
+  labels.checked = checked
+  labels.dispatchEvent(new Event("change", { bubbles: true }))
+  await waitFor(
+    () =>
+      [...canvas.querySelectorAll(".memory-atlas-2d__label")].every(
+        (label) => (Number(label.style.opacity) === 0) === !checked,
+      ),
+    \`labels \${checked ? "shown" : "hidden"}\`,
+  )
+}
+const dragBy = (deltaX, deltaY) => {
+  const spot = emptyMapPoint(doc, canvas)
+  dragPointer(spot.element, [
+    { x: spot.x, y: spot.y },
+    { x: spot.x + deltaX, y: spot.y + deltaY },
+  ])
+}
+
+reset.click()
+if (viewportTranslate(canvas).x !== 0) throw new Error("전체 보기 did not start from the initial viewport")
+
+// 빈 곳 드래그가 지도를 옮긴다.
+dragBy(60, 40)
+const afterEmptyDrag = viewportTranslate(canvas)
+if (afterEmptyDrag.x !== 60 || afterEmptyDrag.y !== 40) throw new Error(\`empty-space drag moved the map to \${JSON.stringify(afterEmptyDrag)}\`)
+
+// 다시 그려도 이동값이 남는다.
+await rerender(false)
+await rerender(true)
+const afterRerender = viewportTranslate(canvas)
+if (afterRerender.x !== 60 || afterRerender.y !== 40) throw new Error(\`viewport was lost on rerender: \${JSON.stringify(afterRerender)}\`)
+
+// handler 가 렌더마다 쌓이면 같은 드래그가 배수로 움직인다.
+reset.click()
+dragBy(50, 0)
+const accumulated = viewportTranslate(canvas)
+if (accumulated.x !== 50) throw new Error(\`drag distance scaled with rerenders: \${accumulated.x}\`)
+
+// 노드 위에서 끌어도 지도가 움직이고 선택은 바뀌지 않는다.
+reset.click()
+const selectionBeforeNodeDrag = selectedSlug(canvas)
+const nodeToDrag = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")].find(
+  (button) => button.dataset.selected !== "true",
+)
+if (!nodeToDrag) throw new Error("no unselected node button to drag")
+const nodeRect = nodeToDrag.getBoundingClientRect()
+const nodeCenter = { x: nodeRect.left + nodeRect.width / 2, y: nodeRect.top + nodeRect.height / 2 }
+dragPointer(nodeToDrag, [nodeCenter, { x: nodeCenter.x + 70, y: nodeCenter.y - 30 }])
+const afterNodeDrag = viewportTranslate(canvas)
+if (afterNodeDrag.x !== 70 || afterNodeDrag.y !== -30) throw new Error(\`node drag did not move the map: \${JSON.stringify(afterNodeDrag)}\`)
+if (selectedSlug(canvas) !== selectionBeforeNodeDrag) throw new Error("node drag changed the selection")
+
+// 4px 미만의 짧은 누름은 그 노드를 선택한다.
+reset.click()
+const nodeToTap = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")].find(
+  (button) => button.dataset.selected !== "true",
+)
+if (!nodeToTap) throw new Error("no unselected node button to tap")
+const tapSlug = nodeToTap.dataset.slug
+const tapRect = nodeToTap.getBoundingClientRect()
+const tapCenter = { x: tapRect.left + tapRect.width / 2, y: tapRect.top + tapRect.height / 2 }
+dragPointer(nodeToTap, [tapCenter, { x: tapCenter.x + 1, y: tapCenter.y + 1 }])
+await waitFor(() => selectedSlug(canvas) === tapSlug, "short press selects the node")
+
+// 선택으로 중심이 바뀌면 이동과 배율도 처음 상태로 돌아간다.
+const afterSelect = viewportTranslate(canvas)
+if (afterSelect.x !== 0 || afterSelect.y !== 0 || afterSelect.k !== 1) throw new Error(\`selection did not reset the viewport: \${JSON.stringify(afterSelect)}\`)
+
+// 전체 보기는 시야만 되돌리고 선택은 유지한다.
+dragBy(45, -25)
+if (viewportTranslate(canvas).x !== 45) throw new Error("drag before 전체 보기 did not move the map")
+reset.click()
+const afterResetClick = viewportTranslate(canvas)
+if (afterResetClick.x !== 0 || afterResetClick.y !== 0 || afterResetClick.k !== 1) throw new Error(\`전체 보기 did not restore the viewport: \${JSON.stringify(afterResetClick)}\`)
+if (selectedSlug(canvas) !== tapSlug) throw new Error("전체 보기 changed the selection")
+
+// 선택을 해제해도 이동과 배율이 초기화된다.
+dragBy(35, 15)
+byTestId(doc, "memory-atlas-clear-selection").click()
+await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "selection cleared")
+const afterClear = viewportTranslate(canvas)
+if (afterClear.x !== 0 || afterClear.y !== 0 || afterClear.k !== 1) throw new Error(\`clearing the selection did not reset the viewport: \${JSON.stringify(afterClear)}\`)
+
+reset.click()
+noHorizontalOverflow(doc)
+return { emptyDrag: afterEmptyDrag, nodeDrag: afterNodeDrag, tapped: tapSlug }
+`),
+
+  viewportResetHiddenInThreeD: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const canvas = byTestId(doc, "memory-atlas-canvas")
+const reset = byTestId(doc, "memory-atlas-reset-viewport")
+if (reset.hidden) throw new Error("전체 보기 is hidden while 2D is active")
+doc.querySelector('[data-memory-atlas-mode-button="3d"]').click()
+await waitFor(() => canvas.querySelector("canvas"), "3D canvas", 16000)
+await waitFor(() => reset.hidden, "전체 보기 hidden in 3D")
+doc.querySelector('[data-memory-atlas-mode-button="2d"]').click()
+await waitFor(() => canvas.dataset.runtimeMode === "2d" && canvas.querySelector(".memory-atlas-2d__nodes button"), "2D restored")
+await waitFor(() => !reset.hidden, "전체 보기 shown again in 2D")
+byTestId(doc, "memory-atlas-reset-viewport").click()
+return { hiddenInThreeD: true }
 `),
 
   keyboardMarkupContract: wrap(`

@@ -8,6 +8,7 @@ import {
   memoryAtlasRuntimeSrcForMode,
   removePrivateMemoryAtlasState,
   restoreStoredMemoryAtlasState,
+  updateViewportResetVisibility,
 } from "./memoryAtlasController"
 
 function slug(value: string): FullSlug {
@@ -185,5 +186,50 @@ describe("memory atlas controller", () => {
     lifecycle.update(mountOptions.data, mountOptions.state)
 
     assert.deepStrictEqual(events, ["mount:2d", "update:2d"])
+  })
+
+  test("hides the viewport reset button only while 3D is active", () => {
+    const button = { hidden: false }
+    const root = {
+      querySelector(selector: string) {
+        assert.strictEqual(selector, '[data-testid="memory-atlas-reset-viewport"]')
+        return button
+      },
+    } as unknown as HTMLElement
+
+    updateViewportResetVisibility(root, "3d")
+    assert.strictEqual(button.hidden, true)
+    updateViewportResetVisibility(root, "2d")
+    assert.strictEqual(button.hidden, false)
+  })
+
+  test("passes the viewport reset to the runtime and tolerates handles without it", async () => {
+    const events: string[] = []
+    const mountOptions = {
+      container: {} as HTMLElement,
+      data: { nodes: [], links: [] },
+      state: createDefaultMemoryAtlasState(),
+      onSelect: () => undefined,
+    }
+    const handleFor = (mode: string) => ({
+      update: () => undefined,
+      select: () => undefined,
+      recenter: () => undefined,
+      setEvidenceSlugs: () => undefined,
+      destroy: () => undefined,
+      ...(mode === "2d" ? { resetViewport: () => events.push("reset:2d") } : {}),
+    })
+    const lifecycle = createMemoryAtlasRuntimeLifecycle(async (mode) => ({
+      mountMemoryAtlas: () => handleFor(mode),
+    }))
+
+    await lifecycle.mount("2d", mountOptions)
+    lifecycle.resetViewport()
+    await lifecycle.mount("3d", mountOptions)
+    lifecycle.resetViewport()
+    lifecycle.destroy()
+    lifecycle.resetViewport()
+
+    assert.deepStrictEqual(events, ["reset:2d"])
   })
 })
