@@ -272,14 +272,6 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
           <button type="button" data-testid="memory-atlas-recenter" class="memory-atlas__button">
             중앙 정렬
           </button>
-          <button
-            type="button"
-            data-testid="memory-atlas-reset-viewport"
-            class="memory-atlas__button"
-            aria-label="지도 이동과 배율을 처음 상태로"
-          >
-            전체 보기
-          </button>
         </div>
 
         <section class="memory-atlas__results" aria-label="검색 결과">
@@ -329,6 +321,34 @@ export const MemoryAtlasView = ({ allFiles, fileData }: QuartzComponentProps) =>
             </button>
             <button type="button" data-memory-atlas-mode-button="3d" aria-pressed="false">
               3D 조망
+            </button>
+          </div>
+          <div
+            class="memory-atlas__viewport-controls"
+            data-testid="memory-atlas-viewport-controls"
+            role="group"
+            aria-label="지도 이동과 배율"
+          >
+            <button
+              type="button"
+              data-testid="memory-atlas-zoom-out"
+              title="지도를 한 단계 축소한다"
+            >
+              축소
+            </button>
+            <button
+              type="button"
+              data-testid="memory-atlas-zoom-in"
+              title="지도를 한 단계 확대한다"
+            >
+              확대
+            </button>
+            <button
+              type="button"
+              data-testid="memory-atlas-reset-viewport"
+              title="지도 이동과 배율을 처음 상태로 되돌린다"
+            >
+              전체 보기
             </button>
           </div>
           <label class="memory-atlas__field">

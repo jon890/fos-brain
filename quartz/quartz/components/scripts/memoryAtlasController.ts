@@ -26,11 +26,12 @@ import {
 } from "../memoryAtlasSemantics"
 import type { ContentDetails } from "../../plugins/emitters/contentIndex"
 import type { FullSlug } from "../../util/path"
-import type {
-  MemoryAtlasRuntimeContext,
-  MemoryAtlasRuntimeHandle,
-  MemoryAtlasRuntimeModule,
-  MemoryAtlasRuntimeMountOptions,
+import {
+  MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
+  type MemoryAtlasRuntimeContext,
+  type MemoryAtlasRuntimeHandle,
+  type MemoryAtlasRuntimeModule,
+  type MemoryAtlasRuntimeMountOptions,
 } from "./memoryAtlasRuntimeTypes"
 import {
   getMemoryAtlasAuthSession,
@@ -389,6 +390,10 @@ export function createMemoryAtlasRuntimeLifecycle(loadRuntime: RuntimeLoader) {
       if (destroyed) return
       handle?.resetViewport?.()
     },
+    zoomBy(factor: number) {
+      if (destroyed) return
+      handle?.zoomBy?.(factor)
+    },
     setEvidenceSlugs(slugs: ReadonlySet<FullSlug>) {
       if (destroyed) return
       handle?.setEvidenceSlugs(slugs)
@@ -715,14 +720,12 @@ function readState(root: HTMLElement, current: MemoryAtlasState): MemoryAtlasSta
 }
 
 /**
- * 3D runtime 은 카메라 복원을 자체 처리해 `resetViewport` 를 구현하지 않는다.
- * 버튼을 남기면 눌러도 아무 일도 하지 않는 컨트롤이 되므로 숨긴다.
+ * 3D runtime 은 카메라 조작을 자체 처리해 `resetViewport` 와 `zoomBy` 를 구현하지 않는다.
+ * 버튼을 남기면 눌러도 아무 일도 하지 않는 컨트롤이 되므로 그룹째 숨긴다.
  */
-export function updateViewportResetVisibility(root: HTMLElement, mode: MemoryAtlasMode) {
-  const button = root.querySelector<HTMLButtonElement>(
-    '[data-testid="memory-atlas-reset-viewport"]',
-  )
-  if (button) button.hidden = mode === "3d"
+export function updateViewportControlsVisibility(root: HTMLElement, mode: MemoryAtlasMode) {
+  const controls = root.querySelector<HTMLElement>('[data-testid="memory-atlas-viewport-controls"]')
+  if (controls) controls.hidden = mode === "3d"
 }
 
 function syncControls(root: HTMLElement, state: MemoryAtlasState) {
@@ -757,7 +760,7 @@ function syncControls(root: HTMLElement, state: MemoryAtlasState) {
     const active = button.dataset.memoryAtlasModeButton === state.mode
     button.setAttribute("aria-pressed", String(active))
   })
-  updateViewportResetVisibility(root, state.mode)
+  updateViewportControlsVisibility(root, state.mode)
   if (layout) layout.value = state.layout
   if (color) color.value = state.colorBy
   if (spacing) spacing.value = state.spacing
@@ -1064,7 +1067,7 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     state = readState(root, state)
     storeState(state)
     // refresh 는 syncControls 를 거치지 않으므로 모드에 따른 표시를 여기서 갱신한다.
-    updateViewportResetVisibility(root, state.mode)
+    updateViewportControlsVisibility(root, state.mode)
     visibleData = filterMemoryAtlas(fullData, state)
     updateStats(root, visibleData)
     updateResults(root, visibleData, state, selectNode)
@@ -1298,6 +1301,12 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
   )
   bind(root.querySelector('[data-testid="memory-atlas-reset-viewport"]'), "click", () =>
     runtimeLifecycle.resetViewport(),
+  )
+  bind(root.querySelector('[data-testid="memory-atlas-zoom-in"]'), "click", () =>
+    runtimeLifecycle.zoomBy(MEMORY_ATLAS_2D_BUTTON_SCALE_STEP),
+  )
+  bind(root.querySelector('[data-testid="memory-atlas-zoom-out"]'), "click", () =>
+    runtimeLifecycle.zoomBy(1 / MEMORY_ATLAS_2D_BUTTON_SCALE_STEP),
   )
   bind(root.querySelector('[data-testid="memory-atlas-clear-selection"]'), "click", () =>
     selectNode(undefined),

@@ -128,12 +128,46 @@ export function zoomMemoryAtlas2dViewport(
   pointerX: number,
   pointerY: number,
 ): MemoryAtlas2dViewport {
-  const scale = clampMemoryAtlas2dScale(viewport.k * Math.exp(-deltaY * WHEEL_SCALE_STEP))
+  return scaleMemoryAtlas2dViewport(
+    viewport,
+    Math.exp(-deltaY * WHEEL_SCALE_STEP),
+    pointerX,
+    pointerY,
+  )
+}
+
+/**
+ * 기준점의 장면 좌표를 그 자리에 고정한 채 배율에 `factor` 를 곱한다.
+ * 휠과 배율 버튼이 같은 계산을 쓰도록 떼어낸 함수다.
+ */
+export function scaleMemoryAtlas2dViewport(
+  viewport: MemoryAtlas2dViewport,
+  factor: number,
+  anchorX: number,
+  anchorY: number,
+): MemoryAtlas2dViewport {
+  const scale = clampMemoryAtlas2dScale(viewport.k * factor)
   const ratio = scale / viewport.k
   return {
-    x: pointerX - (pointerX - viewport.x) * ratio,
-    y: pointerY - (pointerY - viewport.y) * ratio,
+    x: anchorX - (anchorX - viewport.x) * ratio,
+    y: anchorY - (anchorY - viewport.y) * ratio,
     k: scale,
+  }
+}
+
+/**
+ * 배율은 그대로 두고 장면 중심이 화면 중앙에 오도록 이동만 맞춘다.
+ * 배치가 다시 계산되는 경로는 선택 노드를 장면 중앙에 두므로 이 계산이 선택 노드를 화면 중앙에 놓는다.
+ */
+export function centerMemoryAtlas2dViewport(
+  viewport: MemoryAtlas2dViewport,
+  width: number,
+  height: number,
+): MemoryAtlas2dViewport {
+  return {
+    x: (width - width * viewport.k) / 2,
+    y: (height - height * viewport.k) / 2,
+    k: viewport.k,
   }
 }
 
@@ -148,6 +182,42 @@ export function applyMemoryAtlas2dViewport(
   const wrapper = container.querySelector<HTMLElement>(VIEWPORT_SELECTOR)
   if (wrapper) wrapper.style.transform = memoryAtlas2dViewportTransform(viewport)
   return wrapper
+}
+
+export type MemoryAtlas2dLayoutInputs = {
+  data: MemoryAtlasData
+  state: MemoryAtlasState
+  semanticEdges?: readonly MemoryAtlasSemanticEdge[]
+}
+
+/**
+ * 노드 좌표를 정하는 입력만 모아 문자열 하나로 만든다.
+ * controller 의 `refresh` 는 filter 결과를 매번 새 객체로 만들어, 참조 비교로는 라벨 토글도 배치 변경으로 읽힌다.
+ */
+export function memoryAtlas2dLayoutSignature({
+  data,
+  state,
+  semanticEdges = [],
+}: MemoryAtlas2dLayoutInputs): string {
+  return [
+    state.layout,
+    state.spacing,
+    state.selectedSlug ?? "",
+    data.nodes.map((node) => node.slug).join(","),
+    data.links.map((link) => `${link.source}>${link.target}`).join(","),
+    semanticEdges.map((edge) => `${edge.source}>${edge.target}:${edge.score}`).join(","),
+  ].join("|")
+}
+
+/**
+ * 노드 좌표를 다시 계산하게 만드는 입력이 바뀌었는지 본다.
+ * 여기가 참이면 이전 이동값이 가리키던 자리가 사라지므로 이동을 다시 맞춘다.
+ */
+export function affectsMemoryAtlas2dLayout(
+  previous: MemoryAtlas2dLayoutInputs,
+  next: MemoryAtlas2dLayoutInputs,
+): boolean {
+  return memoryAtlas2dLayoutSignature(previous) !== memoryAtlas2dLayoutSignature(next)
 }
 
 export type MemoryAtlas2dViewportControlsOptions = {
@@ -577,6 +647,15 @@ export function mountMemoryAtlas({
     viewport = { ...MEMORY_ATLAS_2D_INITIAL_VIEWPORT }
     applyViewport()
   }
+  /**
+   * 배치가 다시 계산되는 경로에서 배율을 유지한 채 이동만 새 중심에 맞춘다.
+   * 렌더는 rAF 로 미뤄지므로, 여기서 바로 적용해야 호출 직후에 읽는 쪽이 옛 값을 보지 않는다.
+   */
+  const centerViewport = () => {
+    const metrics = measure(container)
+    viewport = centerMemoryAtlas2dViewport(viewport, metrics.width, metrics.height)
+    applyViewport()
+  }
 
   const prepareLayout = (metrics: RenderMetrics): MemoryAtlas2dGlobalLayout => {
     const semanticEdges = currentContext.semanticEdges ?? []
@@ -632,22 +711,38 @@ export function mountMemoryAtlas({
       nextState: MemoryAtlasState,
       nextContext?: MemoryAtlasRuntimeContext,
     ) {
+      const nextSemanticEdges = nextContext?.semanticEdges ?? currentContext.semanticEdges
+      const layoutChanged = affectsMemoryAtlas2dLayout(
+        { data: currentData, state: currentState, semanticEdges: currentContext.semanticEdges },
+        { data: nextData, state: nextState, semanticEdges: nextSemanticEdges },
+      )
       currentData = nextData
       currentState = nextState
       currentContext = nextContext ?? currentContext
+      if (layoutChanged) centerViewport()
       render()
     },
     select(slug?: FullSlug) {
       currentState = { ...currentState, selectedSlug: slug }
       // 배치가 다시 계산되므로 이전 이동값을 남기면 새 중심이 화면 밖에 있을 수 있다.
-      resetViewport()
+      // 배율은 유지하고 이동만 맞춰, 확대한 채 노드를 옮겨 다니는 흐름을 끊지 않는다.
+      centerViewport()
       render()
     },
     recenter() {
-      if (!destroyed) container.querySelector<HTMLElement>("[data-selected='true']")?.focus()
+      if (destroyed) return
+      // preventScroll 이 없으면 브라우저가 컨테이너의 scrollLeft, scrollTop 을 바꿔
+      // viewport 가 추적하지 않는 오프셋이 생기고 「전체 보기」 로도 돌아오지 않는다.
+      container.querySelector<HTMLElement>("[data-selected='true']")?.focus({ preventScroll: true })
     },
     resetViewport() {
       if (!destroyed) resetViewport()
+    },
+    zoomBy(factor: number) {
+      if (destroyed) return
+      const rect = container.getBoundingClientRect()
+      viewport = scaleMemoryAtlas2dViewport(viewport, factor, rect.width / 2, rect.height / 2)
+      applyViewport()
     },
     setEvidenceSlugs(slugs: ReadonlySet<FullSlug>) {
       evidenceSlugs = new Set(slugs)

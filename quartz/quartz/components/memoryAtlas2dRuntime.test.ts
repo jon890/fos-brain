@@ -16,6 +16,9 @@ import {
   MEMORY_ATLAS_2D_INITIAL_VIEWPORT,
   memoryAtlas2dViewportTransform,
   normalizeWheelDelta,
+  affectsMemoryAtlas2dLayout,
+  centerMemoryAtlas2dViewport,
+  scaleMemoryAtlas2dViewport,
   zoomMemoryAtlas2dViewport,
   type MemoryAtlas2dViewport,
 } from "./scripts/memoryAtlas2dRuntime"
@@ -395,6 +398,91 @@ describe("memory atlas 2D runtime scene", () => {
 
     assert.strictEqual(stopped, 1)
     assert.deepStrictEqual(dragged.container.captures, [1])
+  })
+
+  test("centers the scene without changing the scale", () => {
+    const centered = centerMemoryAtlas2dViewport({ x: 320, y: -180, k: 2 }, 800, 600)
+
+    // 지역 배치는 선택 노드를 장면 중앙에 두므로, 장면 중앙을 화면 중앙에 맞추면 선택 노드가 가운데 온다.
+    assert.deepStrictEqual(centered, { x: -400, y: -300, k: 2 })
+    assert.strictEqual(400 * centered.k + centered.x, 400)
+    assert.strictEqual(300 * centered.k + centered.y, 300)
+  })
+
+  test("leaves the transform at the origin when centering at the initial scale", () => {
+    assert.deepStrictEqual(
+      centerMemoryAtlas2dViewport({ ...MEMORY_ATLAS_2D_INITIAL_VIEWPORT }, 800, 600),
+      { x: 0, y: 0, k: 1 },
+    )
+  })
+
+  test("keeps the anchor fixed while the zoom buttons change the scale", () => {
+    const zoomed = scaleMemoryAtlas2dViewport({ x: 0, y: 0, k: 1 }, 1.25, 400, 300)
+
+    assert.strictEqual(zoomed.k, 1.25)
+    assert.strictEqual(400 * zoomed.k + zoomed.x, 400)
+    assert.strictEqual(300 * zoomed.k + zoomed.y, 300)
+  })
+
+  test("clamps the button zoom at the scale boundaries", () => {
+    assert.strictEqual(scaleMemoryAtlas2dViewport({ x: 0, y: 0, k: 4 }, 1.25, 0, 0).k, 4)
+    assert.strictEqual(scaleMemoryAtlas2dViewport({ x: 0, y: 0, k: 0.4 }, 1 / 1.25, 0, 0).k, 0.4)
+  })
+
+  test("treats only layout inputs as a reason to recenter the viewport", () => {
+    const state = createDefaultMemoryAtlasState()
+    const data: MemoryAtlasData = {
+      nodes: [node("concepts/rag"), node("concepts/agent")],
+      links: [{ source: slug("concepts/rag"), target: slug("concepts/agent") }],
+    }
+    const semanticEdges: readonly MemoryAtlasSemanticEdge[] = []
+    const base = { data, state, semanticEdges }
+
+    assert.strictEqual(affectsMemoryAtlas2dLayout(base, { ...base }), false)
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, { ...base, state: { ...state, colorBy: "freshness" } }),
+      false,
+    )
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, { ...base, state: { ...state, labels: !state.labels } }),
+      false,
+    )
+    // controller 의 refresh 는 같은 결과라도 새 객체를 넘긴다. 참조만 보면 라벨 토글까지 배치 변경으로 읽힌다.
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, {
+        ...base,
+        data: { nodes: [...data.nodes], links: [...data.links] },
+        semanticEdges: [],
+      }),
+      false,
+    )
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, {
+        ...base,
+        data: { nodes: [data.nodes[0]], links: [] },
+      }),
+      true,
+    )
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, {
+        ...base,
+        semanticEdges: [
+          { source: slug("concepts/rag"), target: slug("concepts/agent"), score: 0.7 },
+        ],
+      }),
+      true,
+    )
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, { ...base, state: { ...state, spacing: "wide" } }),
+      true,
+    )
+    assert.strictEqual(
+      affectsMemoryAtlas2dLayout(base, {
+        ...base,
+        state: { ...state, selectedSlug: slug("concepts/rag") },
+      }),
+      true,
+    )
   })
 
   test("keeps the 2D bundle free from 3D runtime imports", () => {

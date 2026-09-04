@@ -625,13 +625,13 @@
   border-radius: 999px;
   display: flex;
   gap: 0.58rem;
-  left: max(230px, calc(50vw - 260px));
-  max-width: min(520px, calc(100vw - 260px));
+  left: max(230px, calc(50vw - 310px));
+  max-width: min(620px, calc(100vw - 260px));
   min-height: 42px;
   padding: 0.24rem;
   position: absolute;
   top: 1rem;
-  width: 520px;
+  width: 620px;
   z-index: 4;
 
   .memory-atlas__field {
@@ -778,6 +778,40 @@
     background: rgba(154, 201, 186, 0.18);
     color: var(--atlas-paper);
   }
+}
+
+/*
+ * 800px 이하에서 .memory-atlas__rail 은 화면 밖으로 밀리므로 이 그룹을 topbar 에 둔다.
+ * 터치에는 wheel 이 없어, 포인터 없이 배율을 바꿀 수단은 이 버튼뿐이다.
+ */
+.memory-atlas__viewport-controls {
+  background: rgba(154, 201, 186, 0.08);
+  border: 1px solid rgba(154, 201, 186, 0.16);
+  border-radius: 999px;
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.16rem;
+
+  button {
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    color: var(--atlas-muted);
+    cursor: pointer;
+    min-height: 30px;
+    padding: 0.24rem 0.48rem;
+    white-space: nowrap;
+  }
+
+  button:hover {
+    background: rgba(154, 201, 186, 0.18);
+    color: var(--atlas-paper);
+  }
+}
+
+.memory-atlas__viewport-controls[hidden] {
+  display: none;
 }
 
 .memory-atlas__ask {
@@ -1312,6 +1346,11 @@ body.memory-atlas-doc-page {
 
   .memory-atlas__ask-toggle {
     min-height: 44px;
+  }
+
+  .memory-atlas__viewport-controls button {
+    min-height: 40px;
+    padding: 0.24rem 0.56rem;
   }
 
   .memory-atlas__ask {

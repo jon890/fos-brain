@@ -243,7 +243,9 @@ const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
 const reset = byTestId(doc, "memory-atlas-reset-viewport")
-if (reset.hidden) throw new Error("전체 보기 is hidden in 2D")
+const zoomIn = byTestId(doc, "memory-atlas-zoom-in")
+const zoomOut = byTestId(doc, "memory-atlas-zoom-out")
+if (byTestId(doc, "memory-atlas-viewport-controls").hidden) throw new Error("viewport controls are hidden in 2D")
 const labels = byTestId(doc, "memory-atlas-labels")
 const rerender = async (checked) => {
   labels.checked = checked
@@ -302,6 +304,15 @@ const heldY = afterZoom.y + sceneUnderPointer.y * afterZoom.k
 if (Math.abs(heldX - localZoom.x) > 0.5 || Math.abs(heldY - localZoom.y) > 0.5) throw new Error(\`wheel moved the point under the pointer: \${heldX},\${heldY} vs \${localZoom.x},\${localZoom.y}\`)
 wheelAt(zoomSpot.element, zoomSpot, 240)
 
+// 배율 버튼은 포인터 없이도 배율을 바꾼다. 터치와 키보드에 남는 유일한 수단이다.
+reset.click()
+zoomIn.click()
+const afterZoomIn = viewportTranslate(canvas)
+if (!(afterZoomIn.k > 1)) throw new Error(\`확대 did not raise the scale: \${JSON.stringify(afterZoomIn)}\`)
+zoomOut.click()
+const afterZoomOut = viewportTranslate(canvas)
+if (Math.abs(afterZoomOut.k - 1) > 0.001) throw new Error(\`축소 did not undo 확대: \${JSON.stringify(afterZoomOut)}\`)
+
 // 노드 위에서 끌어도 지도가 움직이고 선택은 바뀌지 않는다.
 reset.click()
 const selectionBeforeNodeDrag = selectedSlug(canvas)
@@ -317,7 +328,7 @@ if (afterNodeDrag.x !== 70 || afterNodeDrag.y !== -30) throw new Error(\`node dr
 if (selectedSlug(canvas) !== selectionBeforeNodeDrag) throw new Error("node drag changed the selection")
 
 // 4px 미만의 짧은 누름은 그 노드를 선택한다.
-// 선택 전에 지도를 옮겨 두어야 선택이 시야를 초기화하는지 판정할 수 있다.
+// 선택 전에 지도를 옮겨 두어야 선택이 이동을 다시 맞추는지 판정할 수 있다.
 reset.click()
 dragBy(80, 55)
 if (viewportTranslate(canvas).x !== 80) throw new Error("drag before the short press did not move the map")
@@ -331,9 +342,36 @@ const tapCenter = { x: tapRect.left + tapRect.width / 2, y: tapRect.top + tapRec
 dragPointer(nodeToTap, [tapCenter, { x: tapCenter.x + 1, y: tapCenter.y + 1 }])
 await waitFor(() => selectedSlug(canvas) === tapSlug, "short press selects the node")
 
-// 선택으로 중심이 바뀌면 이동과 배율도 처음 상태로 돌아간다.
+// 선택으로 중심이 바뀌면 배율은 그대로 두고 이동만 새 중심에 맞춘다.
 const afterSelect = viewportTranslate(canvas)
-if (afterSelect.x !== 0 || afterSelect.y !== 0 || afterSelect.k !== 1) throw new Error(\`selection did not reset the viewport: \${JSON.stringify(afterSelect)}\`)
+if (afterSelect.x !== 0 || afterSelect.y !== 0 || afterSelect.k !== 1) throw new Error(\`selection did not recenter the viewport: \${JSON.stringify(afterSelect)}\`)
+
+// 확대한 채 노드를 고르면 그 배율이 유지되고 선택 노드가 화면 중앙에 온다.
+const centeredFor = (k) => {
+  const rect = canvas.getBoundingClientRect()
+  const width = Math.max(320, Math.floor(rect.width))
+  const height = Math.max(320, Math.floor(rect.height))
+  return { x: (width - width * k) / 2, y: (height - height * k) / 2 }
+}
+zoomIn.click()
+const zoomedScale = viewportTranslate(canvas).k
+dragBy(60, -40)
+const nodeToTapZoomed = [...canvas.querySelectorAll(".memory-atlas-2d__nodes button")].find(
+  (button) => button.dataset.selected !== "true",
+)
+if (!nodeToTapZoomed) throw new Error("no unselected node button to tap while zoomed")
+const zoomedSlug = nodeToTapZoomed.dataset.slug
+const zoomedRect = nodeToTapZoomed.getBoundingClientRect()
+const zoomedCenter = { x: zoomedRect.left + zoomedRect.width / 2, y: zoomedRect.top + zoomedRect.height / 2 }
+dragPointer(nodeToTapZoomed, [zoomedCenter, { x: zoomedCenter.x + 1, y: zoomedCenter.y + 1 }])
+await waitFor(() => selectedSlug(canvas) === zoomedSlug, "short press selects the node while zoomed")
+const afterZoomedSelect = viewportTranslate(canvas)
+if (Math.abs(afterZoomedSelect.k - zoomedScale) > 0.001) throw new Error(\`selection changed the scale: \${JSON.stringify(afterZoomedSelect)}\`)
+const expectedCenter = centeredFor(afterZoomedSelect.k)
+if (Math.abs(afterZoomedSelect.x - expectedCenter.x) > 0.5 || Math.abs(afterZoomedSelect.y - expectedCenter.y) > 0.5) throw new Error(\`selection did not center the scene: \${JSON.stringify(afterZoomedSelect)} vs \${JSON.stringify(expectedCenter)}\`)
+
+// 뒤 판정들은 배율 1 을 전제하므로 여기서 되돌린다.
+reset.click()
 
 // 전체 보기는 시야만 되돌리고 선택은 유지한다.
 dragBy(45, -25)
@@ -341,14 +379,14 @@ if (viewportTranslate(canvas).x !== 45) throw new Error("drag before 전체 보�
 reset.click()
 const afterResetClick = viewportTranslate(canvas)
 if (afterResetClick.x !== 0 || afterResetClick.y !== 0 || afterResetClick.k !== 1) throw new Error(\`전체 보기 did not restore the viewport: \${JSON.stringify(afterResetClick)}\`)
-if (selectedSlug(canvas) !== tapSlug) throw new Error("전체 보기 changed the selection")
+if (selectedSlug(canvas) !== zoomedSlug) throw new Error("전체 보기 changed the selection")
 
-// 선택을 해제해도 이동과 배율이 초기화된다.
+// 선택을 해제해도 이동이 다시 맞춰진다.
 dragBy(35, 15)
 byTestId(doc, "memory-atlas-clear-selection").click()
 await waitFor(() => byTestId(doc, "memory-atlas-context-title").textContent.trim() === "전체 지도", "selection cleared")
 const afterClear = viewportTranslate(canvas)
-if (afterClear.x !== 0 || afterClear.y !== 0 || afterClear.k !== 1) throw new Error(\`clearing the selection did not reset the viewport: \${JSON.stringify(afterClear)}\`)
+if (afterClear.x !== 0 || afterClear.y !== 0 || afterClear.k !== 1) throw new Error(\`clearing the selection did not recenter the viewport: \${JSON.stringify(afterClear)}\`)
 
 reset.click()
 noHorizontalOverflow(doc)
@@ -359,14 +397,14 @@ return { emptyDrag: afterEmptyDrag, nodeDrag: afterNodeDrag, tapped: tapSlug }
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
-const reset = byTestId(doc, "memory-atlas-reset-viewport")
-if (reset.hidden) throw new Error("전체 보기 is hidden while 2D is active")
+const controls = byTestId(doc, "memory-atlas-viewport-controls")
+if (controls.hidden) throw new Error("viewport controls are hidden while 2D is active")
 doc.querySelector('[data-memory-atlas-mode-button="3d"]').click()
 await waitFor(() => canvas.querySelector("canvas"), "3D canvas", 16000)
-await waitFor(() => reset.hidden, "전체 보기 hidden in 3D")
+await waitFor(() => controls.hidden, "viewport controls hidden in 3D")
 doc.querySelector('[data-memory-atlas-mode-button="2d"]').click()
 await waitFor(() => canvas.dataset.runtimeMode === "2d" && canvas.querySelector(".memory-atlas-2d__nodes button"), "2D restored")
-await waitFor(() => !reset.hidden, "전체 보기 shown again in 2D")
+await waitFor(() => !controls.hidden, "viewport controls shown again in 2D")
 byTestId(doc, "memory-atlas-reset-viewport").click()
 return { hiddenInThreeD: true }
 `),
