@@ -147,7 +147,9 @@ function matchesText(node: MemoryAtlasNode, query: string | undefined): boolean 
 }
 
 export function buildMemoryAtlasData(index: ContentIndexRecord): MemoryAtlasData {
-  const entries = entriesFromIndex(index).sort(([a], [b]) => a.localeCompare(b))
+  const entries = entriesFromIndex(index)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .filter(([, details]) => details.role !== "navigation")
   const validSlugs = new Set(entries.map(([slug]) => slug))
   const degreeBySlug = new Map<FullSlug, number>()
   const linkKeys = new Set<string>()

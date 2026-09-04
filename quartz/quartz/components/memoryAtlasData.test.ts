@@ -306,6 +306,45 @@ describe("memory atlas data", () => {
     assert.strictEqual(facets.total, 1)
   })
 
+  test("removes navigation documents from nodes, links, and degree", () => {
+    const data = buildMemoryAtlasData({
+      INDEX: content("INDEX", {
+        role: "navigation",
+        links: [simpleSlug("concepts/a"), simpleSlug("concepts/b")],
+      }),
+      "concepts/a": content("concepts/a", {
+        links: [simpleSlug("INDEX"), simpleSlug("concepts/b")],
+      }),
+      "concepts/b": content("concepts/b", { links: [simpleSlug("INDEX")] }),
+    })
+
+    assert.deepStrictEqual(
+      data.nodes.map((node) => node.slug),
+      ["concepts/a", "concepts/b"],
+    )
+    assert.deepStrictEqual(data.links, [{ source: "concepts/a", target: "concepts/b" }])
+    assert.deepStrictEqual(
+      data.nodes.map((node) => [node.slug, node.degree]),
+      [
+        ["concepts/a", 1],
+        ["concepts/b", 1],
+      ],
+    )
+  })
+
+  test("keeps documents whose role is not navigation", () => {
+    const data = buildMemoryAtlasData({
+      INDEX: content("INDEX", { role: "navigation" }),
+      hub: content("hub", { role: "hub" as unknown as ContentDetails["role"] }),
+      plain: content("plain"),
+    })
+
+    assert.deepStrictEqual(
+      data.nodes.map((node) => node.slug),
+      ["hub", "plain"],
+    )
+  })
+
   test("removes private nodes and links at the public data boundary", () => {
     const data = buildMemoryAtlasData({
       "concepts/public": content("concepts/public", {
