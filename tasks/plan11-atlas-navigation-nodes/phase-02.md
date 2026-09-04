@@ -123,14 +123,14 @@ git status --short CLAUDE.md quartz/scripts/memory-atlas-browser-assertions.mjs
 
 - `type`을 넣지 않는 이유는 이 문서들이 지식 문서가 아니기 때문이다. 유형이 비어 있어야 할 문서에 유형을 만들어 주면 그래프 필터가 잘못된 후보를 얻는다.
 - 페이지 렌더를 유지하는 이유는 목차와 활동 기록이 사람에게는 계속 필요하기 때문이다. 빠지는 것은 관계 계산뿐이다.
+- **JS 없이 렌더된 목록은 이번 PR 에서 해결했다.** `memoryAtlasView.tsx` 의 `fallbackFiles` 에 frontmatter `role` 조건을 넣어, 색인 로딩이 실패했을 때 쓰는 목록에서도 항해 문서가 빠진다.
 
 ## 이 plan 범위 밖으로 남기는 것
 
-아래 셋은 이번에 고치지 않는다. 다음 사람이 다시 찾지 않도록 여기 적어 둔다.
+아래 둘은 이번에 고치지 않는다. 다음 사람이 다시 찾지 않도록 여기 적어 둔다.
 
 - **비공개 색인 재생성**: 관리자 로그인 후 그래프는 `services/brain-ask`가 `BRAIN_PRIVATE_CONTENT_INDEX_FILE` 경로에서 읽는 미리 만들어진 산출물을 쓴다. `private/wiki/`에 frontmatter를 넣어도 그 산출물을 quartz-local 빌드로 다시 만들기 전에는 관리자 화면에서 두 노드가 남는다. 이 worktree에는 `private/`이 없어 이번에는 공개 둘만 고친다.
 - **의미 연결 생성기**: `quartz/scripts/generate-memory-atlas-semantics.mjs`는 콘텐츠 색인이 아니라 markdown 파일을 직접 읽으므로 목차와 활동 기록에 대해서도 계속 연결을 만든다. 런타임이 노드 slug로 걸러내 화면에는 나오지 않지만 산출물 안에는 쓰이지 않을 연결이 남는다.
-- **JS 없이 렌더된 목록**: `memoryAtlasView.tsx`의 `fallbackFiles`는 소문자 `index`와 `_private/` 접두사만 거르므로 `log`가 남는다. 색인 로딩이 실패했을 때만 이 목록으로 그래프를 만든다. 해당 파일은 다른 plan이 동시에 고치고 있어 이번에 건드리지 않는다.
 
 ## Blocked 조건
 

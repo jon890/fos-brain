@@ -89,6 +89,10 @@ def collect_namespaces(root):
 def is_navigation(fmtext):
     # frontmatter 의 role: navigation 은 목차·활동 기록처럼 항해가 목적인 문서다.
     # 지식 문서가 아니므로 type / created / updated 를 요구하지 않는다.
+    #
+    # 현재 저장소의 항해 문서 넷은 파일명이 ENTRYPOINTS 에 들어 있어 이 조건보다
+    # 먼저 걸러진다. 따라서 이 조건은 지금 점수를 바꾸지 않고, INDEX.md 나 log.md
+    # 가 아닌 다른 이름의 항해 문서가 생길 때를 대비한 것이다.
     return NAV_ROLE.search(fmtext) is not None
 
 
