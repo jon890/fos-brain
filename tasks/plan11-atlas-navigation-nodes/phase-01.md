@@ -22,7 +22,9 @@ private 문서가 모두 15개라 private 목차는 사실상 전체와 연결�
 ### 1. `quartz/quartz/components/knowledgeMetaData.ts` — `role` 정규화 추가
 
 `KnowledgeRole` 타입을 `"navigation"` 단일 값으로 선언하고 `KnowledgeMetaData`에 선택 필드 `role?: KnowledgeRole`을 더한다.
-`normalizeKnowledgeRole(value: unknown): KnowledgeRole | undefined`를 만든다.
+`KnowledgeRole`은 `contentIndex.tsx`가 import 하므로 반드시 `export` 한다.
+`normalizeKnowledgeRole(value: unknown): KnowledgeRole | undefined`를 만들고 이것도 `export` 한다.
+`normalizeKnowledgeStatus`가 module-private인 것과 다르게 가는 이유는 Phase 02의 선행 조건 확인이 이 이름의 존재를 본다는 것이다.
 기존 `normalizeKnowledgeStatus`와 같은 방식으로 문자열을 `trim` 하고 소문자로 바꾼 뒤 `navigation`일 때만 값을 돌려주고 나머지는 `undefined`를 돌려준다.
 `normalizeKnowledgeMetaData`가 이 결과를 `role`로 담는다.
 
@@ -41,7 +43,7 @@ private 문서가 모두 15개라 private 목차는 사실상 전체와 연결�
 
 ### 4. `quartz/quartz/components/memoryAtlasData.test.ts` — 단위 검사 추가
 
-세 가지를 검사한다.
+네 가지를 검사한다.
 
 - `role: "navigation"`인 항목이 `nodes`에 없다.
 - 그 항목이 source이거나 target인 링크가 `links`에 없다.
@@ -82,3 +84,4 @@ git diff --check
 - 제외 대상을 코드에 slug로 적지 않은 이유는 ADR-011에 있다. 네임스페이스가 늘거나 항해 문서가 추가될 때 코드를 고치지 않기 위해서다.
 - `type`의 값을 늘리지 않은 이유도 같다. `type`은 지식의 유형이고 `role`은 문서의 성격이라 축이 다르며, `type`을 읽는 그래프 색상과 필터가 함께 흔들린다.
 - 노드에 `role`을 담지 않는 이유는 제외된 문서가 노드로 만들어지지 않기 때문이다. 값을 담아 두면 읽는 쪽이 없는 필드가 생긴다.
+- `role`이라는 이름은 인증 세션에도 이미 있다. `docs/data-schema.md`의 세션 스키마와 브라우저 단언의 `{ role: "admin" }`이 그것이다. 담기는 객체가 달라 충돌하지 않지만, `role`을 검색하면 두 쪽이 함께 걸리므로 리뷰할 때 구분한다.
