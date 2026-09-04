@@ -136,6 +136,9 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 - 화면에 얹는 요소는 `renderPage`를 고치지 않고 layout의 컴포넌트 자리로 넣는다.
 - Memory Atlas가 쓰는 확장 색인은 업스트림 `contentIndex`를 고치지 않고 커스텀 emitter가 자체 파일로 내보낸다.
 
+이 경계는 아직 적용 전이다. `quartz/custom/`이 없고 업스트림 파일 8개의 수정이 그대로 남아 있으며, 이전은 plan13이 수행한다.
+위 목록은 이전이 끝난 뒤의 상태를 적은 것이라 지금 코드와는 다르다.
+
 업스트림은 `quartz-upstream` remote로 연결하고 복사 시점 커밋을 공통 조상으로 둔다.
 이 경계가 유지되면 갱신은 설정 파일 충돌만 확인하면 되고, 나중에 Quartz를 자체 구현으로 교체할 때 갈아끼울 표면이 색인 파일과 layout 하나로 드러난다.
 
