@@ -68,6 +68,196 @@ type MemoryAtlas2dGlobalLayout = {
 const SVG_NS = "http://www.w3.org/2000/svg"
 const DEFAULT_WIDTH = 1200
 const DEFAULT_HEIGHT = 800
+const VIEWPORT_SELECTOR = ".memory-atlas-2d__viewport"
+const MIN_SCALE = 0.4
+const MAX_SCALE = 4
+const DRAG_THRESHOLD_PX = 4
+const WHEEL_SCALE_STEP = 0.0015
+
+export type MemoryAtlas2dViewport = {
+  x: number
+  y: number
+  k: number
+}
+
+export const MEMORY_ATLAS_2D_INITIAL_VIEWPORT: MemoryAtlas2dViewport = { x: 0, y: 0, k: 1 }
+
+export function clampMemoryAtlas2dScale(scale: number): number {
+  if (!Number.isFinite(scale)) return MEMORY_ATLAS_2D_INITIAL_VIEWPORT.k
+  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
+}
+
+export function memoryAtlas2dViewportTransform(viewport: MemoryAtlas2dViewport): string {
+  return `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.k})`
+}
+
+export function panMemoryAtlas2dViewport(
+  viewport: MemoryAtlas2dViewport,
+  deltaX: number,
+  deltaY: number,
+): MemoryAtlas2dViewport {
+  return { x: viewport.x + deltaX, y: viewport.y + deltaY, k: viewport.k }
+}
+
+/**
+ * 포인터 아래의 장면 좌표를 그 자리에 고정한 채 배율만 바꾼다.
+ * `pointerX`, `pointerY` 는 컨테이너 왼쪽 위를 기준으로 한 좌표다.
+ */
+export function zoomMemoryAtlas2dViewport(
+  viewport: MemoryAtlas2dViewport,
+  deltaY: number,
+  pointerX: number,
+  pointerY: number,
+): MemoryAtlas2dViewport {
+  const scale = clampMemoryAtlas2dScale(viewport.k * Math.exp(-deltaY * WHEEL_SCALE_STEP))
+  const ratio = scale / viewport.k
+  return {
+    x: pointerX - (pointerX - viewport.x) * ratio,
+    y: pointerY - (pointerY - viewport.y) * ratio,
+    k: scale,
+  }
+}
+
+/**
+ * 래퍼는 매 렌더마다 새로 만들어지므로 호출할 때마다 다시 찾는다.
+ * mount 시점에 참조를 캐시하면 첫 재렌더에서 이동값이 화면에 반영되지 않는다.
+ */
+export function applyMemoryAtlas2dViewport(
+  container: HTMLElement,
+  viewport: MemoryAtlas2dViewport,
+): HTMLElement | null {
+  const wrapper = container.querySelector<HTMLElement>(VIEWPORT_SELECTOR)
+  if (wrapper) wrapper.style.transform = memoryAtlas2dViewportTransform(viewport)
+  return wrapper
+}
+
+export type MemoryAtlas2dViewportControlsOptions = {
+  container: HTMLElement
+  getViewport: () => MemoryAtlas2dViewport
+  setViewport: (viewport: MemoryAtlas2dViewport) => void
+  /** 드래그 중의 pointer event 를 받을 대상. 기본은 컨테이너가 속한 window 다. */
+  moveTarget?: EventTarget
+}
+
+/**
+ * 이동과 배율 조작을 컨테이너에 한 번만 배선하고 해제 함수를 돌려준다.
+ * 렌더마다 등록하면 handler 가 쌓여 한 번의 드래그가 배수로 움직인다.
+ */
+export function attachMemoryAtlas2dViewportControls({
+  container,
+  getViewport,
+  setViewport,
+  moveTarget,
+}: MemoryAtlas2dViewportControlsOptions): () => void {
+  const moveHost = moveTarget ?? container.ownerDocument?.defaultView ?? container
+  const wheelOptions: AddEventListenerOptions = { passive: false }
+  const clickOptions: AddEventListenerOptions = { capture: true }
+  let activePointerId: number | undefined
+  let captured = false
+  let dragging = false
+  let suppressNextClick = false
+  let startX = 0
+  let startY = 0
+  let lastX = 0
+  let lastY = 0
+
+  const releaseCapture = () => {
+    if (!captured || activePointerId === undefined) return
+    captured = false
+    try {
+      container.releasePointerCapture?.(activePointerId)
+    } catch {
+      // 합성 pointer event 는 활성 포인터가 아니라 해제가 실패할 수 있다.
+    }
+  }
+
+  const endDrag = (suppressClick: boolean) => {
+    releaseCapture()
+    suppressNextClick = suppressClick
+    activePointerId = undefined
+    dragging = false
+  }
+
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.button > 0) return
+    // 컨테이너 밖에서 드래그를 끝내면 click 이 오지 않는다. 다음 입력 시작에서 억제를 푼다.
+    suppressNextClick = false
+    activePointerId = event.pointerId
+    dragging = false
+    startX = event.clientX
+    startY = event.clientY
+    lastX = event.clientX
+    lastY = event.clientY
+  }
+
+  const onPointerMove = (event: PointerEvent) => {
+    if (activePointerId === undefined || event.pointerId !== activePointerId) return
+    if (!dragging) {
+      const distance = Math.hypot(event.clientX - startX, event.clientY - startY)
+      if (distance < DRAG_THRESHOLD_PX) return
+      dragging = true
+      // capture 는 드래그로 확정된 뒤에만 건다.
+      // pointerdown 즉시 걸면 짧은 탭의 호환 click 이 컨테이너로 재지정돼 노드 선택이 죽는다.
+      try {
+        container.setPointerCapture?.(event.pointerId)
+        captured = true
+      } catch {
+        // 합성 pointer event 에서는 capture 없이 moveTarget 의 event 로만 처리한다.
+      }
+    }
+    setViewport(
+      panMemoryAtlas2dViewport(getViewport(), event.clientX - lastX, event.clientY - lastY),
+    )
+    lastX = event.clientX
+    lastY = event.clientY
+  }
+
+  const onPointerUp = (event: PointerEvent) => {
+    if (activePointerId === undefined || event.pointerId !== activePointerId) return
+    endDrag(dragging)
+  }
+
+  const onPointerCancel = (event: PointerEvent) => {
+    if (activePointerId === undefined || event.pointerId !== activePointerId) return
+    endDrag(false)
+  }
+
+  const onClickCapture = (event: Event) => {
+    if (!suppressNextClick) return
+    suppressNextClick = false
+    event.stopPropagation()
+  }
+
+  const onWheel = (event: WheelEvent) => {
+    event.preventDefault()
+    const rect = container.getBoundingClientRect()
+    setViewport(
+      zoomMemoryAtlas2dViewport(
+        getViewport(),
+        event.deltaY,
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      ),
+    )
+  }
+
+  container.addEventListener("pointerdown", onPointerDown)
+  container.addEventListener("wheel", onWheel, wheelOptions)
+  container.addEventListener("click", onClickCapture, clickOptions)
+  moveHost.addEventListener("pointermove", onPointerMove as EventListener)
+  moveHost.addEventListener("pointerup", onPointerUp as EventListener)
+  moveHost.addEventListener("pointercancel", onPointerCancel as EventListener)
+
+  return () => {
+    releaseCapture()
+    container.removeEventListener("pointerdown", onPointerDown)
+    container.removeEventListener("wheel", onWheel, wheelOptions)
+    container.removeEventListener("click", onClickCapture, clickOptions)
+    moveHost.removeEventListener("pointermove", onPointerMove as EventListener)
+    moveHost.removeEventListener("pointerup", onPointerUp as EventListener)
+    moveHost.removeEventListener("pointercancel", onPointerCancel as EventListener)
+  }
+}
 
 function opacityForDepth(depth: number | undefined, selected: boolean, related: boolean): number {
   if (selected) return 1
@@ -292,7 +482,10 @@ function renderScene(
     button.dataset.evidence = String(evidenceSlugs.has(button.dataset.slug as FullSlug))
   }
 
-  root.append(svg, nodes)
+  const viewport = document.createElement("div")
+  viewport.className = "memory-atlas-2d__viewport"
+  viewport.append(svg, nodes)
+  root.append(viewport)
   container.replaceChildren(root)
   container.dataset.runtimeMode = "2d"
   container.dataset.nodeCount = String(scene.nodes.length)
@@ -328,6 +521,7 @@ export function mountMemoryAtlas({
   let evidenceSlugs = new Set<FullSlug>()
   let destroyed = false
   let frame: number | undefined
+  let viewport: MemoryAtlas2dViewport = { ...MEMORY_ATLAS_2D_INITIAL_VIEWPORT }
   let cachedLayout:
     | (MemoryAtlas2dGlobalLayout & {
         data: MemoryAtlasData
@@ -337,7 +531,15 @@ export function mountMemoryAtlas({
       })
     | undefined
   const observer = new ResizeObserver(() => render())
-
+  const applyViewport = () => applyMemoryAtlas2dViewport(container, viewport)
+  const detachViewportControls = attachMemoryAtlas2dViewportControls({
+    container,
+    getViewport: () => viewport,
+    setViewport: (next) => {
+      viewport = next
+      applyViewport()
+    },
+  })
   const prepareLayout = (metrics: RenderMetrics): MemoryAtlas2dGlobalLayout => {
     const semanticEdges = currentContext.semanticEdges ?? []
     if (
@@ -371,6 +573,7 @@ export function mountMemoryAtlas({
       prepareLayout(metrics),
     )
     renderScene(container, scene, evidenceSlugs, onSelect)
+    applyViewport()
   }
 
   const render = () => {
@@ -412,6 +615,7 @@ export function mountMemoryAtlas({
       destroyed = true
       if (frame !== undefined) cancelAnimationFrame(frame)
       observer.disconnect()
+      detachViewportControls()
       delete container.dataset.runtimeMode
       delete container.dataset.nodeCount
       delete container.dataset.linkCount

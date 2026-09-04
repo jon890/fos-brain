@@ -465,7 +465,19 @@
   height: 100%;
   overflow: hidden;
   position: relative;
+  /* 지정하지 않으면 모바일에서 브라우저가 스크롤을 가져가 pointermove 가 끊긴다. */
+  touch-action: none;
   width: 100%;
+}
+
+/*
+ * transform 을 가진 이 래퍼가 절대 배치 자손의 containing block 이 된다.
+ * 크기를 주지 않으면 SVG 와 노드 레이어가 0 크기 상자를 기준으로 배치돼 지도가 사라진다.
+ */
+.memory-atlas-2d__viewport {
+  inset: 0;
+  position: absolute;
+  transform-origin: 0 0;
 }
 
 .memory-atlas-2d__svg,
