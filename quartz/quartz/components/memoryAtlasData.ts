@@ -1,5 +1,6 @@
 import type { ContentDetails } from "../plugins/emitters/contentIndex"
 import type { KnowledgeFreshness, KnowledgeStatus, KnowledgeType } from "./knowledgeMetaData"
+import { normalizeKnowledgeRole } from "./knowledgeMetaData"
 import type { FullSlug } from "../util/path"
 
 export type MemoryAtlasNamespace = "public" | "private"
@@ -148,7 +149,7 @@ function matchesText(node: MemoryAtlasNode, query: string | undefined): boolean 
 
 export function buildMemoryAtlasData(index: ContentIndexRecord): MemoryAtlasData {
   const entries = entriesFromIndex(index)
-    .filter(([, details]) => details.role !== "navigation")
+    .filter(([, details]) => normalizeKnowledgeRole(details.role) !== "navigation")
     .sort(([a], [b]) => a.localeCompare(b))
   const validSlugs = new Set(entries.map(([slug]) => slug))
   const degreeBySlug = new Map<FullSlug, number>()

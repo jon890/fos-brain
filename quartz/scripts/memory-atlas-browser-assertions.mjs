@@ -122,7 +122,10 @@ return results
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
-const index = await win.fetch("/static/contentIndex.json").then((response) => response.json())
+const index = await win.fetch("/static/contentIndex.json").then((response) => {
+  if (!response.ok) throw new Error(\`content index fetch failed with status \${response.status}\`)
+  return response.json()
+})
 const navigationSlugs = Object.entries(index).filter(([, details]) => details.role === "navigation").map(([slug]) => slug)
 if (!navigationSlugs.length) throw new Error("no navigation document in the content index; the assertion would check nothing")
 const present = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
