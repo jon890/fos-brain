@@ -35,6 +35,10 @@ git fetch quartz-upstream
 
 ### 2. 문서별 그래프 수정을 되돌린다
 
+**이 항목과 아래 작업 항목 5 는 Phase 02 가 team-lead 승인을 받아 앞당겨 처리했다.**
+`contentIndex.tsx` 를 업스트림으로 되돌리자 `graph.inline.ts` 가 업스트림 `ContentDetails` 에 없는 `type` 을 읽어 타입 검사가 실패했기 때문이다.
+Phase 03 은 원복이 실제로 끝났는지 확인만 한다.
+
 아래 셋을 업스트림 `d25a6ea` 상태로 되돌린다.
 
 - `quartz/quartz/components/Graph.tsx`
@@ -107,6 +111,8 @@ plan11 이 콘텐츠 색인에 `role` 을 더해 그 값이 달라졌다.
 - 경계를 무엇이 지키는지 (`verify-upstream-untouched.sh`)
 
 ### 5. 원복으로 읽는 곳이 없어진 변수를 지운다
+
+**Phase 02 가 작업 항목 2 와 함께 앞당겨 처리했다. 여기서는 확인만 한다.**
 
 `quartz/quartz/styles/custom.scss` 의 `--graph-current-ring` 은 `graph.scss` 를 원복하면 읽는 곳이 없어진다.
 `custom.scss` 는 예외 파일이라 검사에 걸리지 않지만, 쓰이지 않는 정의를 남길 이유가 없다.

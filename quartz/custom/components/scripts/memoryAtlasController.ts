@@ -24,7 +24,7 @@ import {
   restrictPublishedMemoryAtlasSemanticsToSlugs,
   type MemoryAtlasSemanticEdge,
 } from "../memoryAtlasSemantics"
-import type { ContentDetails } from "../../../quartz/plugins/emitters/contentIndex"
+import type { MemoryAtlasIndexEntry } from "../../emitters/memoryAtlasIndex"
 import type { FullSlug } from "../../../quartz/util/path"
 import {
   MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
@@ -45,7 +45,7 @@ import {
   type ProtectedMemoryAtlasData,
 } from "./memoryAtlasAuth"
 
-type ContentIndexRecord = Record<string, ContentDetails>
+type ContentIndexRecord = Record<string, MemoryAtlasIndexEntry>
 type ContentIndexLoader = () => Promise<ContentIndexRecord>
 type RuntimeLoader = (mode: MemoryAtlasMode) => Promise<MemoryAtlasRuntimeModule>
 type SemanticsLoader = () => Promise<unknown>
@@ -97,7 +97,7 @@ const DEFAULT_TAGS: string[] = []
 const STATE_STORAGE_KEY = "memoryAtlasState"
 const LOGIN_RATE_LIMIT_MINUTES = 15
 
-declare const fetchData: Promise<ContentIndexRecord>
+const MEMORY_ATLAS_INDEX_URL = "/static/memory-atlas-index.json"
 
 function selectedValues(root: ParentNode, name: string): string[] {
   return [...root.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`)].map(
@@ -300,7 +300,12 @@ export function restoreStoredMemoryAtlasState(
 }
 
 function loadContentIndex(): Promise<ContentIndexRecord> {
-  return fetchData
+  return fetch(MEMORY_ATLAS_INDEX_URL).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Memory Atlas index failed with HTTP ${response.status}`)
+    }
+    return response.json() as Promise<ContentIndexRecord>
+  })
 }
 
 export function memoryAtlasRuntimeSrcForMode(

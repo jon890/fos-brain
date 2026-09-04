@@ -2,11 +2,12 @@ import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 import MemoryAtlas from "./custom/components/MemoryAtlas"
 import KnowledgeMeta from "./custom/components/KnowledgeMeta"
+import MemoryAtlasDocNav from "./custom/components/MemoryAtlasDocNav"
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
-  header: [],
+  header: [MemoryAtlasDocNav()],
   afterBody: [],
   footer: Component.Footer({
     links: {

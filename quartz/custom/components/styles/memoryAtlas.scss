@@ -1118,13 +1118,13 @@
   display: none;
 }
 
-html:has(body.memory-atlas-page),
-body.memory-atlas-page {
+html:has(.memory-atlas),
+body:has(.memory-atlas) {
   height: 100%;
   overflow: hidden;
 }
 
-body.memory-atlas-page {
+body:has(.memory-atlas) {
   background: var(--atlas-void);
 
   #quartz-root.page,
@@ -1162,7 +1162,7 @@ body.memory-atlas-page {
   }
 }
 
-body.memory-atlas-doc-page {
+body:has(.memory-atlas-doc-nav) {
   --atlas-void: #05090a;
   --atlas-surface: rgba(10, 17, 18, 0.92);
   --atlas-line: rgba(154, 201, 186, 0.18);
@@ -1409,7 +1409,7 @@ body.memory-atlas-doc-page {
     width: 100%;
   }
 
-  body.memory-atlas-doc-page {
+  body:has(.memory-atlas-doc-nav) {
     #quartz-body {
       display: block;
       padding: 5.2rem 1rem 3rem;

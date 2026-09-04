@@ -27,24 +27,25 @@
 
 ### 사람용 렌더링
 
-- `quartz/quartz/components/KnowledgeMeta.tsx` — 페이지 frontmatter를 사람이 읽는 설명·신뢰·최신성 표시로 바꾼다.
-- `quartz/quartz/plugins/emitters/contentIndex.tsx` — 그래프가 사용할 문서 유형, 문서 성격(`role`), 설명, 상태, 최신성, 수정일과 출처 개수를 콘텐츠 색인에 포함한다.
+- `quartz/custom/components/KnowledgeMeta.tsx` — 페이지 frontmatter를 사람이 읽는 설명·신뢰·최신성 표시로 바꾼다.
+- `quartz/custom/emitters/memoryAtlasIndex.ts` — 그래프가 사용할 문서 유형, 문서 성격(`role`), 설명, 상태, 최신성, 수정일과 출처 개수를 담은 `/static/memory-atlas-index.json`을 내보낸다. 업스트림 `contentIndex`는 고치지 않는다.
 - `quartz/quartz/components/Graph.tsx` — 유형 범례를 렌더한다.
 - `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
-- `quartz/quartz/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
-- `quartz/quartz/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role`이 `navigation`인 문서를 이 계산에서 뺀다.
-- `quartz/quartz/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
-- `quartz/quartz/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 브라우저 상태, 사용자 event, 파생 데이터 계산과 2D·3D renderer 생명 주기를 조정한다.
-- `quartz/quartz/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D renderer가 함께 구현하는 생성·갱신·제거 계약을 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링과 지도의 이동·배율 상태를 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
-- `quartz/quartz/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
-- `quartz/quartz/plugins/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
+- `quartz/custom/components/MemoryAtlasDocNav.tsx` — 홈이 아닌 모든 페이지 상단에 항해도로 돌아가는 요소를 렌더한다. `sharedPageComponents.header`에 등록해 본문, 목록, 404 페이지가 모두 받는다.
+- `quartz/custom/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
+- `quartz/custom/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role`이 `navigation`인 문서를 이 계산에서 뺀다.
+- `quartz/custom/components/memoryAtlasSemantics.ts` — 의미 관계 임시 산출물의 형식 검증과 현재 빌드 slug 제한을 소유한다.
+- `quartz/custom/components/memoryAtlasGraph.ts` — 혼합 관계 점수, 결정적 전체 배치, hop depth, 지역 배치와 자동 시작점 계산을 DOM 없이 소유한다.
+- `quartz/custom/components/scripts/memoryAtlas.inline.ts` — SPA `nav` event에서 controller 초기화만 호출하는 진입점을 소유한다.
+- `quartz/custom/components/scripts/memoryAtlasController.ts` — 브라우저 상태, 사용자 event, 파생 데이터 계산과 2D·3D renderer 생명 주기를 조정한다.
+- `quartz/custom/components/scripts/memoryAtlasRuntimeTypes.ts` — 2D와 3D renderer가 함께 구현하는 생성·갱신·제거 계약을 소유한다.
+- `quartz/custom/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링과 지도의 이동·배율 상태를 소유한다.
+- `quartz/custom/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
+- `quartz/custom/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
+- `quartz/custom/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
 - `quartz/scripts/generate-memory-atlas-semantics.mjs` — qmd HTTP vector 검색을 slug 관계 임시 산출물로 바꾸며 실패 시 오래된 산출물을 제거한다.
 
-화면의 작은 SSR 조각은 `quartz/quartz/components/memoryAtlasView.tsx`가 소유한다.
+화면의 작은 SSR 조각은 `quartz/custom/components/memoryAtlasView.tsx`가 소유한다.
 브라우저 controller와 2D·3D runtime은 위 경계를 유지하며 `memoryAtlas.inline.ts`에 상태나 renderer 책임을 다시 넣지 않는다.
 
 
@@ -67,10 +68,10 @@ Quartz의 기존 SPA와 서버 렌더 대체 목록을 유지하기 위해 별�
 - `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build를 만들고 UID 1000으로 실행하며 HTTP health 검사를 제공한다.
 - `services/brain-ask/src/brain-ask/qmd.client.ts` — BFF가 사용하는 qmd `/query` 요청과 응답 collection 검사를 구현한다.
 - `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — agent와 CLI 검색에서 사용하는 qmd HTTP client를 구현한다.
-- `quartz/quartz/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
-- `quartz/quartz/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
-- `quartz/quartz/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
-- `quartz/quartz/components/styles/memoryAtlas.scss` — 데스크톱 하단 패널과 모바일 아래 시트의 경계를 소유한다.
+- `quartz/custom/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
+- `quartz/custom/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
+- `quartz/custom/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
+- `quartz/custom/components/styles/memoryAtlas.scss` — 데스크톱 하단 패널과 모바일 아래 시트의 경계를 소유한다.
 
 `brain-ask`는 공개 인터넷에 직접 연결하지 않는 같은 출처 NestJS BFF다.
 BFF는 관리자 인증과 권한 판정, 모델 key 은닉, 입력 제한, 근거 경로 검증과 응답 형태 고정을 담당한다.

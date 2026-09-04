@@ -114,18 +114,24 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 
 ## Memory Atlas 콘텐츠 색인
 
-정적 `/static/contentIndex.json`의 문서 항목은 기존 검색 필드에 다음 선택 필드를 더한다.
-필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
+Memory Atlas는 Quartz의 `/static/contentIndex.json`을 읽지 않는다.
+자체 emitter가 `/static/memory-atlas-index.json`을 만들고 이 파일이 색인 계약을 소유한다.
+색인은 slug를 key로 하는 객체이며 각 항목은 아래 열한 필드를 가진다.
+선택 필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
 
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
+| `slug` | 문자열 | 문서 slug이며 색인의 key와 같다. |
+| `title` | 문자열 | frontmatter 제목이다. |
+| `links` | 문자열 배열 | 문서가 가리키는 대상 slug 목록이다. |
+| `tags` | 문자열 배열 | frontmatter 태그 목록이다. |
 | `description` | 문자열 | frontmatter 설명이며 노드 상세에 사용한다. |
 | `type` | `concept`, `topic`, `entity` | 기존 정규화 결과를 사용한다. |
+| `role` | `navigation` | frontmatter 값을 그대로 옮기며 다른 값은 생략한다. |
 | `status` | `draft`, `stable`, `deprecated` | 잘못된 값은 생략한다. |
 | `freshness` | 객체 | `date`에는 `stale_after` 날짜를 넣고, `state`에는 `current`, `stale`, `invalid` 중 하나를 넣는다. |
 | `updated` | ISO 8601 문자열 | Quartz가 선택한 수정일을 직렬화한다. |
 | `sourceCount` | 0 이상의 정수 | 유효한 `sources` 항목 수다. |
-| `role` | `navigation` | frontmatter 값을 그대로 옮기며 다른 값은 생략한다. |
 
 브라우저는 slug가 `_private/`로 시작하면 private, 아니면 public 네임스페이스로 계산한다.
 공개 빌드에는 `_private/` 입력이 없으므로 private 항목과 필터가 생성되지 않는다.
@@ -289,7 +295,7 @@ private 인프라 저장소는 다음 이름으로 파일과 디렉터리를 ima
 | `BRAIN_ADMIN_PASSWORD_HASH_FILE` | mode `600`인 일반 파일이며 `scrypt$131072$8$1$<salt>$<derived-key>` 한 줄을 담는다. |
 | `BRAIN_PUBLIC_WIKI_ROOT` | public wiki root 디렉터리다. |
 | `BRAIN_PRIVATE_WIKI_ROOT` | private wiki root 디렉터리다. |
-| `BRAIN_PRIVATE_CONTENT_INDEX_FILE` | public과 private을 합친 Memory Atlas 콘텐츠 색인 JSON 파일이다. |
+| `BRAIN_PRIVATE_CONTENT_INDEX_FILE` | public과 private을 합친 Memory Atlas 콘텐츠 색인 JSON 파일인 `memory-atlas-index.json`이다. |
 | `BRAIN_PRIVATE_MEMORY_ATLAS_SEMANTICS_FILE` | public과 private을 합친 Memory Atlas 관계 JSON 파일이다. |
 | `BRAIN_TRUST_PROXY_HOPS` | Express가 신뢰할 reverse proxy hop 수인 0 이상 255 이하 정수다. 실제 값은 private 인프라의 운영 경로 검증으로 정한다. |
 
@@ -377,7 +383,7 @@ public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`�
 
 ## 관리자 콘텐츠 API
 
-`GET /api/private/content-index`는 관리자용 병합 `contentIndex.json`을 반환한다.
+`GET /api/private/content-index`는 관리자용 병합 `memory-atlas-index.json`을 반환한다.
 `GET /api/private/memory-atlas-semantics`는 관리자용 관계 데이터 JSON을 반환한다.
 두 endpoint는 관리자 Guard를 적용하고 `Cache-Control: private, no-store`를 반환한다.
 설정한 read-only 파일의 실제 경로 밖으로 이동하거나 다른 파일명을 요청할 수 없다.

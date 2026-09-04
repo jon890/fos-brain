@@ -2,10 +2,6 @@
 
 // put your custom CSS here!
 
-:root {
-  --graph-current-ring: color-mix(in srgb, var(--secondary) 72%, var(--light));
-}
-
 body {
   letter-spacing: 0;
 }
@@ -26,6 +22,10 @@ a.internal {
 
 .sidebar {
   --sidepanel-muted-border: color-mix(in srgb, var(--lightgray) 72%, transparent);
+}
+
+.sidebar:empty {
+  display: none;
 }
 
 .sidebar.left,

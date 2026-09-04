@@ -195,7 +195,7 @@ return results
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
-const index = await win.fetch("/static/contentIndex.json").then((response) => {
+const index = await win.fetch("/static/memory-atlas-index.json").then((response) => {
   if (!response.ok) throw new Error(\`content index fetch failed with status \${response.status}\`)
   return response.json()
 })
@@ -597,7 +597,10 @@ if (!byTestId(doc, "memory-atlas-ask-toggle").hidden) throw new Error("question 
 const publicIndexResponse = await originalFetch("/static/contentIndex.json")
 const publicIndexText = await publicIndexResponse.text()
 if (publicIndexText.includes("private-auth-fixture")) throw new Error("private fixture reached the public content index")
-const publicIndex = JSON.parse(publicIndexText)
+const publicIndex = await originalFetch("/static/memory-atlas-index.json").then((response) => {
+  if (!response.ok) throw new Error(\`memory atlas index fetch failed with status \${response.status}\`)
+  return response.json()
+})
 const publicSemantics = await originalFetch("/static/memory-atlas-semantics.json")
   .then((response) => response.ok ? response.json() : ({ schemaVersion: 1, generatedAt: "2026-09-03T00:00:00.000Z", source: "qmd-vector", edges: [] }))
 const privateSlug = "_private/concepts/private-auth-fixture"
