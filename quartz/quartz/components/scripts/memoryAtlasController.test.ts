@@ -8,6 +8,7 @@ import {
   memoryAtlasRuntimeSrcForMode,
   removePrivateMemoryAtlasState,
   restoreStoredMemoryAtlasState,
+  updateViewportControlsVisibility,
 } from "./memoryAtlasController"
 
 function slug(value: string): FullSlug {
@@ -185,5 +186,58 @@ describe("memory atlas controller", () => {
     lifecycle.update(mountOptions.data, mountOptions.state)
 
     assert.deepStrictEqual(events, ["mount:2d", "update:2d"])
+  })
+
+  test("hides the viewport controls only while 3D is active", () => {
+    const controls = { hidden: false }
+    const root = {
+      querySelector(selector: string) {
+        assert.strictEqual(selector, '[data-testid="memory-atlas-viewport-controls"]')
+        return controls
+      },
+    } as unknown as HTMLElement
+
+    updateViewportControlsVisibility(root, "3d")
+    assert.strictEqual(controls.hidden, true)
+    updateViewportControlsVisibility(root, "2d")
+    assert.strictEqual(controls.hidden, false)
+  })
+
+  test("passes the viewport reset and zoom to the runtime and tolerates handles without them", async () => {
+    const events: string[] = []
+    const mountOptions = {
+      container: {} as HTMLElement,
+      data: { nodes: [], links: [] },
+      state: createDefaultMemoryAtlasState(),
+      onSelect: () => undefined,
+    }
+    const handleFor = (mode: string) => ({
+      update: () => undefined,
+      select: () => undefined,
+      recenter: () => undefined,
+      setEvidenceSlugs: () => undefined,
+      destroy: () => undefined,
+      ...(mode === "2d"
+        ? {
+            resetViewport: () => events.push("reset:2d"),
+            zoomBy: (factor: number) => events.push(`zoom:${factor}`),
+          }
+        : {}),
+    })
+    const lifecycle = createMemoryAtlasRuntimeLifecycle(async (mode) => ({
+      mountMemoryAtlas: () => handleFor(mode),
+    }))
+
+    await lifecycle.mount("2d", mountOptions)
+    lifecycle.resetViewport()
+    lifecycle.zoomBy(2)
+    await lifecycle.mount("3d", mountOptions)
+    lifecycle.resetViewport()
+    lifecycle.zoomBy(2)
+    lifecycle.destroy()
+    lifecycle.resetViewport()
+    lifecycle.zoomBy(2)
+
+    assert.deepStrictEqual(events, ["reset:2d", "zoom:2"])
   })
 })
