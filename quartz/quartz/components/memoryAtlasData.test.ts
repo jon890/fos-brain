@@ -306,6 +306,47 @@ describe("memory atlas data", () => {
     assert.strictEqual(facets.total, 1)
   })
 
+  test("removes navigation documents from nodes, links, and degree", () => {
+    const data = buildMemoryAtlasData({
+      INDEX: content("INDEX", {
+        role: "navigation",
+        links: [simpleSlug("concepts/a"), simpleSlug("concepts/b")],
+      }),
+      "concepts/a": content("concepts/a", {
+        links: [simpleSlug("INDEX"), simpleSlug("concepts/b")],
+      }),
+      "concepts/b": content("concepts/b", { links: [simpleSlug("INDEX")] }),
+    })
+
+    assert.deepStrictEqual(
+      data.nodes.map((node) => node.slug),
+      ["concepts/a", "concepts/b"],
+    )
+    assert.deepStrictEqual(data.links, [{ source: "concepts/a", target: "concepts/b" }])
+    assert.deepStrictEqual(
+      data.nodes.map((node) => [node.slug, node.degree]),
+      [
+        ["concepts/a", 1],
+        ["concepts/b", 1],
+      ],
+    )
+  })
+
+  test("excludes only the navigation role and keeps every other value", () => {
+    const data = buildMemoryAtlasData({
+      INDEX: content("INDEX", { role: "navigation" }),
+      // 정규화가 이미 미지 값을 undefined 로 만들지만, 그래프 쪽 조건이
+      // navigation 하나만 보는지를 여기서 따로 고정한다.
+      hub: content("hub", { role: "hub" as unknown as ContentDetails["role"] }),
+      plain: content("plain"),
+    })
+
+    assert.deepStrictEqual(
+      data.nodes.map((node) => node.slug),
+      ["hub", "plain"],
+    )
+  })
+
   test("removes private nodes and links at the public data boundary", () => {
     const data = buildMemoryAtlasData({
       "concepts/public": content("concepts/public", {

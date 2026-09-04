@@ -1,3 +1,7 @@
+---
+role: navigation
+---
+
 # Wiki Log
 
 Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append 한다. 사용자도 LLM 도 기존 항목을 수정·삭제하지 않는다.

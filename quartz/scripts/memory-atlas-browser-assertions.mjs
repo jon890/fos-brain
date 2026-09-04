@@ -191,6 +191,24 @@ for (const id of ["desktop-frame", "mobile-frame"]) {
 return results
 `),
 
+  navigationDocumentsExcluded: wrap(`
+const win = frameWindow("desktop-frame")
+const doc = win.document
+const canvas = byTestId(doc, "memory-atlas-canvas")
+const index = await win.fetch("/static/contentIndex.json").then((response) => {
+  if (!response.ok) throw new Error(\`content index fetch failed with status \${response.status}\`)
+  return response.json()
+})
+const navigationSlugs = Object.entries(index).filter(([, details]) => details.role === "navigation").map(([slug]) => slug)
+if (!navigationSlugs.length) throw new Error("no navigation document in the content index; the assertion would check nothing")
+const present = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
+if (present.length) throw new Error(\`navigation documents reached the graph: \${present.join(", ")}\`)
+const knowledgeSlug = Object.entries(index).find(([, details]) => details.role !== "navigation")?.[0]
+if (!knowledgeSlug) throw new Error("no knowledge document in the content index")
+if (!canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${knowledgeSlug}"]\`)) throw new Error(\`the node selector matched nothing for \${knowledgeSlug}; the absence check above proves nothing\`)
+return { navigationSlugs, knowledgeSlug, graphNodes: canvas.querySelectorAll(".memory-atlas-2d__nodes button").length }
+`),
+
   selectRagEntrypoint: wrap(`
 const win = frameWindow("desktop-frame")
 const doc = win.document

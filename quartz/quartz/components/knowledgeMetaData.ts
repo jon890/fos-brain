@@ -1,5 +1,6 @@
 export type KnowledgeType = "concept" | "topic" | "entity"
 export type KnowledgeStatus = "draft" | "stable" | "deprecated"
+export type KnowledgeRole = "navigation"
 
 export type KnowledgeSource = {
   id?: string
@@ -20,6 +21,7 @@ export type KnowledgeFreshness = {
 export type KnowledgeMetaData = {
   description?: string
   type?: KnowledgeType
+  role?: KnowledgeRole
   status?: KnowledgeStatus
   staleAfter?: KnowledgeFreshness
   sources: KnowledgeSource[]
@@ -42,6 +44,11 @@ export function normalizeKnowledgeType(value: unknown): KnowledgeType | undefine
   return normalized === "concept" || normalized === "topic" || normalized === "entity"
     ? normalized
     : undefined
+}
+
+export function normalizeKnowledgeRole(value: unknown): KnowledgeRole | undefined {
+  const normalized = normalizeText(value)?.toLowerCase()
+  return normalized === "navigation" ? normalized : undefined
 }
 
 function normalizeKnowledgeStatus(value: unknown): KnowledgeStatus | undefined {
@@ -139,6 +146,7 @@ export function normalizeKnowledgeMetaData(
   return {
     description: normalizeText(data.description),
     type: normalizeKnowledgeType(data.type),
+    role: normalizeKnowledgeRole(data.role),
     status: normalizeKnowledgeStatus(data.status),
     staleAfter: normalizeFreshness(data.stale_after, today),
     sources,

@@ -325,6 +325,7 @@ try {
   await openHarnessAndVerifyWorktree(driverName)
   await waitHarnessReadyWithSingleRecovery(driverName)
   await assertDriver("viewport-basics", assertions.viewportBasics)
+  await assertDriver("navigation-documents-excluded", assertions.navigationDocumentsExcluded)
   await assertDriver("select-rag-entrypoint", assertions.selectRagEntrypoint)
   await assertDriverPoll("rag-entrypoint-selected", assertions.ragEntrypointSelected)
   await assertDriver("local-relation-flow", assertions.localRelationFlow)
