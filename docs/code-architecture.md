@@ -29,8 +29,7 @@
 
 - `quartz/custom/components/KnowledgeMeta.tsx` — 페이지 frontmatter를 사람이 읽는 설명·신뢰·최신성 표시로 바꾼다.
 - `quartz/custom/emitters/memoryAtlasIndex.ts` — 그래프가 사용할 문서 유형, 문서 성격(`role`), 설명, 상태, 최신성, 수정일과 출처 개수를 담은 `/static/memory-atlas-index.json`을 내보낸다. 업스트림 `contentIndex`는 고치지 않는다.
-- `quartz/quartz/components/Graph.tsx` — 유형 범례를 렌더한다.
-- `quartz/quartz/components/scripts/graph.inline.ts` — 문서 유형별 노드 색을 선택한다.
+- `quartz/custom/components/memoryAtlasIndexSchema.ts` — 색인의 스키마 표식과 그 검사기를 소유한다. 표식이 없는 옛 색인이 들어오면 그 자리에서 오류를 던진다.
 - `quartz/custom/components/MemoryAtlasDocNav.tsx` — 홈이 아닌 모든 페이지 상단에 항해도로 돌아가는 요소를 렌더한다. `sharedPageComponents.header`에 등록해 본문, 목록, 404 페이지가 모두 받는다.
 - `quartz/custom/components/MemoryAtlas.tsx` — 홈의 검색, 필터, 표시 설정, 상세 패널에 필요한 HTML 구조를 소유한다.
 - `quartz/custom/components/memoryAtlasData.ts` — 콘텐츠 색인을 그래프 노드와 연결, 집계, 필터 결과로 바꾸는 순수 함수를 소유한다. `role`이 `navigation`인 문서를 이 계산에서 뺀다.
