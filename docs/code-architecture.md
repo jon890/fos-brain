@@ -41,6 +41,7 @@
 - `quartz/custom/components/scripts/memoryAtlas2dRuntime.ts` — SVG 연결선, HTML 노드, 전체 지도와 선택 중심 지역 관계 렌더링과 지도의 이동·배율 상태를 소유한다.
 - `quartz/custom/components/scripts/memoryAtlas3dRuntime.ts` — Three.js renderer와 카메라, 3D 배치와 선택 경로 강조를 소유한다.
 - `quartz/custom/components/styles/memoryAtlas.scss` — 홈 전용 전체 화면 배치와 Memory Atlas 시각 정체성, 반응형 상태를 소유한다.
+  업스트림 사이드바의 가시성도 이 파일이 소유한다. 홈과 문서 페이지 양쪽에서 숨기므로 다른 파일이 같은 일을 다시 하지 않는다.
 - `quartz/custom/emitters/memoryAtlasAssets.ts` — 2D와 3D runtime을 별도 ESM 파일로 묶고 현재 콘텐츠로 정제한 의미 관계 파일을 내보낸다.
 - `quartz/scripts/generate-memory-atlas-semantics.mjs` — qmd HTTP vector 검색을 slug 관계 임시 산출물로 바꾸며 실패 시 오래된 산출물을 제거한다.
 
@@ -156,11 +157,13 @@ plan13이 이전을 마쳐 위 목록이 현재 코드와 같다.
 - 검색 벤치마크 — 대표 질문마다 기대 slug의 상위 순위를 검사한다.
 - OKF 내보내기 — 임시 fixture를 내보내고 메타데이터, raw Reference, 예약 문서, 링크, private 제외를 검사한다.
 - Quartz — SCSS를 불러오지 않는 순수 메타데이터 helper의 단위 검사, TypeScript 검사, 공개 정적 빌드를 실행한다.
+  형식 검사는 파일 목록이 아니라 이 저장소 코드가 들어 있는 디렉터리를 대상으로 지정해, 파일이 늘 때 목록을 따로 고치지 않게 한다.
 - Quartz fork 경계 — `verify-upstream-untouched.sh`로 예외 파일을 뺀 업스트림 파일이 복사 시점 커밋과 같은지, `quartz/quartz/` 아래 새 파일이 없는지 검사한다.
 - Memory Atlas — 색인 정규화와 필터·집계 순수 함수 단위 검사, 데스크톱과 390px 화면의 실제 렌더, 검색·필터·배치·노드 선택·오류 폴백을 검증한다.
 - Memory Atlas 관계 계산 — 의미 산출물 형식과 namespace 제한, 혼합 점수 우선순위, 결정적 좌표, hop depth, 재중심화와 고정·자동 시작점을 DOM 없는 단위 검사로 검증한다.
 - Memory Atlas 생명주기 — 2D와 3D 전환, SPA 재탐색과 컴포넌트 제거 뒤 listener, animation frame과 renderer 자원이 남지 않는지 검증한다.
 - Memory Atlas 브라우저 회귀 — `browser-driver`를 통해 1440px와 390px 화면, 키보드, 움직임 줄이기, 전체 지도와 지역 관계 전환을 검증한다.
+  홈뿐 아니라 문서 페이지도 함께 띄워 항해 요소의 고정 위치와 본문 상단 위치를 같은 두 너비에서 검증한다.
 - Brain 질문 — 입력 제한, 동시 요청, qmd URI 경계, 근거 크기, 빈 결과의 모델 API 미호출, 모델 오류 변환과 로그 비노출을 단위·통합 검사한다.
 - Brain 질문 UI — 질문 상태, 답변 평문 렌더, 출처 이동, 그래프 강조 해제, 1440px와 390px의 넘침을 브라우저에서 검사한다.
 - Brain 인증 — 정상·실패·제한 로그인, cookie 속성, session 만료·로그아웃·재시작과 관리자 Guard를 단위·통합 검사한다.
