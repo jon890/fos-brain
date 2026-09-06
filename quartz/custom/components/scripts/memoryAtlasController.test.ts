@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
 import { createDefaultMemoryAtlasState } from "../memoryAtlasData"
-import type { FullSlug } from "../../util/path"
+import type { FullSlug } from "../../../quartz/util/path"
 import {
   createMemoryAtlasRuntimeLifecycle,
   loadMemoryAtlasDataWithFallback,

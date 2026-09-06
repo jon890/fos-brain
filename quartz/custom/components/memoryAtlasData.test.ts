@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import type { ContentDetails } from "../plugins/emitters/contentIndex"
-import type { FilePath, FullSlug, SimpleSlug } from "../util/path"
+import type { MemoryAtlasIndexEntry } from "../emitters/memoryAtlasIndex"
+import type { FullSlug, SimpleSlug } from "../../quartz/util/path"
 import {
   buildMemoryAtlasData,
   clearMemoryAtlasQuery,
@@ -23,14 +23,16 @@ function simpleSlug(value: string): SimpleSlug {
   return value as SimpleSlug
 }
 
-function content(id: string, overrides: Partial<ContentDetails> = {}): ContentDetails {
+function content(
+  id: string,
+  overrides: Partial<MemoryAtlasIndexEntry> = {},
+): MemoryAtlasIndexEntry {
   return {
     slug: slug(id),
-    filePath: `${id}.md` as FilePath,
     title: `Title ${id}`,
     links: [],
     tags: [],
-    content: "",
+    sourceCount: 0,
     ...overrides,
   }
 }
@@ -337,7 +339,7 @@ describe("memory atlas data", () => {
       INDEX: content("INDEX", { role: "navigation" }),
       // 정규화가 이미 미지 값을 undefined 로 만들지만, 그래프 쪽 조건이
       // navigation 하나만 보는지를 여기서 따로 고정한다.
-      hub: content("hub", { role: "hub" as unknown as ContentDetails["role"] }),
+      hub: content("hub", { role: "hub" as unknown as MemoryAtlasIndexEntry["role"] }),
       plain: content("plain"),
     })
 

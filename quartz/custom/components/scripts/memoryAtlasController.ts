@@ -24,8 +24,10 @@ import {
   restrictPublishedMemoryAtlasSemanticsToSlugs,
   type MemoryAtlasSemanticEdge,
 } from "../memoryAtlasSemantics"
-import type { ContentDetails } from "../../plugins/emitters/contentIndex"
-import type { FullSlug } from "../../util/path"
+import type { MemoryAtlasIndexEntry } from "../../emitters/memoryAtlasIndex"
+import { parseMemoryAtlasIndex } from "../memoryAtlasIndexSchema"
+import { getFullSlug, joinSegments, pathToRoot } from "../../../quartz/util/path"
+import type { FullSlug } from "../../../quartz/util/path"
 import {
   MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
   type MemoryAtlasRuntimeContext,
@@ -45,7 +47,7 @@ import {
   type ProtectedMemoryAtlasData,
 } from "./memoryAtlasAuth"
 
-type ContentIndexRecord = Record<string, ContentDetails>
+type ContentIndexRecord = Record<string, MemoryAtlasIndexEntry>
 type ContentIndexLoader = () => Promise<ContentIndexRecord>
 type RuntimeLoader = (mode: MemoryAtlasMode) => Promise<MemoryAtlasRuntimeModule>
 type SemanticsLoader = () => Promise<unknown>
@@ -88,7 +90,6 @@ type BrainError = {
 const memoryAtlasState = {
   cleanup: undefined as (() => void) | undefined,
 }
-const BODY_CLASS = "memory-atlas-page"
 
 const TYPE_OPTIONS = ["concept", "topic", "entity"] as const
 const FRESHNESS_OPTIONS = ["current", "stale", "invalid"] as const
@@ -97,7 +98,18 @@ const DEFAULT_TAGS: string[] = []
 const STATE_STORAGE_KEY = "memoryAtlasState"
 const LOGIN_RATE_LIMIT_MINUTES = 15
 
-declare const fetchData: Promise<ContentIndexRecord>
+const MEMORY_ATLAS_INDEX_FILE = "static/memory-atlas-index.json"
+const MEMORY_ATLAS_SEMANTICS_FILE = "static/memory-atlas-semantics.json"
+
+// 업스트림 fetchData 와 같은 방식으로 페이지 기준 상대 경로를 만든다.
+// 절대 경로를 쓰면 하위 경로에 게시했을 때 404 가 난다.
+// 아직 색인과 의미 파일만 이 함수를 거친다. memoryAtlasView.tsx 가 넘기는
+// data-runtime-2d-src 와 data-runtime-3d-src 는 /static 절대 경로 그대로라,
+// 하위 경로 게시는 여전히 runtime 로딩에서 깨진다. 후속 작업으로 남긴다.
+function publishedAssetUrl(file: string): string {
+  const slug = (getFullSlug(window) ?? "") as FullSlug
+  return joinSegments(pathToRoot(slug), file)
+}
 
 function selectedValues(root: ParentNode, name: string): string[] {
   return [...root.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`)].map(
@@ -300,7 +312,16 @@ export function restoreStoredMemoryAtlasState(
 }
 
 function loadContentIndex(): Promise<ContentIndexRecord> {
-  return fetchData
+  const indexUrl = publishedAssetUrl(MEMORY_ATLAS_INDEX_FILE)
+  return fetch(indexUrl).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`Memory Atlas index failed with HTTP ${response.status}`)
+    }
+    return parseMemoryAtlasIndex<MemoryAtlasIndexEntry>(
+      await response.json(),
+      indexUrl,
+    ) as ContentIndexRecord
+  })
 }
 
 export function memoryAtlasRuntimeSrcForMode(
@@ -319,7 +340,7 @@ function loadRuntimeFromDom(root: HTMLElement): RuntimeLoader {
 }
 
 function loadPublishedSemantics(): Promise<unknown> {
-  return fetch("/static/memory-atlas-semantics.json").then((response) => {
+  return fetch(publishedAssetUrl(MEMORY_ATLAS_SEMANTICS_FILE)).then((response) => {
     if (!response.ok) throw new Error(`Memory Atlas semantics failed with HTTP ${response.status}`)
     return response.json()
   })
@@ -796,11 +817,9 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
 
   const root = options.root ?? document.querySelector<HTMLElement>('[data-testid="memory-atlas"]')
   if (!root) {
-    document.body.classList.remove(BODY_CLASS)
     return
   }
 
-  document.body.classList.add(BODY_CLASS)
   const canvas = root.querySelector<HTMLElement>('[data-testid="memory-atlas-canvas"]')
   const status = root.querySelector<HTMLElement>('[data-testid="memory-atlas-status"]')
   if (!canvas) return
@@ -885,7 +904,6 @@ export async function initMemoryAtlas(options: InitMemoryAtlasOptions = {}) {
     setRuntimeState(root, "loading")
     root.classList.remove("memory-atlas--detail-open")
     setFiltersOpen(root, false)
-    document.body.classList.remove(BODY_CLASS)
     runtimeLifecycle.destroy()
     askController?.abort()
     askController = undefined

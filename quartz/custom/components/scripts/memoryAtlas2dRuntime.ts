@@ -13,7 +13,7 @@ import type {
   MemoryAtlasState,
 } from "../memoryAtlasData"
 import type { MemoryAtlasSemanticEdge } from "../memoryAtlasSemantics"
-import type { FullSlug } from "../../util/path"
+import type { FullSlug } from "../../../quartz/util/path"
 import type {
   MemoryAtlasRuntimeContext,
   MemoryAtlasRuntimeHandle,

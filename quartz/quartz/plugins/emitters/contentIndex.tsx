@@ -7,13 +7,6 @@ import { QuartzEmitterPlugin } from "../types"
 import { toHtml } from "hast-util-to-html"
 import { write } from "./helpers"
 import { i18n } from "../../i18n"
-import type {
-  KnowledgeFreshness,
-  KnowledgeRole,
-  KnowledgeStatus,
-  KnowledgeType,
-} from "../../components/knowledgeMetaData"
-import { normalizeKnowledgeMetaData } from "../../components/knowledgeMetaData"
 
 export type ContentIndexMap = Map<FullSlug, ContentDetails>
 export type ContentDetails = {
@@ -24,15 +17,8 @@ export type ContentDetails = {
   tags: string[]
   content: string
   richContent?: string
-  rssDescription?: string
   date?: Date
   description?: string
-  type?: KnowledgeType
-  role?: KnowledgeRole
-  status?: KnowledgeStatus
-  freshness?: KnowledgeFreshness
-  updated?: string
-  sourceCount?: number
 }
 
 interface Options {
@@ -72,7 +58,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndexMap, limit?:
     <title>${escapeHTML(content.title)}</title>
     <link>https://${joinSegments(base, encodeURI(slug))}</link>
     <guid>https://${joinSegments(base, encodeURI(slug))}</guid>
-    <description><![CDATA[ ${content.richContent ?? content.rssDescription ?? content.description ?? ""} ]]></description>
+    <description><![CDATA[ ${content.richContent ?? content.description} ]]></description>
     <pubDate>${content.date?.toUTCString()}</pubDate>
   </item>`
 
@@ -115,9 +101,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
       const linkIndex: ContentIndexMap = new Map()
       for (const [tree, file] of content) {
         const slug = file.data.slug!
-        const updatedDate = getDate(ctx.cfg.configuration, file.data)
-        const date = updatedDate ?? new Date()
-        const metadata = normalizeKnowledgeMetaData(file.data.frontmatter)
+        const date = getDate(ctx.cfg.configuration, file.data) ?? new Date()
         if (opts?.includeEmptyFiles || (file.data.text && file.data.text !== "")) {
           linkIndex.set(slug, {
             slug,
@@ -129,15 +113,8 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
             richContent: opts?.rssFullHtml
               ? escapeHTML(toHtml(tree as Root, { allowDangerousHtml: true }))
               : undefined,
-            rssDescription: file.data.description ?? "",
             date: date,
-            description: metadata.description,
-            type: metadata.type,
-            role: metadata.role,
-            status: metadata.status,
-            freshness: metadata.staleAfter,
-            updated: updatedDate?.toISOString(),
-            sourceCount: metadata.sources.length,
+            description: file.data.description ?? "",
           })
         }
       }
@@ -163,8 +140,10 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
       const fp = joinSegments("static", "contentIndex") as FullSlug
       const simplifiedIndex = Object.fromEntries(
         Array.from(linkIndex).map(([slug, content]) => {
-          // These fields are only needed for sitemap/RSS output.
-          delete content.rssDescription
+          // remove description and from content index as nothing downstream
+          // actually uses it. we only keep it in the index as we need it
+          // for the RSS feed
+          delete content.description
           delete content.date
           return [slug, content]
         }),

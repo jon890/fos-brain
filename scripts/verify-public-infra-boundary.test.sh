@@ -84,6 +84,7 @@ rg -q 'Public Auth Fixture' "$fixture_root/quartz/public/index.html" || {
 public_artifacts=(
   "$fixture_root/quartz/public/index.html"
   "$fixture_root/quartz/public/static/contentIndex.json"
+  "$fixture_root/quartz/public/static/memory-atlas-index.json"
   "$fixture_root/quartz/public/static/memory-atlas-semantics.json"
   "$fixture_root/quartz/public/sitemap.xml"
   "$fixture_root/quartz/public/index.xml"

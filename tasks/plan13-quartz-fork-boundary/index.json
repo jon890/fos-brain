@@ -1,0 +1,28 @@
+{
+  "name": "plan13-quartz-fork-boundary",
+  "description": "Quartz 업스트림 파일 수정을 없애고 자체 코드를 별도 디렉터리로 분리해 업스트림 갱신을 병합으로 처리할 수 있게 한다.",
+  "status": "completed",
+  "created_at": "2026-09-04",
+  "total_phases": 3,
+  "current_phases": 3,
+  "phases": [
+    {
+      "number": 1,
+      "title": "커스텀 코드 디렉터리 분리와 재수출 제거",
+      "file": "phase-01.md",
+      "execution_profile": "deep"
+    },
+    {
+      "number": 2,
+      "title": "렌더 함수와 콘텐츠 색인 수정 제거",
+      "file": "phase-02.md",
+      "execution_profile": "deep"
+    },
+    {
+      "number": 3,
+      "title": "업스트림 원복과 remote 연결",
+      "file": "phase-03.md",
+      "execution_profile": "standard"
+    }
+  ]
+}

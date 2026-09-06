@@ -23,8 +23,6 @@ import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
-import KnowledgeMeta from "./KnowledgeMeta"
-import MemoryAtlas from "./MemoryAtlas"
 
 export {
   ArticleTitle,
@@ -52,6 +50,4 @@ export {
   Comments,
   Flex,
   ConditionalRender,
-  KnowledgeMeta,
-  MemoryAtlas,
 }

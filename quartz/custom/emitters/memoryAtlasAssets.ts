@@ -1,14 +1,14 @@
 import esbuild from "esbuild"
 import fs from "fs/promises"
 import path from "path"
-import { FullSlug, joinSegments } from "../../util/path"
+import { FullSlug, joinSegments } from "../../quartz/util/path"
 import {
   createEmptyPublishedMemoryAtlasSemantics,
   parseMemoryAtlasSemantics,
   restrictMemoryAtlasSemanticsToSlugs,
-} from "../../components/memoryAtlasSemantics"
-import { QuartzEmitterPlugin } from "../types"
-import { write } from "./helpers"
+} from "../components/memoryAtlasSemantics"
+import { QuartzEmitterPlugin } from "../../quartz/plugins/types"
+import { write } from "../../quartz/plugins/emitters/helpers"
 
 export const MemoryAtlasAssets: QuartzEmitterPlugin = () => ({
   name: "MemoryAtlasAssets",
@@ -17,14 +17,14 @@ export const MemoryAtlasAssets: QuartzEmitterPlugin = () => ({
       entryPoints: {
         "memory-atlas-2d": path.join(
           process.cwd(),
-          "quartz",
+          "custom",
           "components",
           "scripts",
           "memoryAtlas2dRuntime.ts",
         ),
         "memory-atlas-3d": path.join(
           process.cwd(),
-          "quartz",
+          "custom",
           "components",
           "scripts",
           "memoryAtlas3dRuntime.ts",

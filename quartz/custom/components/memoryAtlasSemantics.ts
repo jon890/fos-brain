@@ -1,5 +1,5 @@
-import type { FullSlug } from "../util/path"
-import { isFullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
+import { isFullSlug } from "../../quartz/util/path"
 
 export const MEMORY_ATLAS_SEMANTICS_SCHEMA_VERSION = 1
 export const MEMORY_ATLAS_SEMANTICS_SOURCE = "qmd-vector"

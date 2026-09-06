@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import type { FullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
 import {
   createEmptyPublishedMemoryAtlasSemantics,
   parseMemoryAtlasSemantics,

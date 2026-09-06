@@ -1,7 +1,7 @@
-import type { ContentDetails } from "../plugins/emitters/contentIndex"
+import type { MemoryAtlasIndexEntry } from "../emitters/memoryAtlasIndex"
 import type { KnowledgeFreshness, KnowledgeStatus, KnowledgeType } from "./knowledgeMetaData"
 import { normalizeKnowledgeRole } from "./knowledgeMetaData"
-import type { FullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
 
 export type MemoryAtlasNamespace = "public" | "private"
 export type MemoryAtlasLens = "all" | "topic" | "type" | "freshness" | "namespace"
@@ -67,7 +67,9 @@ export type MemoryAtlasFacets = {
   }
 }
 
-type ContentIndexRecord = Record<string, ContentDetails> | Map<FullSlug, ContentDetails>
+type ContentIndexRecord =
+  | Record<string, MemoryAtlasIndexEntry>
+  | Map<FullSlug, MemoryAtlasIndexEntry>
 
 export const DEFAULT_MEMORY_ATLAS_STATE: MemoryAtlasState = {
   mode: "2d",
@@ -122,10 +124,10 @@ export function inferMemoryNamespace(slug: string): MemoryAtlasNamespace {
   return slug.startsWith("_private/") ? "private" : "public"
 }
 
-function entriesFromIndex(index: ContentIndexRecord): [FullSlug, ContentDetails][] {
+function entriesFromIndex(index: ContentIndexRecord): [FullSlug, MemoryAtlasIndexEntry][] {
   return index instanceof Map
     ? [...index.entries()]
-    : (Object.entries(index) as [FullSlug, ContentDetails][])
+    : (Object.entries(index) as [FullSlug, MemoryAtlasIndexEntry][])
 }
 
 function hasAny<T extends string>(

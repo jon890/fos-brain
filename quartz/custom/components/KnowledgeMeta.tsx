@@ -1,4 +1,4 @@
-import { classNames } from "../util/lang"
+import { classNames } from "../../quartz/util/lang"
 import type {
   KnowledgeAttribution,
   KnowledgeFreshness,
@@ -7,7 +7,11 @@ import type {
 } from "./knowledgeMetaData"
 import { normalizeKnowledgeMetaData } from "./knowledgeMetaData"
 import style from "./styles/knowledgeMeta.scss"
-import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+import {
+  QuartzComponent,
+  QuartzComponentConstructor,
+  QuartzComponentProps,
+} from "../../quartz/components/types"
 
 const typeLabels: Record<KnowledgeType, string> = {
   concept: "개념",

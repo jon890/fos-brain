@@ -9,7 +9,7 @@ import type {
   MemoryAtlasSpacing,
   MemoryAtlasState,
 } from "../memoryAtlasData"
-import type { FullSlug } from "../../util/path"
+import type { FullSlug } from "../../../quartz/util/path"
 import type { MemoryAtlasRuntimeMountOptions } from "./memoryAtlasRuntimeTypes"
 
 type GraphNode = MemoryAtlasNode & {

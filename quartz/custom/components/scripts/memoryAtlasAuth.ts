@@ -1,4 +1,5 @@
-import type { ContentDetails } from "../../plugins/emitters/contentIndex"
+import type { MemoryAtlasIndexEntry } from "../../emitters/memoryAtlasIndex"
+import { parseMemoryAtlasIndex } from "../memoryAtlasIndexSchema"
 
 export type MemoryAtlasAuthRole = "public" | "admin"
 
@@ -8,7 +9,7 @@ export type MemoryAtlasAuthSession = {
 }
 
 export type ProtectedMemoryAtlasData = {
-  contentIndex: Record<string, ContentDetails>
+  contentIndex: Record<string, MemoryAtlasIndexEntry>
   semantics: unknown
 }
 
@@ -96,10 +97,16 @@ export async function logoutMemoryAtlasAdmin(): Promise<void> {
 
 export async function loadProtectedMemoryAtlasData(): Promise<ProtectedMemoryAtlasData> {
   const [contentIndex, semantics] = await Promise.all([
-    requestJson<Record<string, ContentDetails>>("/api/private/content-index"),
+    requestJson<unknown>("/api/private/content-index"),
     requestJson<unknown>("/api/private/memory-atlas-semantics"),
   ])
-  return { contentIndex, semantics }
+  return {
+    contentIndex: parseMemoryAtlasIndex<MemoryAtlasIndexEntry>(
+      contentIndex,
+      "/api/private/content-index",
+    ),
+    semantics,
+  }
 }
 
 export function isMemoryAtlasUnauthorized(error: unknown): boolean {

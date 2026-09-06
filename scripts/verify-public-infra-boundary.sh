@@ -66,6 +66,7 @@ if [[ -d quartz/public ]]; then
     find quartz/public -type f \( \
       -name '*.html' -o \
       -name 'contentIndex.json' -o \
+      -name 'memory-atlas-index.json' -o \
       -name 'memory-atlas-semantics.json' -o \
       -name 'sitemap.xml' -o \
       -name 'index.xml' \

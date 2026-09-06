@@ -1,4 +1,4 @@
-import { QuartzComponent, QuartzComponentProps } from "./types"
+import { QuartzComponent, QuartzComponentProps } from "../../quartz/components/types"
 // @ts-ignore
 import script from "./scripts/memoryAtlas.inline"
 import style from "./styles/memoryAtlas.scss"

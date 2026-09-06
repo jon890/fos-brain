@@ -195,10 +195,12 @@ return results
 const win = frameWindow("desktop-frame")
 const doc = win.document
 const canvas = byTestId(doc, "memory-atlas-canvas")
-const index = await win.fetch("/static/contentIndex.json").then((response) => {
+const rawIndex = await win.fetch("/static/memory-atlas-index.json").then((response) => {
   if (!response.ok) throw new Error(\`content index fetch failed with status \${response.status}\`)
   return response.json()
 })
+if (rawIndex["$memoryAtlasIndexSchema"] !== "fos-brain/memory-atlas-index@1") throw new Error("the memory atlas index is missing its schema marker")
+const index = Object.fromEntries(Object.entries(rawIndex).filter(([slug]) => slug !== "$memoryAtlasIndexSchema"))
 const navigationSlugs = Object.entries(index).filter(([, details]) => details.role === "navigation").map(([slug]) => slug)
 if (!navigationSlugs.length) throw new Error("no navigation document in the content index; the assertion would check nothing")
 const present = navigationSlugs.filter((navigationSlug) => canvas.querySelector(\`.memory-atlas-2d__nodes button[data-slug="\${navigationSlug}"]\`))
@@ -597,7 +599,13 @@ if (!byTestId(doc, "memory-atlas-ask-toggle").hidden) throw new Error("question 
 const publicIndexResponse = await originalFetch("/static/contentIndex.json")
 const publicIndexText = await publicIndexResponse.text()
 if (publicIndexText.includes("private-auth-fixture")) throw new Error("private fixture reached the public content index")
-const publicIndex = JSON.parse(publicIndexText)
+const publicAtlasIndexResponse = await originalFetch("/static/memory-atlas-index.json")
+if (!publicAtlasIndexResponse.ok)
+  throw new Error(\`memory atlas index fetch failed with status \${publicAtlasIndexResponse.status}\`)
+const publicAtlasIndexText = await publicAtlasIndexResponse.text()
+if (publicAtlasIndexText.includes("private-auth-fixture"))
+  throw new Error("private fixture reached the public memory atlas index")
+const publicIndex = JSON.parse(publicAtlasIndexText)
 const publicSemantics = await originalFetch("/static/memory-atlas-semantics.json")
   .then((response) => response.ok ? response.json() : ({ schemaVersion: 1, generatedAt: "2026-09-03T00:00:00.000Z", source: "qmd-vector", edges: [] }))
 const privateSlug = "_private/concepts/private-auth-fixture"

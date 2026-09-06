@@ -1,5 +1,5 @@
 import * as d3 from "d3"
-import type { FullSlug } from "../util/path"
+import type { FullSlug } from "../../quartz/util/path"
 import type { MemoryAtlasData, MemoryAtlasLink, MemoryAtlasNode } from "./memoryAtlasData"
 import type { MemoryAtlasSemanticEdge } from "./memoryAtlasSemantics"
 

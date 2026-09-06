@@ -1,6 +1,6 @@
 import type { MemoryAtlasData, MemoryAtlasState } from "../memoryAtlasData"
 import type { MemoryAtlasSemanticEdge } from "../memoryAtlasSemantics"
-import type { FullSlug } from "../../util/path"
+import type { FullSlug } from "../../../quartz/util/path"
 
 /**
  * 배율 버튼 한 번이 바꾸는 비율. 확대는 이 값을, 축소는 역수를 쓴다.
