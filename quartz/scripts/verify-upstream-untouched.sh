@@ -55,18 +55,39 @@ while IFS= read -r rel; do
   fi
 done < <(git -C "$REPO_ROOT" ls-tree -r --name-only "$UPSTREAM_BASE" -- quartz/ | sed 's#^quartz/##')
 
-# 2) 복사 시점 커밋의 루트 파일(블롭만, 디렉터리 제외) 중
-#    이 저장소의 quartz/ 에 있는 것과 비교한다.
-while IFS=$'\t' read -r type rel; do
-  [[ "$type" == "blob" ]] || continue
-  upstream_path="$rel"
-  is_exception "$upstream_path" && continue
+# 2) 복사 대상으로 삼은 업스트림 루트 파일과 비교한다.
+#    목록을 여기 명시해, 파일이 사라진 것도 위반으로 잡는다.
+#    업스트림 루트에 있으나 이 저장소가 복사하지 않은 파일(.gitignore)은 목록에서 뺀다.
+ROOT_FILES=(
+  ".gitattributes"
+  ".node-version"
+  ".npmrc"
+  ".prettierignore"
+  ".prettierrc"
+  "CODE_OF_CONDUCT.md"
+  "Dockerfile"
+  "LICENSE.txt"
+  "README.md"
+  "globals.d.ts"
+  "index.d.ts"
+  "package-lock.json"
+  "package.json"
+  "quartz.config.ts"
+  "quartz.layout.ts"
+  "tsconfig.json"
+)
+
+for rel in "${ROOT_FILES[@]}"; do
   repo_path="$QUARTZ_ROOT/$rel"
-  [[ -f "$repo_path" ]] || continue
-  if ! diff -q <(git -C "$REPO_ROOT" show "$UPSTREAM_BASE:$rel") "$repo_path" >/dev/null 2>&1; then
-    violations+=("수정: $upstream_path")
+  if [[ ! -f "$repo_path" ]]; then
+    violations+=("삭제: $rel")
+    continue
   fi
-done < <(git -C "$REPO_ROOT" ls-tree "$UPSTREAM_BASE" -- . | awk '{print $2"\t"$4}')
+  is_exception "$rel" && continue
+  if ! diff -q <(git -C "$REPO_ROOT" show "$UPSTREAM_BASE:$rel") "$repo_path" >/dev/null 2>&1; then
+    violations+=("수정: $rel")
+  fi
+done
 
 # 3) 이 저장소가 quartz/quartz/ 아래 새로 만든 파일을 잡는다.
 while IFS= read -r rel; do

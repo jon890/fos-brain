@@ -61,18 +61,24 @@ mkdir -p "$EVIDENCE_DIR"
 
 cd "$QUARTZ_DIR"
 
-echo "[1/5] Formatting"
+echo "[1/6] Upstream fork boundary"
+bash "$SCRIPT_DIR/verify-upstream-untouched.sh"
+
+echo "[2/6] Formatting"
 pnpm exec prettier --check \
   scripts/memory-atlas-browser-assertions.mjs \
   scripts/verify-memory-atlas-browser.mjs \
   quartz.layout.ts \
   custom/components/MemoryAtlas.tsx \
+  custom/components/MemoryAtlasDocNav.tsx \
   custom/components/memoryAtlasData.test.ts \
   custom/components/memoryAtlasData.ts \
+  custom/components/memoryAtlasIndexSchema.test.ts \
+  custom/components/memoryAtlasIndexSchema.ts \
   custom/components/memoryAtlasView.test.tsx \
   custom/components/memoryAtlasView.tsx \
   custom/components/memoryAtlas2dRuntime.test.ts \
-  quartz/components/renderPage.tsx \
+  custom/emitters/memoryAtlasIndex.ts \
   custom/components/scripts/memoryAtlas.inline.ts \
   custom/components/scripts/memoryAtlasAuth.test.ts \
   custom/components/scripts/memoryAtlasAuth.ts \
@@ -83,19 +89,19 @@ pnpm exec prettier --check \
   custom/components/scripts/memoryAtlas3dRuntime.ts \
   custom/components/styles/memoryAtlas.scss
 
-echo "[2/5] Type checking"
+echo "[3/6] Type checking"
 pnpm exec tsc --noEmit
 
-echo "[3/5] Unit tests"
+echo "[4/6] Unit tests"
 pnpm test
 
-echo "[4/5] Quartz build and local server"
+echo "[5/6] Quartz build and local server"
 node --no-deprecation ./quartz/bootstrap-cli.mjs build --serve --port "$PORT" --wsPort "$WS_PORT" \
   >"$SERVER_LOG" 2>&1 &
 SERVER_PID=$!
 wait_for_server
 
-echo "[5/5] Browser, state, layout, and privacy regression"
+echo "[6/6] Browser, state, layout, and privacy regression"
 AB_TIMEOUT_SECONDS="${AB_TIMEOUT_SECONDS:-45}" \
   bash "$SCRIPT_DIR/verify-memory-atlas-browser.sh" "$BASE_URL"
 
