@@ -8,16 +8,23 @@ set -Eeuo pipefail
 # 경로 표기 규칙(작업 항목 3 참고): 이 스크립트 안에서 업스트림 기준 경로 P 는
 # 이 저장소의 <REPO_ROOT>/quartz/P 에 대응한다.
 
-# 복사 시점 커밋. quartz-upstream remote 를 fetch 해야 존재한다.
+# 복사 시점 커밋. 로컬에 없으면 업스트림에서 이 커밋만 얕게 fetch 한다.
 UPSTREAM_BASE="d25a6eabf96751ffca56f8a8139272def7a65041"
+UPSTREAM_URL="https://github.com/jackyzha0/quartz.git"
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 QUARTZ_ROOT="$REPO_ROOT/quartz"
 
+# 새로 clone 한 환경에는 quartz-upstream remote 가 없다. remote 를 등록하는 대신
+# URL 을 직접 주어 기준 커밋 하나만 받아 온다. git 설정을 바꾸지 않는다.
 if ! git -C "$REPO_ROOT" cat-file -e "$UPSTREAM_BASE" 2>/dev/null; then
-  echo "기준 커밋 $UPSTREAM_BASE 를 찾을 수 없다. quartz-upstream remote 를 fetch 한다:" >&2
-  echo "  git remote add quartz-upstream https://github.com/jackyzha0/quartz.git" >&2
-  echo "  git fetch quartz-upstream" >&2
+  echo "기준 커밋 $UPSTREAM_BASE 가 로컬에 없어 업스트림에서 받아 온다." >&2
+  git -C "$REPO_ROOT" fetch --quiet --depth=1 "$UPSTREAM_URL" "$UPSTREAM_BASE" 2>/dev/null || true
+fi
+
+if ! git -C "$REPO_ROOT" cat-file -e "$UPSTREAM_BASE" 2>/dev/null; then
+  echo "기준 커밋 $UPSTREAM_BASE 를 찾을 수 없다. 네트워크가 닿는 곳에서 아래를 실행한다:" >&2
+  echo "  git fetch --depth=1 $UPSTREAM_URL $UPSTREAM_BASE" >&2
   exit 2
 fi
 
@@ -90,11 +97,15 @@ for rel in "${ROOT_FILES[@]}"; do
 done
 
 # 3) 이 저장소가 quartz/quartz/ 아래 새로 만든 파일을 잡는다.
+#    아직 commit 하지 않은 파일도 경계를 무너뜨리므로 --others 로 함께 본다.
 while IFS= read -r rel; do
   if ! git -C "$REPO_ROOT" cat-file -e "$UPSTREAM_BASE:quartz/$rel" 2>/dev/null; then
     violations+=("추가: quartz/$rel")
   fi
-done < <(git -C "$QUARTZ_ROOT" ls-files quartz/ | sed 's#^quartz/##')
+done < <(
+  git -C "$QUARTZ_ROOT" ls-files --cached --others --exclude-standard quartz/ |
+    sed 's#^quartz/##' | sort -u
+)
 
 if ((${#violations[@]} > 0)); then
   printf '%s\n' "${violations[@]}"

@@ -62,7 +62,15 @@ mkdir -p "$EVIDENCE_DIR"
 cd "$QUARTZ_DIR"
 
 echo "[1/6] Upstream fork boundary"
-bash "$SCRIPT_DIR/verify-upstream-untouched.sh"
+# 기준 커밋을 끝내 받지 못하면 그 스크립트가 종료 코드 2 로 끝난다.
+# 이때는 경고만 남기고 넘어가, 뒤의 다섯 단계가 환경 때문에 통째로 빠지는 것을 막는다.
+boundary_status=0
+bash "$SCRIPT_DIR/verify-upstream-untouched.sh" || boundary_status=$?
+if ((boundary_status == 2)); then
+  echo "  경고: 기준 커밋을 받지 못해 경계 검사를 건너뛴다." >&2
+elif ((boundary_status != 0)); then
+  fail "the upstream fork boundary check reported violations"
+fi
 
 echo "[2/6] Formatting"
 pnpm exec prettier --check \
