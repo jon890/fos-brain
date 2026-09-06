@@ -1213,6 +1213,15 @@ body:has(.memory-atlas-doc-nav) {
     color: var(--atlas-paper);
   }
 
+  // 업스트림 Header 는 children 이 하나라도 있으면 요소를 그린다.
+  // 문서 탐색 nav 는 position: fixed 라 흐름에서 빠지므로,
+  // 내용 없는 header 가 업스트림 여백 `margin: 2rem 0` 만 남긴다.
+  // 실측한 본문 상단 위치는 이 규칙이 있을 때 1440px 에서 522.92px, 390px 에서 506.4px 이고,
+  // 규칙을 빼면 각각 542.92px, 558.4px 로 늘어난다.
+  .page-header > header {
+    margin: 0;
+  }
+
   article {
     background: transparent;
     border-top: 1px solid var(--atlas-line);
