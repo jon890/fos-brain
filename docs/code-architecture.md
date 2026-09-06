@@ -132,15 +132,16 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 
 - `quartz/quartz/**`는 업스트림 원본만 담으며 이 저장소에서 수정하지 않는다.
 - `quartz/custom/**`는 이 저장소가 만든 컴포넌트, 렌더러, emitter와 스타일을 담는다.
-- `quartz.config.ts`, `quartz.layout.ts`, `quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
+- `quartz.config.ts`, `quartz.layout.ts`, `quartz/quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
+- `.npmrc`, `.prettierignore`, `package.json`은 이 저장소의 도구 설정이라 함께 예외로 둔다.
 - 커스텀 컴포넌트와 emitter는 업스트림의 재수출 목록에 등록하지 않고 설정 파일이 경로로 직접 불러온다.
 - 화면에 얹는 요소는 `renderPage`를 고치지 않고 layout의 컴포넌트 자리로 넣는다.
 - Memory Atlas가 쓰는 확장 색인은 업스트림 `contentIndex`를 고치지 않고 커스텀 emitter가 자체 파일로 내보낸다.
 
-이 경계는 아직 적용 전이다. `quartz/custom/`이 없고 `quartz-upstream` remote도 붙어 있지 않으며, 업스트림 파일 10개의 수정이 그대로 남아 있다. 이전은 plan13이 수행하며 이 문장을 쓴 시점에 그 plan은 아직 만들어지지 않았다.
-위 목록은 이전이 끝난 뒤의 상태를 적은 것이라 지금 코드와는 다르다.
+plan13이 이전을 마쳐 위 목록이 현재 코드와 같다.
+`quartz-upstream` remote를 연결했고 공통 조상은 복사 시점 커밋 `d25a6eab`다.
+예외 파일 여섯을 뺀 나머지는 그 커밋과 내용이 같으며, `quartz/scripts/verify-upstream-untouched.sh`가 이것을 검사한다.
 
-업스트림은 `quartz-upstream` remote로 연결하고 복사 시점 커밋을 공통 조상으로 둔다.
 이 경계가 유지되면 갱신은 설정 파일 충돌만 확인하면 되고, 나중에 Quartz를 자체 구현으로 교체할 때 갈아끼울 표면이 색인 파일과 layout 하나로 드러난다.
 
 ## 운영 구성 저장 경계
