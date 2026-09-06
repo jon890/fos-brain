@@ -9,3 +9,4 @@
 | [aria-label 이 시각 라벨을 덮는다](code-review/aria-label-overrides-visible-label.md) | 음성 조작이 화면의 글자로 버튼을 찾지 못한다 |
 | [SSR 마크업 검사가 속성 출력 순서에 묶인다](code-review/ssr-attribute-order-regex.md) | 정규식이 렌더러의 속성 출력 순서를 전제한다 |
 | [경계 검사가 부재한 파일을 건너뛴다](code-review/absent-file-skipped-in-boundary-check.md) | 검사 대상을 현재 파일에서 뽑아 삭제가 통과한다 |
+| [git ls-files 가 추적하지 않는 파일을 빠뜨린다](code-review/git-ls-files-misses-untracked.md) | 검사가 새 파일 대신 추적 중인 새 파일만 본다 |
