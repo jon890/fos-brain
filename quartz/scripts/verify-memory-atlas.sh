@@ -65,8 +65,10 @@ echo "[1/6] Upstream fork boundary"
 # 기준 커밋을 끝내 받지 못하면 그 스크립트가 종료 코드 2 로 끝난다.
 # 이때는 경고만 남기고 넘어가, 뒤의 다섯 단계가 환경 때문에 통째로 빠지는 것을 막는다.
 boundary_status=0
+boundary_skipped=0
 bash "$SCRIPT_DIR/verify-upstream-untouched.sh" || boundary_status=$?
 if ((boundary_status == 2)); then
+  boundary_skipped=1
   echo "  경고: 기준 커밋을 받지 못해 경계 검사를 건너뛴다." >&2
 elif ((boundary_status != 0)); then
   fail "the upstream fork boundary check reported violations"
@@ -124,6 +126,11 @@ if nc -z 127.0.0.1 "$PORT" >/dev/null 2>&1 || nc -z 127.0.0.1 "$WS_PORT" >/dev/n
   fail "the temporary Quartz server did not release ports $PORT and $WS_PORT"
 fi
 
-echo "Memory Atlas verification passed."
+if ((boundary_skipped == 1)); then
+  echo "Memory Atlas verification passed, 단 [1/6] 업스트림 경계 검사는 건너뛰었다."
+  echo "기준 커밋을 받을 수 있는 환경에서 bash scripts/verify-upstream-untouched.sh 를 다시 돌린다."
+else
+  echo "Memory Atlas verification passed."
+fi
 echo "Suite log: $SERVER_LOG"
 echo "Browser evidence: $EVIDENCE_DIR"
