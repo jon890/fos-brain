@@ -42,8 +42,10 @@ Quartz를 계속 쓸지 자체 구현으로 갈지는 아직 정하지 않았으
 - `quartz.config.ts`, `quartz.layout.ts`, `quartz/styles/custom.scss`
 - `.npmrc`, `.prettierignore`, `package.json`
 
-이 예외를 뺀 `quartz/quartz/**`와 `quartz/` 루트가 복사 시점 커밋과 같은 상태를
-`quartz/scripts/verify-upstream-untouched.sh`가 검사한다. 경계가 무너지면 이 검사가 종료 코드 `1`로 잡는다.
+이 예외를 뺀 `quartz/quartz/**`, `quartz/docs/**`, `quartz/.github/**`와 `quartz/` 루트의 업스트림 파일이
+복사 시점 커밋과 같은 상태를 `quartz/scripts/verify-upstream-untouched.sh`가 검사한다.
+경계가 무너지면 이 검사가 종료 코드 `1`로 잡는다.
+검사 범위의 정확한 경계는 `quartz/UPSTREAM.md`가 소유한다.
 
 이 경계가 유지되면 Quartz에 의존하는 표면이 색인 파일과 layout 둘로 좁아진다.
 자체 구현으로 갈지는 그 표면을 보고 따로 판단한다. 이 결정은 그 판단을 앞당기지도 막지도 않는다.
