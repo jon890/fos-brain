@@ -119,6 +119,12 @@ Memory Atlas는 Quartz의 `/static/contentIndex.json`을 읽지 않는다.
 색인은 slug를 key로 하는 객체이며 각 항목은 아래 열한 필드를 가진다.
 선택 필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
 
+색인 객체는 항목 외에 스키마 표식 key 하나를 함께 담는다.
+key 이름은 `$memoryAtlasIndexSchema`이고 값은 문자열 `fos-brain/memory-atlas-index@1`이다.
+`$`로 시작하는 이름은 slug가 될 수 없으므로 항목과 섞이지 않으며, 읽는 쪽은 이 key를 제거한 나머지를 항목으로 다룬다.
+브라우저는 공개 색인과 관리자 색인을 모두 이 표식으로 검사하고, 값이 다르거나 표식이 없으면 그 자리에서 오류를 던진다.
+업스트림 `contentIndex.json`에는 이 표식이 없으므로, 옛 파일이 들어오면 필드만 비어 화면이 나빠지는 대신 실패가 드러난다.
+
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
 | `slug` | 문자열 | 문서 slug이며 색인의 key와 같다. |
@@ -384,6 +390,7 @@ public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`�
 ## 관리자 콘텐츠 API
 
 `GET /api/private/content-index`는 관리자용 병합 `memory-atlas-index.json`을 반환한다.
+응답 본문은 공개 색인과 같은 `$memoryAtlasIndexSchema` 표식을 담아야 하며, 브라우저는 표식이 없으면 관리자 데이터 적재를 실패로 처리한다.
 `GET /api/private/memory-atlas-semantics`는 관리자용 관계 데이터 JSON을 반환한다.
 두 endpoint는 관리자 Guard를 적용하고 `Cache-Control: private, no-store`를 반환한다.
 설정한 read-only 파일의 실제 경로 밖으로 이동하거나 다른 파일명을 요청할 수 없다.

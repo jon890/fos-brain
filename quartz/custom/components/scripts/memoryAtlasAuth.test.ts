@@ -8,6 +8,7 @@ import {
   logoutMemoryAtlasAdmin,
   MemoryAtlasAuthError,
 } from "./memoryAtlasAuth"
+import { memoryAtlasIndexSchemaMarker } from "../memoryAtlasIndexSchema"
 
 const originalFetch = globalThis.fetch
 
@@ -47,7 +48,10 @@ describe("memory atlas auth client", () => {
     globalThis.fetch = async (input) => {
       requested.push(String(input))
       if (String(input).endsWith("content-index")) {
-        return Response.json({ "concepts/rag": { title: "RAG", links: [], tags: [] } })
+        return Response.json({
+          ...memoryAtlasIndexSchemaMarker(),
+          "concepts/rag": { title: "RAG", links: [], tags: [] },
+        })
       }
       return Response.json({ schemaVersion: 1, edges: [] })
     }
@@ -59,6 +63,18 @@ describe("memory atlas auth client", () => {
       "/api/private/memory-atlas-semantics",
     ])
     assert.strictEqual(result.contentIndex["concepts/rag"].title, "RAG")
+    assert.deepStrictEqual(Object.keys(result.contentIndex), ["concepts/rag"])
+  })
+
+  test("fails when the protected index carries no schema marker", async () => {
+    globalThis.fetch = async (input) => {
+      if (String(input).endsWith("content-index")) {
+        return Response.json({ "concepts/rag": { title: "RAG", links: [], tags: [] } })
+      }
+      return Response.json({ schemaVersion: 1, edges: [] })
+    }
+
+    await assert.rejects(loadProtectedMemoryAtlasData(), /schema marker/)
   })
 
   test("preserves unauthorized status and rate-limit retry time", async () => {

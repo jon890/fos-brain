@@ -3,6 +3,7 @@ import { write } from "../../quartz/plugins/emitters/helpers"
 import { FullSlug, SimpleSlug, joinSegments } from "../../quartz/util/path"
 import { getDate } from "../../quartz/components/Date"
 import { normalizeKnowledgeMetaData } from "../components/knowledgeMetaData"
+import { memoryAtlasIndexSchemaMarker } from "../components/memoryAtlasIndexSchema"
 import type {
   KnowledgeFreshness,
   KnowledgeRole,
@@ -55,7 +56,7 @@ export const MemoryAtlasIndexEmitter: QuartzEmitterPlugin = () => ({
       ctx,
       slug: joinSegments("static", "memory-atlas-index") as FullSlug,
       ext: ".json",
-      content: JSON.stringify(index),
+      content: JSON.stringify({ ...memoryAtlasIndexSchemaMarker(), ...index }),
     })
   },
 })

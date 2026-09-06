@@ -25,6 +25,7 @@ import {
   type MemoryAtlasSemanticEdge,
 } from "../memoryAtlasSemantics"
 import type { MemoryAtlasIndexEntry } from "../../emitters/memoryAtlasIndex"
+import { parseMemoryAtlasIndex } from "../memoryAtlasIndexSchema"
 import type { FullSlug } from "../../../quartz/util/path"
 import {
   MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
@@ -300,11 +301,14 @@ export function restoreStoredMemoryAtlasState(
 }
 
 function loadContentIndex(): Promise<ContentIndexRecord> {
-  return fetch(MEMORY_ATLAS_INDEX_URL).then((response) => {
+  return fetch(MEMORY_ATLAS_INDEX_URL).then(async (response) => {
     if (!response.ok) {
       throw new Error(`Memory Atlas index failed with HTTP ${response.status}`)
     }
-    return response.json() as Promise<ContentIndexRecord>
+    return parseMemoryAtlasIndex<MemoryAtlasIndexEntry>(
+      await response.json(),
+      MEMORY_ATLAS_INDEX_URL,
+    ) as ContentIndexRecord
   })
 }
 
