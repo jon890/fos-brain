@@ -177,6 +177,13 @@ python3 ~/.claude/scripts/check-readability.py docs/code-architecture.md quartz/
 - 검사 스크립트를 만드는 이유는 경계가 사람의 기억으로만 유지되면 다음 작업에서 다시 무너지기 때문이다. 이 검사가 있어야 경계가 계약이 된다.
 - 그래프 수정을 되돌리는 판단 근거는 ADR-012에 있다. 본문 페이지에서 사용하지 않아 화면이 달라지지 않는다.
 
+## 범위 밖 후속
+
+`memoryAtlasView.tsx` 가 넘기는 `data-runtime-2d-src` 와 `data-runtime-3d-src` 가 아직
+`/static` 절대 경로다. 색인과 의미 파일은 `publishedAssetUrl` 로 페이지 기준 상대 경로가 됐지만
+runtime 스크립트는 그대로라, 하위 경로에 게시하면 runtime 로딩이 404 로 깨진다.
+이 phase 는 그 변경을 하지 않고 후속으로 보고한다.
+
 ## Blocked 조건
 
 - 업스트림 저장소를 받을 수 없으면 `PHASE_BLOCKED: quartz-upstream fetch 실패` 를 출력하고 끝낸다.
