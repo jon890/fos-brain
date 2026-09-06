@@ -26,6 +26,7 @@ import {
 } from "../memoryAtlasSemantics"
 import type { MemoryAtlasIndexEntry } from "../../emitters/memoryAtlasIndex"
 import { parseMemoryAtlasIndex } from "../memoryAtlasIndexSchema"
+import { getFullSlug, joinSegments, pathToRoot } from "../../../quartz/util/path"
 import type { FullSlug } from "../../../quartz/util/path"
 import {
   MEMORY_ATLAS_2D_BUTTON_SCALE_STEP,
@@ -98,7 +99,15 @@ const DEFAULT_TAGS: string[] = []
 const STATE_STORAGE_KEY = "memoryAtlasState"
 const LOGIN_RATE_LIMIT_MINUTES = 15
 
-const MEMORY_ATLAS_INDEX_URL = "/static/memory-atlas-index.json"
+const MEMORY_ATLAS_INDEX_FILE = "static/memory-atlas-index.json"
+const MEMORY_ATLAS_SEMANTICS_FILE = "static/memory-atlas-semantics.json"
+
+// 업스트림 fetchData 와 같은 방식으로 페이지 기준 상대 경로를 만든다.
+// 절대 경로를 쓰면 하위 경로에 게시했을 때 404 가 난다.
+function publishedAssetUrl(file: string): string {
+  const slug = (getFullSlug(window) ?? "") as FullSlug
+  return joinSegments(pathToRoot(slug), file)
+}
 
 function selectedValues(root: ParentNode, name: string): string[] {
   return [...root.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`)].map(
@@ -301,13 +310,14 @@ export function restoreStoredMemoryAtlasState(
 }
 
 function loadContentIndex(): Promise<ContentIndexRecord> {
-  return fetch(MEMORY_ATLAS_INDEX_URL).then(async (response) => {
+  const indexUrl = publishedAssetUrl(MEMORY_ATLAS_INDEX_FILE)
+  return fetch(indexUrl).then(async (response) => {
     if (!response.ok) {
       throw new Error(`Memory Atlas index failed with HTTP ${response.status}`)
     }
     return parseMemoryAtlasIndex<MemoryAtlasIndexEntry>(
       await response.json(),
-      MEMORY_ATLAS_INDEX_URL,
+      indexUrl,
     ) as ContentIndexRecord
   })
 }
@@ -328,7 +338,7 @@ function loadRuntimeFromDom(root: HTMLElement): RuntimeLoader {
 }
 
 function loadPublishedSemantics(): Promise<unknown> {
-  return fetch("/static/memory-atlas-semantics.json").then((response) => {
+  return fetch(publishedAssetUrl(MEMORY_ATLAS_SEMANTICS_FILE)).then((response) => {
     if (!response.ok) throw new Error(`Memory Atlas semantics failed with HTTP ${response.status}`)
     return response.json()
   })
