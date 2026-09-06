@@ -394,3 +394,11 @@ public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`�
 `GET /api/private/memory-atlas-semantics`는 관리자용 관계 데이터 JSON을 반환한다.
 두 endpoint는 관리자 Guard를 적용하고 `Cache-Control: private, no-store`를 반환한다.
 설정한 read-only 파일의 실제 경로 밖으로 이동하거나 다른 파일명을 요청할 수 없다.
+
+### 배포 순서
+
+private 인프라의 `BRAIN_PRIVATE_CONTENT_INDEX_FILE` 값 변경이 공개 저장소 배포보다 먼저다.
+
+이 값은 관리자 API가 넘길 병합 색인 파일을 가리킨다.
+값이 옛 `contentIndex.json`을 가리키면 응답에 `$memoryAtlasIndexSchema` 표식이 없고, 브라우저는 관리자 데이터 적재를 실패로 처리해 관리자 로그인이 항상 실패한다.
+그래서 private 인프라에서 이 값을 병합 `memory-atlas-index.json`으로 먼저 바꾸고, 그 응답이 표식을 그대로 넘기는지 확인한 뒤에 공개 저장소를 배포한다.

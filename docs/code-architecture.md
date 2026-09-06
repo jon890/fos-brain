@@ -131,7 +131,7 @@ raw Markdown은 내보내기 사본에서만 `type: Reference`를 보완하고 �
 
 - `quartz/quartz/**`는 업스트림 원본만 담으며 이 저장소에서 수정하지 않는다.
 - `quartz/custom/**`는 이 저장소가 만든 컴포넌트, 렌더러, emitter와 스타일을 담는다.
-- `quartz.config.ts`, `quartz.layout.ts`, `quartz/quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
+- `quartz.config.ts`, `quartz.layout.ts`, `quartz/styles/custom.scss`는 업스트림이 사용자 편집을 전제한 설정 파일이라 예외로 둔다.
 - `.npmrc`, `.prettierignore`, `package.json`은 이 저장소의 도구 설정이라 함께 예외로 둔다.
 - 커스텀 컴포넌트와 emitter는 업스트림의 재수출 목록에 등록하지 않고 설정 파일이 경로로 직접 불러온다.
 - 화면에 얹는 요소는 `renderPage`를 고치지 않고 layout의 컴포넌트 자리로 넣는다.
