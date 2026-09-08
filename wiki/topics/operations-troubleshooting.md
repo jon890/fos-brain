@@ -25,7 +25,7 @@ status: stable
 ## 남길 위치
 
 - 반복 가능한 운영 원칙은 [[testing-philosophy]]와 자동 검사로 남긴다.
-- vendor 고유 결함과 저장소별 우회는 코드, ADR와 회고에 둔다. [[vendor-bug-wrapper-vs-replace]]
+- vendor 고유 결함과 저장소별 우회는 코드, ADR와 회고에 둔다. [[vendor-bug-wrapper-vs-replace]], [[execution-log-vs-retrospective]]
 - 제거·전환 작업은 남아 있어야 하는 상태와 사라져야 하는 상태를 함께 검사한다. [[removal-plan-grep-gate]]
 - 검토 제안은 적용됐다는 가정 대신 결과를 실측한다. [[review-bot-suggestion-verify]]
 
