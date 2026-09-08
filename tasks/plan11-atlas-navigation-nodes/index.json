@@ -1,0 +1,22 @@
+{
+  "name": "plan11-atlas-navigation-nodes",
+  "description": "목차와 활동 기록처럼 항해가 목적인 문서를 frontmatter role로 표시해 Memory Atlas 그래프의 노드와 연결에서 제외한다.",
+  "status": "completed",
+  "created_at": "2026-09-04",
+  "total_phases": 2,
+  "current_phases": 2,
+  "phases": [
+    {
+      "number": 1,
+      "title": "role 필드 정규화와 그래프 제외",
+      "file": "phase-01.md",
+      "execution_profile": "standard"
+    },
+    {
+      "number": 2,
+      "title": "항해 문서 frontmatter 부여와 회귀 확인",
+      "file": "phase-02.md",
+      "execution_profile": "standard"
+    }
+  ]
+}

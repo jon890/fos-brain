@@ -1,5 +1,7 @@
 import { QuartzConfig } from "./quartz/cfg"
 import * as Plugin from "./quartz/plugins"
+import { MemoryAtlasAssets } from "./custom/emitters/memoryAtlasAssets"
+import { MemoryAtlasIndexEmitter } from "./custom/emitters/memoryAtlasIndex"
 
 /**
  * Quartz 4 Configuration
@@ -75,7 +77,8 @@ const config: QuartzConfig = {
     emitters: [
       Plugin.AliasRedirects(),
       Plugin.ComponentResources(),
-      Plugin.MemoryAtlasAssets(),
+      MemoryAtlasAssets(),
+      MemoryAtlasIndexEmitter(),
       Plugin.ContentPage(),
       Plugin.FolderPage(),
       Plugin.TagPage(),

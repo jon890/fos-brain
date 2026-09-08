@@ -1,3 +1,7 @@
+---
+role: navigation
+---
+
 # Wiki Index
 
 이 파일은 `wiki/` 의 전체 목차다. LLM 이 Q&A·brain-add·lint 시 가장 먼저 읽는 진입점.

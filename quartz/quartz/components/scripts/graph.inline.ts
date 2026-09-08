@@ -1,5 +1,4 @@
 import type { ContentDetails } from "../../plugins/emitters/contentIndex"
-import type { KnowledgeType } from "../knowledgeMetaData"
 import {
   SimulationNodeDatum,
   SimulationLinkDatum,
@@ -32,7 +31,6 @@ type NodeData = {
   id: SimpleSlug
   text: string
   tags: string[]
-  type?: KnowledgeType
 } & SimulationNodeDatum
 
 type SimpleLinkData = {
@@ -151,7 +149,6 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       id: url,
       text,
       tags: data.get(url)?.tags ?? [],
-      type: data.get(url)?.type,
     }
   })
   const graphData: { nodes: NodeData[]; links: LinkData[] } = {
@@ -196,12 +193,17 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     {} as Record<(typeof cssVars)[number], string>,
   )
 
-  const typeColors: Record<KnowledgeType, string> = {
-    concept: computedStyleMap["--secondary"],
-    topic: computedStyleMap["--tertiary"],
-    entity: computedStyleMap["--darkgray"],
+  // calculate color
+  const color = (d: NodeData) => {
+    const isCurrent = d.id === slug
+    if (isCurrent) {
+      return computedStyleMap["--secondary"]
+    } else if (visited.has(d.id) || d.id.startsWith("tags/")) {
+      return computedStyleMap["--tertiary"]
+    } else {
+      return computedStyleMap["--gray"]
+    }
   }
-  const nodeColor = (d: NodeData) => (d.type ? typeColors[d.type] : computedStyleMap["--gray"])
 
   function nodeRadius(d: NodeData) {
     const numLinks = graphData.links.filter(
@@ -372,13 +374,11 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   for (const n of graphData.nodes) {
     const nodeId = n.id
 
-    const isCurrentNode = nodeId === slug
-    const isVisitedNode = visited.has(nodeId)
     const label = new Text({
       interactive: false,
       eventMode: "none",
       text: n.text,
-      alpha: 1, // fos-brain: 라벨 항상 표시(첫 줌 이벤트 전에도 보이게)
+      alpha: 0,
       anchor: { x: 0.5, y: 1.2 },
       style: {
         fontSize: fontSize * 15,
@@ -399,16 +399,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       cursor: "pointer",
     })
       .circle(0, 0, nodeRadius(n))
-      .fill({ color: isTagNode ? computedStyleMap["--light"] : nodeColor(n) })
-      .stroke({
-        width: isCurrentNode ? 3 : isVisitedNode ? 2 : 1.15,
-        color: isCurrentNode
-          ? computedStyleMap["--secondary"]
-          : isVisitedNode
-            ? computedStyleMap["--tertiary"]
-            : computedStyleMap["--light"],
-        alpha: isCurrentNode || isVisitedNode ? 0.95 : 0.8,
-      })
+      .fill({ color: isTagNode ? computedStyleMap["--light"] : color(n) })
       .on("pointerover", (e) => {
         updateHoverInfo(e.target.label)
         oldLabelOpacity = label.alpha
@@ -425,7 +416,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       })
 
     if (isTagNode) {
-      gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"], alpha: 0.9 })
+      gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"] })
     }
 
     nodesContainer.addChild(gfx)
@@ -435,7 +426,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       simulationData: n,
       gfx,
       label,
-      color: nodeColor(n),
+      color: color(n),
       alpha: 1,
       active: false,
     }
@@ -519,9 +510,8 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
           stage.position.set(transform.x, transform.y)
 
           // zoom adjusts opacity of labels too
-          // fos-brain: 라벨을 항상 표시한다(한눈에 연결 파악). 기존 줌 fade(floor 0) 대신 floor 1.
           const scale = transform.k * opacityScale
-          let scaleOpacity = Math.max((scale - 1) / 3.75, 1)
+          let scaleOpacity = Math.max((scale - 1) / 3.75, 0)
           const activeNodes = nodeRenderData.filter((n) => n.active).flatMap((n) => n.label)
 
           for (const label of labelsContainer.children) {
@@ -551,7 +541,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       l.gfx.moveTo(linkData.source.x! + width / 2, linkData.source.y! + height / 2)
       l.gfx
         .lineTo(linkData.target.x! + width / 2, linkData.target.y! + height / 2)
-        .stroke({ alpha: l.alpha, width: l.active ? 2 : 1.15, color: l.color })
+        .stroke({ alpha: l.alpha, width: 1, color: l.color })
     }
 
     tweens.forEach((t) => t.update(time))

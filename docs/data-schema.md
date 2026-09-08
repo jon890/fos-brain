@@ -32,6 +32,7 @@
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
 | `type` | `concept`, `topic`, `entity` | 필수이며 문서 유형과 일치한다. |
+| `role` | `navigation` | 선택이며 지식이 아니라 다른 문서로 가는 길을 담은 문서에만 쓴다. |
 | `created` | `YYYY-MM-DD` | 필수이며 최초 생성일이다. |
 | `updated` | `YYYY-MM-DD` | 필수이며 마지막 의미 변경일이다. |
 | `title` | 문자열 | 권장하며 H1과 같은 의미를 가진다. |
@@ -45,6 +46,12 @@
 
 `sources` frontmatter는 검색·교환용 구조 신호다.
 사람이 원문으로 이동할 수 있도록 본문의 `## Sources`도 유지한다.
+
+`role: navigation`은 목차와 활동 기록처럼 다른 문서를 가리키는 것이 목적인 문서를 표시한다.
+이 문서는 지식 문서가 아니므로 위 표의 `type`, `created`, `updated`를 요구하지 않는다.
+페이지 렌더와 Quartz 문서 검색은 그대로 유지되고, Memory Atlas 그래프의 노드와 연결에서만 빠진다.
+그래프에서 빠지므로 항해도 화면의 검색과 결과 목록에도 나오지 않는다.
+`role`이 없거나 `navigation`이 아니면 일반 지식 문서로 다룬다.
 
 ## 링크 계약
 
@@ -107,13 +114,26 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 
 ## Memory Atlas 콘텐츠 색인
 
-정적 `/static/contentIndex.json`의 문서 항목은 기존 검색 필드에 다음 선택 필드를 더한다.
-필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
+Memory Atlas는 Quartz의 `/static/contentIndex.json`을 읽지 않는다.
+자체 emitter가 `/static/memory-atlas-index.json`을 만들고 이 파일이 색인 계약을 소유한다.
+색인은 slug를 key로 하는 객체이며 각 항목은 아래 열한 필드를 가진다.
+선택 필드가 없거나 잘못되면 해당 필터 신호만 생략하고 노드는 유지한다.
+
+색인 객체는 항목 외에 스키마 표식 key 하나를 함께 담는다.
+key 이름은 `$memoryAtlasIndexSchema`이고 값은 문자열 `fos-brain/memory-atlas-index@1`이다.
+`$`로 시작하는 이름은 slug가 될 수 없으므로 항목과 섞이지 않으며, 읽는 쪽은 이 key를 제거한 나머지를 항목으로 다룬다.
+브라우저는 공개 색인과 관리자 색인을 모두 이 표식으로 검사하고, 값이 다르거나 표식이 없으면 그 자리에서 오류를 던진다.
+업스트림 `contentIndex.json`에는 이 표식이 없으므로, 옛 파일이 들어오면 필드만 비어 화면이 나빠지는 대신 실패가 드러난다.
 
 | 필드 | 형식 | 규칙 |
 | --- | --- | --- |
+| `slug` | 문자열 | 문서 slug이며 색인의 key와 같다. |
+| `title` | 문자열 | frontmatter 제목이다. |
+| `links` | 문자열 배열 | 문서가 가리키는 대상 slug 목록이다. |
+| `tags` | 문자열 배열 | frontmatter 태그 목록이다. |
 | `description` | 문자열 | frontmatter 설명이며 노드 상세에 사용한다. |
 | `type` | `concept`, `topic`, `entity` | 기존 정규화 결과를 사용한다. |
+| `role` | `navigation` | frontmatter 값을 그대로 옮기며 다른 값은 생략한다. |
 | `status` | `draft`, `stable`, `deprecated` | 잘못된 값은 생략한다. |
 | `freshness` | 객체 | `date`에는 `stale_after` 날짜를 넣고, `state`에는 `current`, `stale`, `invalid` 중 하나를 넣는다. |
 | `updated` | ISO 8601 문자열 | Quartz가 선택한 수정일을 직렬화한다. |
@@ -123,6 +143,8 @@ public 저장소의 구조화 설정은 애플리케이션 동작에 필요한 �
 공개 빌드에는 `_private/` 입력이 없으므로 private 항목과 필터가 생성되지 않는다.
 
 Memory Atlas의 연결은 기존 `links` 배열에서 대상 slug가 현재 색인에 있는 항목만 사용한다.
+`role`이 `navigation`인 항목은 노드와 연결 계산에서 모두 제외한다.
+목차 문서는 거의 모든 문서를 가리키므로 남겨두면 무관한 두 문서가 2 hop으로 이어지고 배치가 한 점으로 쏠린다.
 중복된 source와 target 쌍은 하나로 합치며 self-link는 제외한다.
 supports나 contradicts 같은 의미 연결 유형은 현재 wiki에 저장된 근거가 없으므로 생성하지 않는다.
 
@@ -279,7 +301,7 @@ private 인프라 저장소는 다음 이름으로 파일과 디렉터리를 ima
 | `BRAIN_ADMIN_PASSWORD_HASH_FILE` | mode `600`인 일반 파일이며 `scrypt$131072$8$1$<salt>$<derived-key>` 한 줄을 담는다. |
 | `BRAIN_PUBLIC_WIKI_ROOT` | public wiki root 디렉터리다. |
 | `BRAIN_PRIVATE_WIKI_ROOT` | private wiki root 디렉터리다. |
-| `BRAIN_PRIVATE_CONTENT_INDEX_FILE` | public과 private을 합친 Memory Atlas 콘텐츠 색인 JSON 파일이다. |
+| `BRAIN_PRIVATE_CONTENT_INDEX_FILE` | public과 private을 합친 Memory Atlas 콘텐츠 색인 JSON 파일인 `memory-atlas-index.json`이다. |
 | `BRAIN_PRIVATE_MEMORY_ATLAS_SEMANTICS_FILE` | public과 private을 합친 Memory Atlas 관계 JSON 파일이다. |
 | `BRAIN_TRUST_PROXY_HOPS` | Express가 신뢰할 reverse proxy hop 수인 0 이상 255 이하 정수다. 실제 값은 private 인프라의 운영 경로 검증으로 정한다. |
 
@@ -367,7 +389,16 @@ public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`�
 
 ## 관리자 콘텐츠 API
 
-`GET /api/private/content-index`는 관리자용 병합 `contentIndex.json`을 반환한다.
+`GET /api/private/content-index`는 관리자용 병합 `memory-atlas-index.json`을 반환한다.
+응답 본문은 공개 색인과 같은 `$memoryAtlasIndexSchema` 표식을 담아야 하며, 브라우저는 표식이 없으면 관리자 데이터 적재를 실패로 처리한다.
 `GET /api/private/memory-atlas-semantics`는 관리자용 관계 데이터 JSON을 반환한다.
 두 endpoint는 관리자 Guard를 적용하고 `Cache-Control: private, no-store`를 반환한다.
 설정한 read-only 파일의 실제 경로 밖으로 이동하거나 다른 파일명을 요청할 수 없다.
+
+### 배포 순서
+
+private 인프라의 `BRAIN_PRIVATE_CONTENT_INDEX_FILE` 값 변경이 공개 저장소 배포보다 먼저다.
+
+이 값은 관리자 API가 넘길 병합 색인 파일을 가리킨다.
+값이 옛 `contentIndex.json`을 가리키면 응답에 `$memoryAtlasIndexSchema` 표식이 없고, 브라우저는 관리자 데이터 적재를 실패로 처리해 관리자 로그인이 항상 실패한다.
+그래서 private 인프라에서 이 값을 병합 `memory-atlas-index.json`으로 먼저 바꾸고, 그 응답이 표식을 그대로 넘기는지 확인한 뒤에 공개 저장소를 배포한다.

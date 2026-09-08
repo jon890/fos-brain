@@ -1,10 +1,13 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
+import MemoryAtlas from "./custom/components/MemoryAtlas"
+import KnowledgeMeta from "./custom/components/KnowledgeMeta"
+import MemoryAtlasDocNav from "./custom/components/MemoryAtlasDocNav"
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
-  header: [],
+  header: [MemoryAtlasDocNav()],
   afterBody: [],
   footer: Component.Footer({
     links: {
@@ -22,7 +25,7 @@ export const defaultContentPageLayout: PageLayout = {
       condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
     Component.ConditionalRender({
-      component: Component.MemoryAtlas(),
+      component: MemoryAtlas(),
       condition: (page) => page.fileData.slug?.toLowerCase() === "index",
     }),
     Component.ConditionalRender({
@@ -30,7 +33,7 @@ export const defaultContentPageLayout: PageLayout = {
       condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
     Component.ConditionalRender({
-      component: Component.KnowledgeMeta(),
+      component: KnowledgeMeta(),
       condition: (page) => page.fileData.slug?.toLowerCase() !== "index",
     }),
     Component.ConditionalRender({

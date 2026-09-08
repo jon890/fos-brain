@@ -66,24 +66,6 @@ export default ((opts?: Partial<GraphOptions>) => {
     return (
       <div class={classNames(displayClass, "graph")}>
         <h3>{i18n(cfg.locale).components.graph.title}</h3>
-        <ul class="graph-legend" aria-label="지식 유형 범례">
-          <li>
-            <span class="graph-legend__swatch graph-legend__swatch--concept" aria-hidden="true" />
-            concept
-          </li>
-          <li>
-            <span class="graph-legend__swatch graph-legend__swatch--topic" aria-hidden="true" />
-            topic
-          </li>
-          <li>
-            <span class="graph-legend__swatch graph-legend__swatch--entity" aria-hidden="true" />
-            entity
-          </li>
-          <li>
-            <span class="graph-legend__swatch graph-legend__swatch--other" aria-hidden="true" />
-            기타
-          </li>
-        </ul>
         <div class="graph-outer">
           <div class="graph-container" data-cfg={JSON.stringify(localGraph)}></div>
           <button class="global-graph-icon" aria-label="Global Graph">

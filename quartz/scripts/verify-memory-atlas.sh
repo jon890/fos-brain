@@ -61,41 +61,57 @@ mkdir -p "$EVIDENCE_DIR"
 
 cd "$QUARTZ_DIR"
 
-echo "[1/5] Formatting"
+echo "[1/6] Upstream fork boundary"
+# 기준 커밋을 끝내 받지 못하면 그 스크립트가 종료 코드 2 로 끝난다.
+# 이때는 경고만 남기고 넘어가, 뒤의 다섯 단계가 환경 때문에 통째로 빠지는 것을 막는다.
+boundary_status=0
+boundary_skipped=0
+bash "$SCRIPT_DIR/verify-upstream-untouched.sh" || boundary_status=$?
+if ((boundary_status == 2)); then
+  boundary_skipped=1
+  echo "  경고: 기준 커밋을 받지 못해 경계 검사를 건너뛴다." >&2
+elif ((boundary_status != 0)); then
+  fail "the upstream fork boundary check reported violations"
+fi
+
+echo "[2/6] Formatting"
 pnpm exec prettier --check \
   scripts/memory-atlas-browser-assertions.mjs \
   scripts/verify-memory-atlas-browser.mjs \
   quartz.layout.ts \
-  quartz/components/MemoryAtlas.tsx \
-  quartz/components/memoryAtlasData.test.ts \
-  quartz/components/memoryAtlasData.ts \
-  quartz/components/memoryAtlasView.test.tsx \
-  quartz/components/memoryAtlasView.tsx \
-  quartz/components/memoryAtlas2dRuntime.test.ts \
-  quartz/components/renderPage.tsx \
-  quartz/components/scripts/memoryAtlas.inline.ts \
-  quartz/components/scripts/memoryAtlasAuth.test.ts \
-  quartz/components/scripts/memoryAtlasAuth.ts \
-  quartz/components/scripts/memoryAtlasController.ts \
-  quartz/components/scripts/memoryAtlasController.test.ts \
-  quartz/components/scripts/memoryAtlasRuntimeTypes.ts \
-  quartz/components/scripts/memoryAtlas2dRuntime.ts \
-  quartz/components/scripts/memoryAtlas3dRuntime.ts \
-  quartz/components/styles/memoryAtlas.scss
+  custom/components/MemoryAtlas.tsx \
+  custom/components/MemoryAtlasDocNav.tsx \
+  custom/components/memoryAtlasData.test.ts \
+  custom/components/memoryAtlasData.ts \
+  custom/components/memoryAtlasIndexSchema.test.ts \
+  custom/components/memoryAtlasIndexSchema.ts \
+  custom/components/memoryAtlasView.test.tsx \
+  custom/components/memoryAtlasView.tsx \
+  custom/components/memoryAtlas2dRuntime.test.ts \
+  custom/emitters/memoryAtlasIndex.ts \
+  custom/components/scripts/memoryAtlas.inline.ts \
+  custom/components/scripts/memoryAtlasAuth.test.ts \
+  custom/components/scripts/memoryAtlasAuth.ts \
+  custom/components/scripts/memoryAtlasController.ts \
+  custom/components/scripts/memoryAtlasController.test.ts \
+  custom/components/scripts/memoryAtlasRuntimeTypes.ts \
+  custom/components/scripts/memoryAtlas2dRuntime.ts \
+  custom/components/scripts/memoryAtlas3dRuntime.ts \
+  custom/components/styles/memoryAtlas.scss
 
-echo "[2/5] Type checking"
+echo "[3/6] Type checking"
 pnpm exec tsc --noEmit
 
-echo "[3/5] Unit tests"
+echo "[4/6] Unit tests"
 pnpm test
 
-echo "[4/5] Quartz build and local server"
+echo "[5/6] Quartz build and local server"
 node --no-deprecation ./quartz/bootstrap-cli.mjs build --serve --port "$PORT" --wsPort "$WS_PORT" \
   >"$SERVER_LOG" 2>&1 &
 SERVER_PID=$!
 wait_for_server
 
-echo "[5/5] Browser, state, layout, and privacy regression"
+echo "[6/6] Browser, state, layout, and privacy regression"
 AB_TIMEOUT_SECONDS="${AB_TIMEOUT_SECONDS:-45}" \
   bash "$SCRIPT_DIR/verify-memory-atlas-browser.sh" "$BASE_URL"
 
@@ -110,6 +126,11 @@ if nc -z 127.0.0.1 "$PORT" >/dev/null 2>&1 || nc -z 127.0.0.1 "$WS_PORT" >/dev/n
   fail "the temporary Quartz server did not release ports $PORT and $WS_PORT"
 fi
 
-echo "Memory Atlas verification passed."
+if ((boundary_skipped == 1)); then
+  echo "Memory Atlas verification passed, 단 [1/6] 업스트림 경계 검사는 건너뛰었다."
+  echo "기준 커밋을 받을 수 있는 환경에서 bash scripts/verify-upstream-untouched.sh 를 다시 돌린다."
+else
+  echo "Memory Atlas verification passed."
+fi
 echo "Suite log: $SERVER_LOG"
 echo "Browser evidence: $EVIDENCE_DIR"

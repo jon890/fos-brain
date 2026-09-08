@@ -30,3 +30,5 @@ ls docs/adr/[0-9]*.md | grep -oE '/[0-9]+' | tr -d '/' | sort | uniq -d
 - [ADR-008](008-memory-atlas-2d-semantic-navigation.md) — 기본 탐색은 2D 혼합 관계 지도와 선택 중심 지역 관계를 사용하고 3D는 조망 모드로 유지한다.
 - [ADR-009](009-claude-code-review-boundary.md) — Claude 코드 리뷰는 GitHub Actions의 읽기 전용 단일 리뷰로 실행하고 별도 GitHub App은 두지 않는다.
 - [ADR-010](010-native-admin-authentication.md) — 단일 Brain 화면은 NestJS BFF의 로컬 관리자 session으로 private 조회 권한을 판정한다.
+- [ADR-011](011-atlas-navigation-document-exclusion.md) — 목차와 활동 기록처럼 항해가 목적인 문서는 frontmatter로 표시해 Memory Atlas 그래프에서 제외한다.
+- [ADR-012](012-quartz-fork-boundary.md) — Quartz는 수정하지 않는 업스트림 원본으로 두고 자체 코드를 별도 디렉터리로 분리한다.
