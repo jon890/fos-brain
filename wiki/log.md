@@ -296,3 +296,33 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: `raw/web/2026-08-26-toss-securities-recommendation-search-rag-graphrag.md` (https://toss.tech/article/tech_talk_talk_3)
 - 이미 있던 유튜브 자동자막 판본의 오인식 수치·파라미터 이름을 글 판본으로 교정
 - 신규 1 페이지(recommendation-batch-to-realtime-loop), 보강 2 페이지(graph-rag-path-retrieval, embedding-versioned-vector-index), 출처 추가 2 페이지
+
+## [2026-08-29] add | 월가아재 손실 대응 마인드셋 영상 적재
+- Source: `raw/videos/2026-08-29-wallstreet-uncle-loss-mindset.md` (https://www.youtube.com/watch?v=qhF-QTddCAw)
+- 신규 2 페이지(investment-loss-mindset, thinking-capacity-as-investment-edge), 보강 1 페이지(self-directed-learning)
+- INDEX: "투자 태도" 카테고리 신설
+
+## [2026-08-29] add | 달러 패권 영상 재컴파일 (매크로 축 신설)
+- Source: `raw/videos/2026-05-12-dollar-hegemony-jasanjegop.md` (https://www.youtube.com/watch?v=sHAppXmzRhs)
+- 5월 수집 이후 wiki 로 컴파일되지 않은 채 남아 있던 raw 를 처리
+- 신규 2 페이지(dollar-hegemony-structure, hegemony-resource-shift-oil-to-ai), 보강 1 페이지(investment-loss-mindset)
+- INDEX: "투자 매크로 배경" 카테고리 신설
+- 자동자막 오인식이 커서 구체적 수치와 시의적 전망은 옮기지 않음
+
+## [2026-08-31] add | 하네스 지식의 보존 기준을 실제 소비 중심으로 교정
+- Source: `raw/notes/2026-08-31-harness-retros-cleanup.md`
+- 신규 0 페이지, 보강 3 페이지: execution-log-vs-retrospective, pitfalls-file-per-pattern, self-improving-harness
+- 원시 회고·실행 통계·완료 task는 전달 산출물로 두고, 재사용 가능한 결정·패턴·검사만 장기 지식으로 승격
+
+## [2026-09-01] add | 코드 리뷰 게시를 한 리뷰로 합치는 패턴과 그것이 강제하는 정리 방식
+- Source: 저장소 8곳의 워크플로 실측 (합쳐진 형태 1곳, 나뉜 형태 7곳을 모두 합침)
+- 신규 0 페이지, 보강 1 페이지: ai-code-review-github-actions
+- 요약을 리뷰 본문으로 옮기면 제출된 리뷰를 지울 수 없어 정리 방식이 접기로 강제된다
+- 낡은 사실 6건 교정: 종료 reaction 은 ✅ 가 아니라 👍·👎, 본문은 gh pr comment 가 아니라 reviews API JSON
+- 부분 채택 조언 6건에 실제 채택률과 안 따를 때 깨지는 지점을 붙였다
+
+## [2026-09-02] add | 리뷰 워크플로를 고치는 PR 자체가 실패하는 함정
+- Source: 저장소 여섯 곳에 합치기를 적용하며 겪은 실측
+- 신규 0 페이지, 보강 1 페이지: ai-code-review-github-actions
+- claude-code-action 은 워크플로 파일이 기본 브랜치와 같아야 앱 토큰을 내준다
+- 합치면 comments 하나의 422 가 요약까지 지운다. 나눠 올릴 때는 인라인만 잃었다
