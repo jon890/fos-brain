@@ -49,6 +49,8 @@ AI 에이전트가 긴 작업을 안전하게 끝내도록 목표, 권한, 컨�
 
 ## 관련 개념
 
+- [[execution-log-vs-retrospective]] — 위에서 말한 회고가 어디에 남고 무엇이 wiki로 올라오는지
+
 - [[work-style]] — 이 패턴을 포함하는 전체 업무 스타일
 - [[self-improving-harness]] — 검증에서 얻은 학습을 올바른 단일 원본으로 환원하는 루프
 - [[testing-philosophy]] — 실제 경로와 실패 불변을 확인하는 검증 철학

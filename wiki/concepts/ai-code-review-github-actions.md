@@ -202,6 +202,6 @@ c 부터 추가(`+`)·context 라인을 누적해 라인을 구하되 삭제(`-`
 
 - [[../../raw/notes/2026-05-28-ai-code-review-github-actions.md]]
 - [[../../raw/notes/2026-05-29-claude-code-review-cli-recipe.md]] (self-hosted CLI 방식, 신규 구축 레시피, 함정 보강)
-- 2026-09-01 실측: 저장소 8곳의 워크플로를 대조해 게시 방식과 정리 방식을 정리했다. 합쳐진 형태 1곳과 나뉜 형태 7곳이었고 7곳을 합쳤다. 별도 raw 노트 없이 이 페이지가 결과를 담는다.
-- 2026-09-02 실측: 저장소 여섯 곳에 합치기를 적용하며 워크플로 파일을 고치는 PR 자체가 `App token exchange failed: 401` 로 실패하는 것을 확인했다. 별도 raw 노트 없이 이 페이지가 결과를 담는다.
+- [[../../raw/notes/2026-09-01-code-review-single-review-merge.md]] (저장소 8곳 대조, 게시 방식과 정리 방식, 갈리는 축 여덟)
+- [[../../raw/notes/2026-09-02-review-workflow-self-pr-failure.md]] (워크플로 파일을 고치는 PR 이 앱 토큰 교환에 실패하는 함정)
 - github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml` (2026-06-02: marketplace action 방식으로 prompt 를 `code-review-prompt.txt` 외부 분리, `--model opus` 별칭 적용, 일반 리뷰 우선 개방형 프레이밍 반영)

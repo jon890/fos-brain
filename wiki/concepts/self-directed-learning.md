@@ -40,6 +40,7 @@ AI를 사용했더라도 근거를 비교하고,
 - [[testing-philosophy]] — 실제 검증을 통해 그럴듯한 결과와 실제 동작을 구분하는 태도
 - [[self-improving-harness]] — 피드백을 받아 산출물을 반복 개선하는 메타 루프
 - [[thinking-capacity-as-investment-edge]] — 같은 원리를 일기와 투자 의사결정에 적용한 관점
+- [[investment-loss-mindset]] — 글로 쓰며 이해의 빈틈을 드러내는 이 루프를 손실 국면의 행동에 적용한 관점
 
 ## Sources
 
