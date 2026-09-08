@@ -140,6 +140,6 @@ role: navigation
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-08-31 (하네스 지식 수명주기 보강 3)
+- 마지막 brain-add: 2026-09-02 (리뷰 워크플로 자체가 실패하는 함정)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

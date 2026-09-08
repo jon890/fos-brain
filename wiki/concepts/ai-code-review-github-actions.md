@@ -2,6 +2,9 @@
 type: concept
 created: 2026-05-28
 updated: 2026-09-02
+title: "GitHub Actions AI 코드 리뷰 워크플로 패턴"
+description: "PR 자동 리뷰를 새 저장소에 포팅하는 두 구현 방식과 프롬프트 주입, 게시 방식, 저장소마다 갈리는 여덟 축"
+tags: [ai-harness, code-review, github-actions, ci]
 ---
 
 # GitHub Actions AI 코드 리뷰 워크플로우 패턴
@@ -14,6 +17,11 @@ PR 에 코드 리뷰를 자동화하는 재사용 패턴이다. 새 repo 마다 
 - **self-hosted CLI** — runner 에 `claude login` 해두고 워크플로에서 `claude` 바이너리를 직접 호출한다. action 의존이 없고 모델·도구·프롬프트를 완전히 제어한다. 대신 인증·도구 차단을 직접 챙겨야 한다.
 
 엔터프라이즈(GitHub Enterprise Server)·사내망에서는 CLI 방식이 흔하다. marketplace action 을 쓸 수 없는 환경이 있기 때문이다.
+
+**엔터프라이즈 함정을 이 공개 페이지에 두는 이유다.**
+이전에는 환경 특화 함정을 work 네임스페이스로 보냈다.
+`GH_HOST` 와 `GH_ENTERPRISE_TOKEN` 처럼 엔터프라이즈를 쓰는 누구에게나 같은 값은 일반 패턴이라 여기 둔다.
+사내 호스트명, 저장소 이름과 토큰 값은 여기 적지 않는다.
 
 ## 신규 레포 구축 순서 (즉시 따라 만들기)
 
@@ -177,7 +185,7 @@ c 부터 추가(`+`)·context 라인을 누적해 라인을 구하되 삭제(`-`
 저장소 8곳의 실측으로 게시 방식과 정리 방식을 다시 정리했다. 합쳐진 형태가 1곳이고 나머지 7곳이 2회로 나뉜 형태였다.
 7곳을 합치는 과정에서 위 「합치면 정리 방식이 강제된다」 와 함정 세 항목이 나왔다.
 
-저장소마다 갈리는 축이 일곱이다. 새 저장소에 포팅할 때 이 축을 먼저 확인한다.
+저장소마다 갈리는 축이 여덟이다. 새 저장소에 포팅할 때 이 축을 먼저 확인한다.
 
 | 축 | 갈리는 값 |
 | --- | --- |
@@ -194,4 +202,6 @@ c 부터 추가(`+`)·context 라인을 누적해 라인을 구하되 삭제(`-`
 
 - [[../../raw/notes/2026-05-28-ai-code-review-github-actions.md]]
 - [[../../raw/notes/2026-05-29-claude-code-review-cli-recipe.md]] (self-hosted CLI 방식, 신규 구축 레시피, 함정 보강)
+- 2026-09-01 실측: 저장소 8곳의 워크플로를 대조해 게시 방식과 정리 방식을 정리했다. 합쳐진 형태 1곳과 나뉜 형태 7곳이었고 7곳을 합쳤다. 별도 raw 노트 없이 이 페이지가 결과를 담는다.
+- 2026-09-02 실측: 저장소 여섯 곳에 합치기를 적용하며 워크플로 파일을 고치는 PR 자체가 `App token exchange failed: 401` 로 실패하는 것을 확인했다. 별도 raw 노트 없이 이 페이지가 결과를 담는다.
 - github.com/jon890/nhncloud-cli `.github/workflows/claude-code-review.yml` (2026-06-02: marketplace action 방식으로 prompt 를 `code-review-prompt.txt` 외부 분리, `--model opus` 별칭 적용, 일반 리뷰 우선 개방형 프레이밍 반영)

@@ -60,6 +60,7 @@ status: stable
 - [[thinking-capacity-as-investment-edge]] — 손실 이후 실천 중 하나인 일기가 왜 투자 실력으로 이어지는지
 - [[self-directed-learning]] — 글로 쓰며 이해의 빈틈을 드러내는 학습 루프와 같은 구조
 - [[dollar-hegemony-structure]] — 시장 구조를 읽는 축. 이 페이지는 그 구조 앞에서의 행동을 다룬다
+- [[hegemony-resource-shift-oil-to-ai]] — 담보가 석유에서 AI로 옮겨가는 국면. 그 전환기의 손실을 어떻게 다룰지가 이 페이지다
 
 ## 적용 시 주의
 

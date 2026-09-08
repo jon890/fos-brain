@@ -2,7 +2,7 @@
 type: concept
 created: 2026-06-16
 updated: 2026-08-31
-title: 회피 패턴 wiki: 파일-per-패턴과 INDEX 라우터
+title: "회피 패턴 wiki: 파일-per-패턴과 INDEX 라우터"
 description: 반복 함정을 패턴당 한 파일로 저장하고 실제 소비되는 항목만 INDEX로 선택하는 운영 원칙
 tags: [ai-harness, pitfalls, documentation]
 ---
