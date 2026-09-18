@@ -27,12 +27,12 @@ role: navigation
 - [[shared-skill-core-overlay]] — 복제 스킬을 단일 코어와 레포 오버레이로 나눠 개선을 한 곳에서만 반영 (전역 override 함정 포함)
 - [[skill-section-single-ownership]] — 스킬 문서 안 같은 지시가 여러 섹션에 중복되면 한 섹션만 소유자로 남기는 원칙
 - [[skill-versioning-changelog]] — 심링크로 배포되는 공용 스킬의 버전+CHANGELOG 체계 (버전은 배포 핀이 아님)
-- [[execution-log-vs-retrospective]] — 실행 기록(매번 얕게)과 회고(사건마다 깊게)의 역할 분리
+- [[execution-log-vs-retrospective]] — task·실행 통계·원시 회고는 전달 산출물로 두고 재사용 가능한 결정과 패턴만 승격
 - [[merge-conflict-free-append]] — 누적 append 파일의 머지 충돌을 파일 per 항목, INDEX 라우터로 구조적 제거 (번호 glob 으로 발견성 보존, pitfalls→ADR 이식)
-- [[pitfalls-file-per-pattern]] — 회피 패턴 wiki 를 파일-per-패턴, INDEX 라우터로 운영 (카테고리=소비 시점, 축적 점검, prune·automate)
+- [[pitfalls-file-per-pattern]] — 회피 패턴을 패턴당 한 파일로 운영하고 원시 회고 없이 실제 소비되는 교훈만 승격
 - [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
-- [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
-- [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식, 신규 구축 레시피, 프롬프트 설계, 함정)
+- [[self-improving-harness]] — 반복 교훈을 실제 소비되는 문서와 결정적 검사에 환원하고 오래된 산출물을 정리하는 루프
+- [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (요약과 인라인을 한 리뷰로 묶는 게시, 그것이 강제하는 정리 방식, 신규 구축 레시피, 함정)
 - [[ai-generated-code-acceptance-criteria]] — AI 생성 코드가 동작해도 사람이 설명 가능성과 변경 규모를 기준으로 채택 여부를 판단하는 기준
 
 ### 스킬 자동 최적화
@@ -61,6 +61,16 @@ role: navigation
 ### 면접 준비
 
 - [[executive-personality-interview-risk-frame]] — 임원·인성면접을 조직 리스크 관리 관점에서 준비하는 프레임
+
+### 투자 태도
+
+- [[investment-loss-mindset]] — 손실을 중립적 사건으로 두고 이후 행동으로 의미를 정하는 대응 원칙
+- [[thinking-capacity-as-investment-edge]] — 투자 실력의 자리를 정보나 기법이 아니라 사고력에 두는 관점
+
+### 투자 매크로 배경
+
+- [[dollar-hegemony-structure]] — 달러가 금에서 석유로 담보를 바꾸며 얻은 특권과 그 균열, 금과 비트코인의 역할 구분
+- [[hegemony-resource-shift-oil-to-ai]] — 패권 담보가 AI로 이동하는 구조와 반도체·희토류 병목, 한국의 위치
 
 ### 자동화 시스템 (fos-agents)
 
@@ -125,11 +135,11 @@ role: navigation
 - `raw/papers/` — PDF 논문·문서 및 추출 텍스트 (2개: RAG 아키텍처 분석, AI 시대 전문성)
 - `raw/repos/` — 코드 저장소 스니펫·README (현재 비어있음)
 - `raw/notes/` — 사용자 메모와 승인된 세션 요약 중 raw 로 승격된 노트
-- `raw/videos/` — 유튜브 자막 정리본 (6개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰, 토스증권 추천·검색 테크톡)
+- `raw/videos/` — 유튜브 자막 정리본 (8개: 자산제곱 달러 패권·미중 패권전쟁, NAVER D2 GNOSIS 에이전트 자율 성장, 코딩하는기술사 커넥션 풀, 취업전략 임원 면접, 조코딩 OpenAI AGI·Codex 인터뷰, 서울대 박주용 교수 자기주도 탐구 학습, 토스증권 추천·검색 테크톡, 월가아재 손실 마인드셋)
 
 ## 메타
 
 - 전체 활동 연대기: [[log]] (append-only)
-- 마지막 brain-add: 2026-08-27 (토스증권 추천·검색 테크톡 글 판본 — 신규 1, 보강 2)
+- 마지막 brain-add: 2026-09-02 (리뷰 워크플로 자체가 실패하는 함정)
 - 마지막 lint: 2026-07-01
 - 검색 도구: qmd (컬렉션 `brain-wiki`, `brain-raw`). 사용법은 CLAUDE.md 의 "검색 도구: qmd" 섹션 참조.

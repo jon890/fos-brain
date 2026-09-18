@@ -19,7 +19,7 @@ status: stable
 - **결정 우선 문서화**: 되돌리기 어렵거나 대안이 갈리는 결정은 코드보다 먼저 이유를 남긴다. [[docs-first-adr]]
 - **실동작 검증**: 결정적 검사, 실제 실행 경로와 실패 시 상태 불변을 확인한다. [[testing-philosophy]]
 - **저장소별 기술 선택**: 반복 취향과 저장소별 버전 경계를 구분한다. [[tech-stack-preferences]]
-- **학습의 단일 원본 환원**: 반복 교훈은 테스트, skill이나 AGENTS.md로 옮기고 일회성 사건은 회고에 둔다. [[self-improving-harness]]
+- **학습의 단일 원본 환원**: 반복 교훈은 테스트, skill이나 AGENTS.md로 옮기고 일회성 사건은 회고에 둔다. [[self-improving-harness]], [[execution-log-vs-retrospective]]
 - **정보의 탐색성**: 요약에서 전체를 훑고 필요한 원문으로 내려가는 화면을 선호한다. [[information-interface-preferences]]
 - **관심사별 자동화 경계**: 공통 규칙과 민감한 실행 데이터를 분리한 개인 자동화 시스템을 운영한다. [[fos-agents]]
 
