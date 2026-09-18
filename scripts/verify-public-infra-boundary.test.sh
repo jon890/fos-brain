@@ -80,6 +80,33 @@ run_boundary >/dev/null \
   || fail "boundary verification failed with an empty denylist"
 rm -f "$fixture_root/docs/leak.md"
 
+# 값 목록의 허용 층이 동작하는지 본다.
+# 지어낸 도메인 하나를 금지하고 그 아래 이름 하나만 허용한다.
+allow_denylist="$fixture_root/denylist-allow.txt"
+printf '%s\n' \
+  '# 지어낸 값' \
+  '(^|[^[:alnum:]_.-])[a-z0-9-]+\.example-private\.test([^[:alnum:]_.-]|$)' \
+  '!(^|[^[:alnum:]_.-])allowed\.example-private\.test([^[:alnum:]_.-]|$)' \
+  > "$allow_denylist"
+
+# 허용 패턴에 맞는 줄은 걸리지 않는다.
+printf '%s\n' '공개해 둔 주소는 allowed.example-private.test 이다' > "$fixture_root/docs/leak.md"
+PUBLIC_REPO_DENYLIST="$allow_denylist" run_boundary >/dev/null \
+  || fail "boundary verification rejected an allowed line"
+
+# 같은 규칙에 걸리는 다른 줄은 그대로 걸린다.
+printf '%s\n' '내부 주소는 blocked.example-private.test 이다' > "$fixture_root/docs/leak.md"
+PUBLIC_REPO_DENYLIST="$allow_denylist" run_boundary >/dev/null 2>&1 \
+  && fail "an allow pattern disabled the whole denylist rule"
+
+# 허용된 줄과 걸리는 줄이 함께 있으면 걸리는 줄만 남아 잡힌다.
+printf '%s\n' \
+  '공개해 둔 주소는 allowed.example-private.test 이다' \
+  '내부 주소는 blocked.example-private.test 이다' > "$fixture_root/docs/leak.md"
+PUBLIC_REPO_DENYLIST="$allow_denylist" run_boundary >/dev/null 2>&1 \
+  && fail "an allowed line masked a blocked line in the same rule"
+rm -f "$fixture_root/docs/leak.md"
+
 # 값 목록을 읽지 못해도 검사 자체는 돌아야 한다.
 PUBLIC_REPO_DENYLIST="$fixture_root/does-not-exist.txt" run_boundary >/dev/null \
   || fail "boundary verification failed when the denylist was unavailable"

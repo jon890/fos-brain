@@ -15,6 +15,12 @@
 # 한 줄에 확장 정규식 하나이고 `#` 로 시작하는 줄은 건너뛴다.
 # 그 저장소가 없으면 형태 패턴만 검사하고 그 사실을 알린다.
 #
+# 그 목록의 `!` 로 시작하는 줄은 허용 패턴이다.
+# 금지 패턴에 걸린 줄 가운데 허용 패턴에 맞는 줄을 결과에서 뺀다.
+# 남는 줄이 없으면 그 금지 규칙은 통과로 친다.
+# 허용은 줄 단위라 금지 규칙 자체를 끄지 않고, 같은 규칙에 걸리는 다른 줄은 그대로 걸린다.
+# `git grep -E` 가 쓰는 확장 정규식에 부정 전방탐색이 없어 층을 따로 둔다.
+#
 # 저장소마다 허용하는 낱말이 다르므로 목록도 저장소마다 나눈다.
 # 이 저장소는 자기 GitHub 저장소 이름과 자기 코드의 식별자를 정상으로 쓴다.
 #
@@ -93,13 +99,33 @@ if ip_hits=$(git grep -nE '(^|[^0-9.])([0-9]{1,3}\.){3}[0-9]{1,3}([^0-9.]|$)' --
 fi
 
 if [[ -r "$DENYLIST" ]]; then
-  while IFS= read -r line; do
+  DENY_PATTERNS=()
+  ALLOW_PATTERNS=()
+  while IFS= read -r line || [[ -n "$line" ]]; do
     [[ -z "$line" ]] && continue
-    case "$line" in \#*) continue ;; esac
-    if hits=$(git grep -nE "$line" -- . "${EXCLUDES[@]}" 2>/dev/null); then
-      report "$hits" "비공개 목록에 걸렸다"
-    fi
+    case "$line" in
+      \#*) continue ;;
+      '!'*) ALLOW_PATTERNS+=("${line#!}") ;;
+      *) DENY_PATTERNS+=("$line") ;;
+    esac
   done < "$DENYLIST"
+
+  # 걸린 줄에서 허용 패턴에 맞는 줄을 뺀다. 남는 줄만 보고한다.
+  drop_allowed() {
+    local remaining="$1" allow
+    for allow in ${ALLOW_PATTERNS[@]+"${ALLOW_PATTERNS[@]}"}; do
+      [[ -z "$remaining" ]] && break
+      remaining=$(printf '%s\n' "$remaining" | grep -Ev "$allow" || true)
+    done
+    printf '%s' "$remaining"
+  }
+
+  for pattern in ${DENY_PATTERNS[@]+"${DENY_PATTERNS[@]}"}; do
+    if hits=$(git grep -nE "$pattern" -- . "${EXCLUDES[@]}" 2>/dev/null); then
+      hits=$(drop_allowed "$hits")
+      [[ -n "$hits" ]] && report "$hits" "비공개 목록에 걸렸다"
+    fi
+  done
 else
   echo "알림: 값 목록을 읽지 못해 형태 패턴만 검사했다."
   echo "  찾은 자리: $DENYLIST"
