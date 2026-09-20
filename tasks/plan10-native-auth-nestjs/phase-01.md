@@ -51,7 +51,7 @@ non-root user, Node 24.15.0 고정, health endpoint 성공과 `/api/brain/ask`�
 ### 5. 공개 인프라 경계 검사의 제품명 구분
 
 `scripts/verify-public-infra-boundary.sh`가 `Cloudflare Access`, `Cloudflare Tunnel`과 `cloudflared` 같은 제품·도구 이름만으로 실패하지 않게 한다.
-배포 경로, 실제 host·domain·IP, network·container 이름과 `TUNNEL_TOKEN` 같은 운영 설정 식별자는 계속 거부한다.
+배포 경로, 실제 host·domain·IP, network·container 이름과 터널 인증 토큰 변수 같은 운영 설정 식별자는 계속 거부한다.
 임시 fixture에 제품 이름만 있으면 통과하고 실제 운영 식별자가 있으면 실패하는 shell 회귀 검사를 추가한다.
 
 ## Critical Files
