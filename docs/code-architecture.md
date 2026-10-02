@@ -11,19 +11,7 @@
 
 ### 에이전트 검색과 교환
 
-- `.agents/plugin/fos-brain/references/knowledge-admission-policy.md` — 저장할 개인 지식과 다른 시스템으로 보낼 정보를 구분하는 단일 정책이다.
-- `.agents/plugin/fos-brain/skills/brain-search/` — 네임스페이스 분리, wiki 우선 검색, 링크 탐색, 근거 작성 절차를 소유한다.
-- `.agents/plugin/fos-brain/skills/brain-add/` — 정책 판정, 새 문서의 메타데이터 작성, 검색 검증 절차를 소유한다.
-- `.agents/plugin/fos-brain/skills/brain-curate/` — 여러 세션에서 후보를 찾되 같은 정책으로 저장 가치와 목적지를 판정한다.
-- `.agents/plugin/fos-brain/skills/brain-lint/` — 기존 문서가 정책에 맞는지 품질 점검에서 분류한다.
-- `.agents/plugin/fos-brain/scripts/` — OKF 내보내기, 검색 벤치마크, 격리된 지식 유입 행동 평가처럼 반복 실행해야 하는 동작을 소유한다.
-- `.agents/plugin/fos-brain/tests/` — 지식 유입 정책, 행동 평가의 원문과 채점 근거, 내보내기 계약, 스크립트 회귀를 검증한다.
-
-스킬은 언제 어떤 단계를 실행할지 설명한다.
-다섯 줄을 넘는 파싱, 변환, 판정은 스크립트에 둔다.
-의미 적합성은 에이전트와 사용자가 판단하고, 스크립트는 판정 기록의 필드와 허용값만 검사한다.
-행동 평가는 기준 commit과 현재 commit을 임시 복사본에서 읽기 전용으로 실행한다.
-평가 원문, 별도 채점, 전후 파일 hash, 결과 JSON을 함께 보존해 결과만 임의로 작성하는 검사를 막는다.
+brain 스킬 다섯 개와 `fos-brain` 플러그인(지식 유입 정책, 스크립트, 테스트)은 저장소 deprecated 처리와 함께 제거했다.
 
 ### 사람용 렌더링
 
@@ -66,7 +54,6 @@ Quartz의 기존 SPA와 서버 렌더 대체 목록을 유지하기 위해 별�
 - `services/brain-ask/src/private-content/` — 관리자용 콘텐츠 색인과 관계 데이터 파일의 read-only 응답을 담당한다.
 - `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build를 만들고 UID 1000으로 실행하며 HTTP health 검사를 제공한다.
 - `services/brain-ask/src/brain-ask/qmd.client.ts` — BFF가 사용하는 qmd `/query` 요청과 응답 collection 검사를 구현한다.
-- `.agents/plugin/fos-brain/scripts/brain-search-http.cjs` — agent와 CLI 검색에서 사용하는 qmd HTTP client를 구현한다.
 - `quartz/custom/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
 - `quartz/custom/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
 - `quartz/custom/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
@@ -148,7 +135,7 @@ plan13이 이전을 마쳐 위 목록이 현재 코드와 같다.
 - `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
 - public 저장소는 Compose, reverse proxy, 모델 profile과 호스트 경로를 소유하지 않는다.
 - private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 게시를 수행한다.
-- BFF의 `qmd.client.ts`와 agent용 `brain-search-http.cjs`는 `docs/data-schema.md`의 qmd 요청·응답 계약을 각각 구현한다.
+- BFF의 `qmd.client.ts`는 `docs/data-schema.md`의 qmd 요청·응답 계약을 구현한다.
 
 ## 검증 경계
 
