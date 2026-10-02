@@ -53,4 +53,4 @@ fos-brain은 TypeScript 화면, shell script, 플러그인과 공개 지식 문�
 
 - [Claude Code Action 설정](https://github.com/anthropics/claude-code-action/blob/main/docs/setup.md)
 - [Claude Code Action 보안](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md)
-- [GitHub Actions AI 코드 리뷰 워크플로우 패턴](../../wiki/concepts/ai-code-review-github-actions.md)
+- GitHub Actions AI 코드 리뷰 워크플로우 패턴 (wiki 문서는 블로그로 옮긴 뒤 제거했다)
