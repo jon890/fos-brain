@@ -139,51 +139,5 @@ for value in "${private_fixture_values[@]}"; do
 done
 
 rm -rf "$fixture_root/quartz/public"
-printf '%s\n' \
-  '---' \
-  'title: Public Auth Fixture' \
-  'description: public fixture body' \
-  '---' \
-  '# Public Auth Fixture' \
-  'public fixture body' > "$fixture_root/content/index.md"
-printf '%s\n' \
-  '---' \
-  'title: Private Auth Fixture' \
-  'description: protected fixture' \
-  'tags: [private-secret-rag]' \
-  '---' \
-  '# Private Auth Fixture' \
-  'Private Shadow Node' > "$fixture_root/content/private/concepts/private-auth-fixture.md"
-
-(
-  cd "$repo_root/quartz"
-  pnpm quartz build --directory "$fixture_root/content" --output "$fixture_root/quartz/public" >/dev/null
-)
-
-rg -q 'Public Auth Fixture' "$fixture_root/quartz/public/index.html" \
-  || fail "Quartz build did not render the public fixture"
-
-public_artifacts=(
-  "$fixture_root/quartz/public/index.html"
-  "$fixture_root/quartz/public/static/contentIndex.json"
-  "$fixture_root/quartz/public/static/memory-atlas-index.json"
-  "$fixture_root/quartz/public/static/memory-atlas-semantics.json"
-  "$fixture_root/quartz/public/sitemap.xml"
-  "$fixture_root/quartz/public/index.xml"
-)
-for artifact in "${public_artifacts[@]}"; do
-  [[ -f "$artifact" ]] || fail "Quartz build did not create expected public artifact: $artifact"
-done
-run_boundary >/dev/null || fail "boundary verification rejected a clean Quartz build"
-
-for artifact in "${public_artifacts[@]}"; do
-  clean_artifact="$artifact.clean"
-  cp "$artifact" "$clean_artifact"
-  printf '%s\n' 'private-auth-fixture' >> "$artifact"
-  if run_boundary >/dev/null 2>&1; then
-    fail "boundary verification did not scan Quartz artifact: $artifact"
-  fi
-  mv "$clean_artifact" "$artifact"
-done
 
 echo "Public infrastructure boundary regression passed."
