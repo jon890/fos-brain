@@ -12,7 +12,6 @@ role: navigation
 
 - [[work-style]] — 개인 프로젝트에서 반복되는 개발·문서·검증과 AI 협업 방식
 - [[ai-dev-harness]] — 목표, 권한과 검증 경계 안에서 에이전트 작업을 완료하는 하네스 방식
-- [[observability]] — 분산 시스템 관측성(logs·metrics·traces) 학습
 - [[operations-troubleshooting]] — 증상과 실제 상태를 분리하고 최소 변경과 되돌리기 근거로 복구하는 운영 방식
 - [[rag-system-architecture-strategies]] — 입력 품질, 검색 파이프라인과 관계 탐색을 나누는 RAG 설계 관점
 - [[ai-era-professionalism]] — AI 시대 전문성을 검증·판단·운영 책임으로 보는 개인 직업 관점
@@ -28,11 +27,8 @@ role: navigation
 - [[skill-section-single-ownership]] — 스킬 문서 안 같은 지시가 여러 섹션에 중복되면 한 섹션만 소유자로 남기는 원칙
 - [[skill-versioning-changelog]] — 심링크로 배포되는 공용 스킬의 버전+CHANGELOG 체계 (버전은 배포 핀이 아님)
 - [[execution-log-vs-retrospective]] — 실행 기록(매번 얕게)과 회고(사건마다 깊게)의 역할 분리
-- [[merge-conflict-free-append]] — 누적 append 파일의 머지 충돌을 파일 per 항목, INDEX 라우터로 구조적 제거 (번호 glob 으로 발견성 보존, pitfalls→ADR 이식)
 - [[pitfalls-file-per-pattern]] — 회피 패턴 wiki 를 파일-per-패턴, INDEX 라우터로 운영 (카테고리=소비 시점, 축적 점검, prune·automate)
-- [[agent-friendly-cli-design]] — 사람·AI 에이전트가 함께 쓰는 CLI 의 입력·출력·에러 설계 패턴 (dooray-cli→nhncloud-cli)
 - [[self-improving-harness]] — 리뷰 학습을 스킬 문서에 누적하는 메타 피드백 루프
-- [[ai-code-review-github-actions]] — PR 자동 코드 리뷰를 GitHub Actions 로 붙이는 패턴 (marketplace action / self-hosted CLI 두 방식, 신규 구축 레시피, 프롬프트 설계, 함정)
 - [[ai-generated-code-acceptance-criteria]] — AI 생성 코드가 동작해도 사람이 설명 가능성과 변경 규모를 기준으로 채택 여부를 판단하는 기준
 
 ### 스킬 자동 최적화
@@ -43,20 +39,12 @@ role: navigation
 - [[reward-detector-false-positive]] — reward detector 오탐을 먼저 잡기(잘못된 그래디언트 방어)
 - [[two-tier-reward-static-llm-judge]] — 정적 정규식 바닥, LLM judge 천장 2계층 reward
 
-### AI 검증
-
-- [[ai-verification-layer]] — AI 산출물을 전부 이해하려 하기보다 통과 기준과 자동 검증 구조로 신뢰를 만드는 방식
-
 ### 개인 코딩 규율·취향
 
 - [[docs-first-adr]] — 의사결정을 코드보다 먼저 문서·ADR 로 남기는 규율
 - [[testing-philosophy]] — 실제 동작 검증 우선(모킹 최소·실DB·co-located)
 - [[tech-stack-preferences]] — TS/Next·Java/Spring, ky·pnpm 등 고정 취향
 - [[information-interface-preferences]] — 훑기와 비교, 모바일 다이어그램의 확대·이동, 원문 탐색을 연결하는 정보 화면 취향
-
-### 학습 방법
-
-- [[self-directed-learning]] — 읽기·토론·글쓰기·피드백으로 스스로 배우는 능력을 기르는 학습 프레임
 
 ### 면접 준비
 
@@ -67,35 +55,11 @@ role: navigation
 - [[multi-workspace-monorepo]] — 워크스페이스 격리, _shared 규율
 - [[script-skill-separation]] — 실행(scripts)/컨텍스트(.claude/skills) 분리(ADR-006)
 
-### 관측성 (학습)
-
-- [[observability-three-pillars]] — Logs / Metrics / Traces 역할·상호보완·한계
-- [[latency-percentiles]] — p50/p95/p99, 평균의 함정, histogram_quantile
-- [[red-use-metrics]] — RED(API) / USE(리소스) 메트릭 분류
-- [[prometheus-histogram-vs-summary]] — 분위수 집계, 다인스턴스 합산, cardinality 함정
-- [[slo-burn-rate-alerting]] — symptom 우선, multi-burn-rate 알림
-
-### 성능·확장성 (학습)
-
-- [[connection-pool-sizing]] — DB 커넥션 풀 사이즈 공식(코어×2+스핀들), USL 역설, Little's Law 진단, WAS 분배, maxconn 한계
-- [[connection-pool-pitfalls]] — 커넥션 풀 4대 함정(롱 트랜잭션·maxLifetime 미스매치·CM>1 데드락·누수)
-
-### 품질 평가 (학습)
-
-- [[document-parsing-quality-evaluation]] — 문서 파싱 품질 평가 방법론 스펙트럼(회귀→golden→NED→docling-eval→LLM-judge), 비용·깊이로 조합
-
 ### RAG와 검색 (학습)
 
 상위 주제: [[rag-system-architecture-strategies]]
 
-- [[rag-retrieval-pipeline]] — 질문 구조화, 하이브리드 검색, 재정렬과 근거 전달을 잇는 공통 검색 흐름
-- [[embedding-versioned-vector-index]] — 임베딩 모델 변경을 벡터 재생성, 재색인과 서빙 전환까지 묶는 운영 원칙
-- [[graph-rag-path-retrieval]] — 질문에 맞는 시작 노드와 제한된 관계 경로로 설명 가능한 서브그래프를 찾는 방식
 - [[retrieval-backend-selection]] — 검색 계층을 벡터DB 기본값 없이 문서 성격·규모·운영 역량으로 고르는 기준
-
-### 추천 시스템 (학습)
-
-- [[recommendation-batch-to-realtime-loop]] — 미리 계산한 추천 리스트를 이벤트와 피드백 루프로 옮길 조건과 따라오는 운영 부담
 
 ### 생활·요리
 
@@ -103,11 +67,7 @@ role: navigation
 
 ### 일반 엔지니어링 교훈
 
-- [[review-bot-suggestion-verify]] — 리뷰 봇 제안의 명령·정규식은 실측 없이 적용하면 검증을 조용히 무력화한다
 - [[vendor-bug-wrapper-vs-replace]] — vendor 라이브러리 버그, 상속 wrapper 우회 vs 라이브러리 교체 판단 기준
-- [[removal-plan-grep-gate]] — 제거 작업의 grep 통과 조건 함정과 docs 부패
-- [[append-only-doc-file-per-item-split]] — append-only 단일 문서를 파일-per-항목, INDEX 라우터로 분리
-- [[pid1-zombie-tini]] — 컨테이너 PID 1 좀비 reaping 과 tini 도입
 
 ## Entities
 

@@ -32,7 +32,6 @@ status: stable
 ## 관련 개념
 
 - [[work-style]] — 이 취향이 적용되는 전체 업무·도구 사용 방식
-- [[ai-verification-layer]] — 상태와 근거를 화면 가까이에 두는 이유
 
 ## Sources
 

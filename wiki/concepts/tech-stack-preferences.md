@@ -27,7 +27,7 @@ status: stable
 - 개인 웹 제품은 TypeScript, Next.js와 React를 반복해 사용한다.
 - JavaScript 패키지 관리는 pnpm을 선호한다.
 - HTTP client는 여러 개인 저장소에서 ky를 선택한다.
-- CLI는 기계가 읽을 수 있는 출력과 명시적인 종료 코드를 중요하게 본다. [[agent-friendly-cli-design]]
+- CLI는 기계가 읽을 수 있는 출력과 명시적인 종료 코드를 중요하게 본다.
 
 ## 고정하지 않는 것
 

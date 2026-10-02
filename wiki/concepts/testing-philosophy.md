@@ -30,7 +30,6 @@ status: stable
 ## 관련 개념
 
 - [[ai-harness-pattern]] — 위험에 비례해 검증 범위를 넓히는 실행 방식
-- [[ai-verification-layer]] — 비결정적 결과를 통과 기준으로 관리하는 구조
 - [[tech-stack-preferences]] — 저장소별 테스트 도구 선택
 - [[fos-accountbook]] — vision 후보와 결정적 안전 검사를 분리한 적용 사례
 

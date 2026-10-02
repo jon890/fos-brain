@@ -53,9 +53,7 @@ AI 에이전트가 긴 작업을 안전하게 끝내도록 목표, 권한, 컨�
 - [[self-improving-harness]] — 검증에서 얻은 학습을 올바른 단일 원본으로 환원하는 루프
 - [[testing-philosophy]] — 실제 경로와 실패 불변을 확인하는 검증 철학
 - [[docs-first-adr]] — 되돌리기 어려운 결정의 이유를 먼저 남기는 방식
-- [[agent-friendly-cli-design]] — 사람과 에이전트가 같은 도구를 안정적으로 사용하는 인터페이스
 - [[ai-generated-code-acceptance-criteria]] — 자동 검증 이후 사람이 최종 채택을 설명하는 기준
-- [[ai-verification-layer]] — 비결정적 결과를 통과 기준으로 관리하는 구조
 
 ## Sources
 
