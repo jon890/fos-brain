@@ -48,35 +48,13 @@ Quartz의 기존 SPA와 서버 렌더 대체 목록을 유지하기 위해 별�
 
 ### Brain 근거 질문
 
-- `services/brain-ask/src/main.ts` — NestJS bootstrap, 보안 middleware, 전역 입력 검사와 종료 처리를 담당한다.
-- `services/brain-ask/src/auth/` — password hash 검사, 제한된 메모리 session 저장소와 관리자 Guard를 담당한다.
-- `services/brain-ask/src/brain-ask/` — 질문 검증, 동시 실행 제한, qmd 검색, wiki 본문 읽기, 모델 호출과 응답 변환을 담당한다.
-- `services/brain-ask/src/private-content/` — 관리자용 콘텐츠 색인과 관계 데이터 파일의 read-only 응답을 담당한다.
-- `services/brain-ask/Dockerfile` — Node.js 24.15.0에서 NestJS production build를 만들고 UID 1000으로 실행하며 HTTP health 검사를 제공한다.
-- `services/brain-ask/src/brain-ask/qmd.client.ts` — BFF가 사용하는 qmd `/query` 요청과 응답 collection 검사를 구현한다.
 - `quartz/custom/components/MemoryAtlas.tsx` — 질문 버튼, 패널과 접근 가능한 상태 문구를 렌더한다.
 - `quartz/custom/components/scripts/memoryAtlasController.ts` — 단일 요청 상태, 닫기·취소·출처 이동과 질문 출처 강조의 생명 주기를 소유한다.
 - `quartz/custom/components/scripts/memoryAtlas2dRuntime.ts`와 `memoryAtlas3dRuntime.ts` — controller가 전달한 출처 slug의 일시 강조를 각 renderer에 적용하고 제거한다.
 - `quartz/custom/components/styles/memoryAtlas.scss` — 데스크톱 하단 패널과 모바일 아래 시트의 경계를 소유한다.
 
-`brain-ask`는 공개 인터넷에 직접 연결하지 않는 같은 출처 NestJS BFF다.
-BFF는 관리자 인증과 권한 판정, 모델 key 은닉, 입력 제한, 근거 경로 검증과 응답 형태 고정을 담당한다.
-질문 한 건은 `brain-ask` 안의 메모리 잠금 하나를 사용하며 서버 재시작 뒤 복원할 상태는 없다.
-
-### Brain 로그인과 private 콘텐츠
-
-- NestJS `AuthModule`은 단일 관리자 password hash를 secret 파일에서 읽고 opaque session을 발급한다.
-- `AuthModule`의 제한된 메모리 provider는 client별 로그인 시도를 15분에 5회로 제한하고 최대 1,024개 client만 유지한다.
-- `OriginGuard`는 모든 `POST`의 `Origin`이 설정한 Brain origin과 정확히 같은지 검사하고 누락도 거부하며 `Referer`를 대신 읽지 않는다.
-- `AdminGuard`는 controller가 private 색인, 관계 데이터와 질문 기능을 실행하기 전에 session의 `admin` 역할을 검사한다.
-- session ID는 브라우저 cookie에만 두고 역할과 만료 시각은 최대 8개로 제한한 서버 메모리 저장소에 둔다.
-- Nginx는 private HTML을 보내기 전에 BFF의 내부 권한 확인 endpoint를 `auth_request`로 호출한다.
-- Quartz의 public HTML과 정적 콘텐츠 색인은 로그인 없이 제공한다.
-- Memory Atlas는 session 역할이 `admin`일 때만 보호 API의 관리자 색인과 관계 데이터를 읽고 그래프를 다시 만든다.
-
-클라이언트가 보낸 역할, namespace 또는 private 요청 여부는 권한 근거로 사용하지 않는다.
-public build를 기본 document root로 사용하고 private 포함 build에서는 `/_private/` 문서와 보호 데이터 파일만 읽는다.
-관리자 응답에는 `Cache-Control: private, no-store`를 적용한다.
+질문, 로그인과 관리자 콘텐츠 API를 제공하던 NestJS BFF `services/brain-ask`는 배포를 폐기한 뒤 저장소에서도 제거했다.
+위 화면 코드는 남아 있지만 응답할 서버가 없어 질문과 관리자 로그인은 동작하지 않는다.
 
 ## 의존성
 
@@ -94,15 +72,6 @@ Memory Atlas 의미 관계 생성은 기존 qmd 내부 HTTP 경계를 재사용�
 Quartz 일반 빌드는 qmd를 필수 의존성으로 삼지 않으며 임시 의미 산출물이 없으면 wiki 연결과 태그만으로 빌드한다.
 임시 산출물은 gitignore 대상이고 emitter가 현재 빌드의 slug로 다시 제한하므로 protected 생성 결과가 남아 있어도 public 산출물에 private 관계가 포함되지 않는다.
 자동 시작점은 정제된 graph에서 브라우저가 계산하고 wiki, 콘텐츠 색인과 임시 의미 산출물에 저장하지 않는다.
-
-질문 BFF는 Node.js 24.15.0과 NestJS 12의 기본 Express adapter를 사용한다.
-NestJS module, controller, provider와 Guard로 HTTP 경계와 도메인 로직을 분리한다.
-입력 검사는 전역 `ValidationPipe`, 로그인 시도 제한은 `AuthModule`의 메모리 provider, HTTP 보안 header는 Helmet을 사용한다.
-NestJS 12의 peer 범위와 맞지 않는 외부 throttling package는 추가하지 않는다.
-`services/brain-ask/package.json`은 `packageManager: pnpm@10.33.0`을 선언하고 BFF의 설치·검사·빌드는 `corepack pnpm@10.33.0`으로 실행한다.
-별도 데이터베이스, queue, Passport, JWT와 외부 벡터 저장소를 추가하지 않는다.
-`brain-ask`는 qmd 결과의 URI를 직접 신뢰하지 않고 허용 collection과 mount 경계를 검사한 뒤 wiki 본문을 읽는다.
-모델 API에는 `store: false`와 `brain` 모델 별칭을 전달하며 이전 응답 식별자나 대화 식별자를 보내지 않는다.
 
 내보내기 스크립트는 YAML 객체를 자체 파서로 재구성하지 않는다.
 기존 frontmatter 원문을 보존하고 최상위 키의 존재만 감지한 뒤, 누락된 교환 필드를 JSON 호환 YAML 값으로 삽입한다.
@@ -132,10 +101,8 @@ plan13이 이전을 마쳐 위 목록이 현재 코드와 같다.
 
 ## 운영 구성 저장 경계
 
-- `services/brain-ask/`는 환경에 독립적인 질문 BFF 소스와 unit test를 소유한다.
 - public 저장소는 Compose, reverse proxy, 모델 profile과 호스트 경로를 소유하지 않는다.
 - private 인프라 저장소는 public 저장소의 검증된 commit을 입력으로 build와 게시를 수행한다.
-- BFF의 `qmd.client.ts`는 `docs/data-schema.md`의 qmd 요청·응답 계약을 구현한다.
 
 ## 검증 경계
 
@@ -148,8 +115,6 @@ plan13이 이전을 마쳐 위 목록이 현재 코드와 같다.
 - Memory Atlas 관계 계산 — 의미 산출물 형식과 namespace 제한, 혼합 점수 우선순위, 결정적 좌표, hop depth, 재중심화와 고정·자동 시작점을 DOM 없는 단위 검사로 검증한다.
 - Memory Atlas 생명주기 — 2D와 3D 전환, SPA 재탐색과 컴포넌트 제거 뒤 listener, animation frame과 renderer 자원이 남지 않는지 검증한다.
 - Memory Atlas 브라우저 회귀 — `browser-driver`를 통해 1440px와 390px 화면, 키보드, 움직임 줄이기, 전체 지도와 지역 관계 전환을 검증한다.
-- Brain 질문 — 입력 제한, 동시 요청, qmd URI 경계, 근거 크기, 빈 결과의 모델 API 미호출, 모델 오류 변환과 로그 비노출을 단위·통합 검사한다.
 - Brain 질문 UI — 질문 상태, 답변 평문 렌더, 출처 이동, 그래프 강조 해제, 1440px와 390px의 넘침을 브라우저에서 검사한다.
-- Brain 인증 — 정상·실패·제한 로그인, cookie 속성, session 만료·로그아웃·재시작과 관리자 Guard를 단위·통합 검사한다.
 - private 공개 범위 — 비로그인 BFF 응답과 public 산출물에 private slug와 본문이 없으며 private 출처 href가 같은 origin의 `/_private/<slug>` 형식인지 검사한다. 실제 `/_private` 요청의 `401`은 private 인프라 저장소에서 검증한다.
 - 스킬 — `quick_validate.py`로 수정한 skill 폴더를 검사한다.

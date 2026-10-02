@@ -378,15 +378,6 @@ header가 없거나 값이 다르면 `origin_rejected`로 거부하고 `Referer`
 
 `login_rate_limited` 응답은 현재 제한 구간이 끝날 때까지 남은 초를 `Retry-After` header에 담는다.
 
-## Brain Ask image 계약
-
-private 인프라 계획이 배포할 target platform은 `linux/amd64`다.
-Phase 04 image 검사는 이 platform으로 image를 빌드하고 image architecture가 `amd64`인지 확인한다.
-public 저장소의 발행 workflow는 image 이름 `ghcr.io/jon890/brain-ask`를 공개 계약으로 기록한다.
-발행 workflow는 push 결과의 digest를 검증하고 image 이름, digest, source commit과 workflow URL을 실행 summary에 기록한다.
-실제 digest는 public 저장소 소스에 고정하지 않으며 배포 저장소가 검증된 `image@digest`를 배포 입력으로 사용한다.
-첫 package의 Public 전환과 인증 정보가 없는 환경의 동일 digest pull은 `main` merge 뒤 private 인프라 계획에서 운영 검증한다.
-
 ## 관리자 콘텐츠 API
 
 `GET /api/private/content-index`는 관리자용 병합 `memory-atlas-index.json`을 반환한다.
