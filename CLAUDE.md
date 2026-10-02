@@ -1,7 +1,11 @@
 # fos-brain
 
+> **Deprecated (2026-10-02)**: 이 저장소는 더 이상 운영하지 않는다.
+> brain 스킬 다섯 개와 `fos-brain` 플러그인 코드는 제거했고, 남은 기록도 단계적으로 제거한다.
+> 새 지식을 추가하지 않는다. 아래 내용은 남아 있는 기록을 읽고 정리할 때 참고하는 설명이다.
+
 이 저장소는 Karpathy 스타일 LLM 지식 기반(brain)이다.
-원본(`raw/`)은 사용자가 수집하거나 brain-add 로 가져오고, 위키(`wiki/`)는 Claude Code 가 컴파일·유지한다.
+원본(`raw/`)은 사용자가 수집한 자료이고, 위키(`wiki/`)는 Claude Code 가 컴파일한 결과다.
 
 범용 개인 brain이다. 기술 연구뿐 아니라 일지·목표·건강·취미 등 개인 지식 전반을 다룬다.
 
@@ -20,9 +24,9 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 
 규칙:
 
-1. **라우팅**: brain-add 는 호출 시 네임스페이스를 선택받아 해당 트리에만 저장·컴파일한다.
+1. **라우팅**: 문서는 한 네임스페이스의 트리에만 둔다.
 2. **링크 방향**: 공개 페이지는 비공개(private)를 링크하지 않는다(공개 빌드 깨짐·유출 방지). 비공개 → 공개 링크는 허용.
-3. **검색**: brain-search 는 로컬에서 두 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
+3. **검색**: 로컬에서는 두 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
 4. **gitignore 불변**: `private/` 를 commit 대상에 올리지 않는다. `.gitignore` 를 수정해 비공개를 공개로 바꾸지 않는다.
 5. **네임스페이스 간 매핑**(비공개 ↔ 공개 지식 연결): 비공개 → 공개 방향만 건다.
   - 비공개 페이지에서 `[[개념명]]`처럼 **폴더 경로 없이 파일명만 쓴 wiki 링크**로 공개 개념을 가리킨다. 병합 빌드에서는 파일명으로 대상을 찾는다.
@@ -95,7 +99,7 @@ scripts/verify-public-infra-boundary.sh
 ## 디렉터리 역할
 
 - `raw/` — **원본**. LLM 은 읽기 전용으로 취급한다. 수정·삭제 금지(사용자 명시 지시 예외).
-- `wiki/INDEX.md` — 전체 목차와 한 줄 요약. 모든 brain-add / brain-lint 후 최신 상태로 유지.
+- `wiki/INDEX.md` — 전체 목차와 한 줄 요약. wiki 를 바꾸면 최신 상태로 유지.
 - `wiki/concepts/` — 개념 단위 페이지. 백링크 의무.
 - `wiki/topics/` — 여러 개념을 묶는 상위 narrative 페이지.
 - `wiki/entities/` — 사람·프로젝트·목표 같은 개체 페이지(개인 brain 용).
@@ -116,7 +120,7 @@ scripts/verify-public-infra-boundary.sh
   - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 빌드 대상이 아니므로 경로형 그대로 둔다.
 4. **raw 는 출처**: wiki 의 주장은 raw 로 추적 가능해야 한다. 출처 없는 주장 금지.
 5. **점진적 컴파일**: 한 번에 raw 전체를 처리하지 않는다. 새 raw 파일 또는 사용자가 지정한 범위만 처리.
-6. **lint 는 별도 호출**: 무결성 점검은 사용자가 brain-lint 를 명시 요청할 때만 실행.
+6. **무결성 점검은 별도 요청**: 사용자가 명시 요청할 때만 실행.
 7. **내부 용어를 풀어서 설명**: 독자가 별도 용어를 배워야만 이해할 수 있는 내부 구현 용어는 실제 동작을 설명하는 쉬운 한국어로 쓴다. 명령어, 설정명이나 검색어로 원문이 필요할 때만 쉬운 설명 뒤에 원문을 한 번 덧붙인다.
 
 ## 지식 유입 정책
@@ -125,8 +129,8 @@ fos-brain은 시간이 지난 뒤에도 사용자의 업무 방식, 취향, 결�
 일반 설명, 일회성 작업, 코드와 git으로 자명한 사실, 실행 절차, 행동 규칙, 좁은 장애 우회법, 일시 상태는 올바른 단일 소스로 보내거나 제외한다.
 회사 내부 지식은 public과 private 어느 쪽에도 저장하지 않고 nbrain으로 보낸다.
 
-상세 판정 순서, 목적지, 공개 범위, 판정 기록 계약은 [`.agents/plugin/fos-brain/references/knowledge-admission-policy.md`](.agents/plugin/fos-brain/references/knowledge-admission-policy.md)를 단일 소스로 사용한다.
-의미 적합성은 숫자 점수로 자동 승인하지 않으며, 저장 전 미리보기와 사용자 승인을 거친다.
+상세 판정 순서를 담았던 정책 문서는 플러그인과 함께 제거했다.
+정책을 채택한 근거는 `docs/adr/007-knowledge-admission-policy.md`에 남아 있다.
 
 ## 페이지 스키마
 
@@ -188,58 +192,6 @@ tags: ["주제"]
 
 사람·프로젝트·목표 등. `type: entity` frontmatter. 관련 concept·topic 과 양방향 링크.
 
-### 새 머신 설정
-
-**권장: 플러그인으로 설치** (다섯 brain 스킬을 함께 적용):
-
-```bash
-# Claude Code: settings.json을 직접 편집하는 것만으로는 반영되지 않는다. CLI로 등록·설치까지 실행한다.
-claude plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
-claude plugin install fos-brain@fos-brain
-
-# Codex CLI
-codex plugin marketplace add "$HOME/personal/fos-brain/.agents/plugin/fos-brain"
-codex plugin add fos-brain@fos-brain
-```
-
-두 도구 모두 로컬 마켓플레이스를 각자 캐시(`~/.claude/plugins/cache/fos-brain/`, `~/.codex/plugins/cache/fos-brain/`)에 **복사**해서 쓴다.
-fos-brain 쪽 스크립트를 고치면 캐시가 자동으로 갱신되지 않으므로, 수정 후에는 위 install/add 명령을 다시 실행해 재설치한다(Claude Code는 `claude plugin update fos-brain`도 가능).
-
-사용자 프롬프트마다 지식을 자동 주입하지 않는다.
-필요한 지식은 사용자가 요청하거나 현재 작업에 실질적으로 필요할 때 `brain-search`를 명시적으로 호출해 검색한다.
-
-`.claude-plugin/plugin.json`에는 `skills` 필드를 넣지 않는다.
-Claude Code는 플러그인 루트의 `skills/`를 관례로 로드한다.
-Codex 쪽 루트 `plugin.json`은 `skills` 경로를 명시한다.
-
-**대안: 스킬만 심링크** (플러그인 시스템이 없는 에이전트용):
-
-```bash
-mkdir -p "$HOME/.claude/skills"
-for s in brain-add brain-curate brain-search brain-lint brain-delete; do
-  ln -sfn "$HOME/personal/fos-brain/.agents/skills/$s" "$HOME/.claude/skills/$s"
-done
-```
-
-## brain-add 가 처리하는 소스
-
-brain-add 는 다양한 소스를 `raw/` 로 가져와 파싱한다.
-
-
-| 소스             | 처리 방식                              |
-| -------------- | ---------------------------------- |
-| 웹 기사·페이지       | WebFetch → markdown 본문             |
-| 유튜브 링크         | `yt-dlp` 로 자막(자동·수동)과 메타 추출 → 텍스트 |
-| PDF 논문         | Read 로 직접 파싱                       |
-| GitHub repo    | clone / `gh` 로 README·코드           |
-| 이미지            | Read 로 시각 분석                       |
-| 붙여넣은 텍스트·로컬 파일 | 그대로                                |
-
-
-유튜브는 영상·음성을 직접 듣지 못하므로 자막을 경유한다.
-현재는 **자막 있는 영상만 우선 지원**한다.
-자막 없는 영상의 로컬 STT(`whisper`)는 미설치 상태이며 나중에 추가한다.
-
 ## 검색 도구: qmd
 
 규모가 커지면 `grep` 으로는 한계가 있다.
@@ -251,8 +203,6 @@ Karpathy 가 권장한 qmd(BM25, 벡터, LLM rerank)를 사용한다.
 - 하이브리드 검색과 rerank(권장): `qmd query "<question>"`
 - 인덱스 갱신: `qmd update`(파일 변경 후), `qmd embed`(임베딩 재생성)
 - 상태 점검: `qmd status`
-
-`brain-search` skill 은 wiki 가 일정 규모 이상이면 grep 대신 `qmd query` 를 1차 검색으로 사용한다.
 
 원격 실행 환경에서는 qmd의 HTTP transport를 사용할 수 있다.
 애플리케이션은 transport가 설정되면 `/query`를 우선 사용하고, 실패하면 로컬 고정 qmd와 INDEX·`rg` 순서로 축소한다.
@@ -273,7 +223,7 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
     - qmd 를 재설치하거나 node 를 올리면 wrapper 의 고정 버전을 함께 갱신한다.
 - **`bun.lock`을 실행 환경 복구 수단으로 만들거나 수정하지 않는다**: 런처는 lockfile로 런타임을 고르므로, bun이 PATH에 없으면 `qmd: failed to launch bun: spawn bun ENOENT`로 실패할 수 있다. wrapper로 런타임을 고정하고 저장소의 의존성 파일은 건드리지 않는다.
 - 진단 순서: `which qmd` 로 wrapper 가 잡히는지 → `qmd collection list` 로 DB 접근이 되는지 → 고정한 node 버전이 아직 설치돼 있는지.
-- qmd 가 끝내 안 되면 `brain-search` 는 grep 으로 폴백한다(품질은 떨어지지만 동작).
+- qmd 가 끝내 안 되면 `rg` 로 검색한다(품질은 떨어지지만 동작).
 
 ## 웹 UI: Quartz
 
