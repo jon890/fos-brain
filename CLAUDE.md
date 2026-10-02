@@ -1,7 +1,7 @@
 # fos-brain
 
 > **Deprecated (2026-10-02)**: 이 저장소는 더 이상 운영하지 않는다.
-> brain 스킬 다섯 개와 `fos-brain` 플러그인 코드는 제거했고, 남은 기록도 단계적으로 제거한다.
+> brain 스킬과 `fos-brain` 플러그인, 질문 서비스, Quartz 웹 UI, 설계 문서(`docs/`, `tasks/`)는 제거했고, 남은 기록도 단계적으로 제거한다.
 > 새 지식을 추가하지 않는다. 아래 내용은 남아 있는 기록을 읽고 정리할 때 참고하는 설명이다.
 
 이 저장소는 Karpathy 스타일 LLM 지식 기반(brain)이다.
@@ -14,10 +14,10 @@
 brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 `raw/`, `wiki/`, INDEX, log 를 갖는 독립된 mini-brain 이다.
 
 
-| 네임스페이스  | 경로                  | git           | Quartz 공개 | 용도           |
-| ------- | ------------------- | ------------- | --------- | ------------ |
-| public  | 루트(`raw/`, `wiki/`) | commit        | 게시        | 공개 가능한 개인 자료 |
-| private | `private/`          | **gitignore** | 제외        | 개인 비공개 자료    |
+| 네임스페이스  | 경로                  | git           | 용도           |
+| ------- | ------------------- | ------------- | ------------ |
+| public  | 루트(`raw/`, `wiki/`) | commit        | 공개 가능한 개인 자료 |
+| private | `private/`          | **gitignore** | 개인 비공개 자료    |
 
 
 회사·팀 지식(사내 시스템 조회법, 업무 기록 등)은 이 brain의 대상이 아니다. `nbrain`(Dooray 위키 기반 사내 지식 검색)으로 관리한다.
@@ -25,12 +25,11 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 규칙:
 
 1. **라우팅**: 문서는 한 네임스페이스의 트리에만 둔다.
-2. **링크 방향**: 공개 페이지는 비공개(private)를 링크하지 않는다(공개 빌드 깨짐·유출 방지). 비공개 → 공개 링크는 허용.
+2. **링크 방향**: 공개 페이지는 비공개(private)를 링크하지 않는다(유출 방지). 비공개 → 공개 링크는 허용.
 3. **검색**: 로컬에서는 두 네임스페이스를 모두 검색하되, 인용 시 출처에 네임스페이스를 표기한다.
 4. **gitignore 불변**: `private/` 를 commit 대상에 올리지 않는다. `.gitignore` 를 수정해 비공개를 공개로 바꾸지 않는다.
 5. **네임스페이스 간 매핑**(비공개 ↔ 공개 지식 연결): 비공개 → 공개 방향만 건다.
-  - 비공개 페이지에서 `[[개념명]]`처럼 **폴더 경로 없이 파일명만 쓴 wiki 링크**로 공개 개념을 가리킨다. 병합 빌드에서는 파일명으로 대상을 찾는다.
-  - 이 네임스페이스 간 링크는 **로컬 전체 그래프(`quartz-local`)에서만** 보인다. 공개 빌드(`quartz`)에는 비공개 노드가 없으므로 링크도 노출되지 않는다.
+  - 비공개 페이지에서 `[[개념명]]`처럼 **폴더 경로 없이 파일명만 쓴 wiki 링크**로 공개 개념을 가리킨다.
   - 반대(공개 → 비공개)는 금지(규칙 2).
 
 ### 형상관리 (네임스페이스별 독립 VC)
@@ -55,7 +54,7 @@ brain 은 두 네임스페이스로 나뉜다. 각 네임스페이스는 자체 
 
 루트 저장소는 누구나 읽는다.
 
-**아래를 어느 파일에도 적지 않는다.** 코드, 문서, `tasks/`, `raw/`, `wiki/`, 커밋 메시지, PR 본문이 모두 해당한다.
+**아래를 어느 파일에도 적지 않는다.** 코드, 문서, `raw/`, `wiki/`, 커밋 메시지, PR 본문이 모두 해당한다.
 
 - 홈서버의 주소와 계정
 - 우리가 정한 포트 번호
@@ -115,9 +114,8 @@ scripts/verify-public-infra-boundary.sh
 3. **wiki 링크에는 폴더 경로를 쓰지 않음 (필수)**: 다른 wiki 페이지를 가리킬 때는 파일명만 쓴다.
   - O: `[[work-style]]` · `[[ai-harness-pattern]]`
   - X: `[[topics/work-style]]` · `[[../concepts/ai-harness-pattern]]` (경로형 금지)
-  - 이유: 로컬 전체 빌드(`quartz-local`)는 네임스페이스를 하위 폴더(`public/`·`_private/`)로 병합한다. 폴더 경로를 쓴 링크에는 이 하위 폴더가 빠져 404가 발생한다. 파일명만 쓴 링크는 Quartz가 전체 문서에서 같은 파일명을 찾아 공개 빌드와 로컬 빌드 모두 올바른 경로로 연결한다.
   - 파일명이 전체 wiki에서 고유하므로 파일명만 써도 충분하다. 링크에 표시할 이름이나 문서 안의 제목을 붙여도 된다: `[[work-style|개발 스타일]]`.
-  - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 빌드 대상이 아니므로 경로형 그대로 둔다.
+  - **예외 — `raw/` Sources 링크는 경로형 유지**: `[[../../raw/notes/원본.md]]` 처럼 raw 를 가리키는 출처 링크는 경로형 그대로 둔다.
 4. **raw 는 출처**: wiki 의 주장은 raw 로 추적 가능해야 한다. 출처 없는 주장 금지.
 5. **점진적 컴파일**: 한 번에 raw 전체를 처리하지 않는다. 새 raw 파일 또는 사용자가 지정한 범위만 처리.
 6. **무결성 점검은 별도 요청**: 사용자가 명시 요청할 때만 실행.
@@ -129,8 +127,7 @@ fos-brain은 시간이 지난 뒤에도 사용자의 업무 방식, 취향, 결�
 일반 설명, 일회성 작업, 코드와 git으로 자명한 사실, 실행 절차, 행동 규칙, 좁은 장애 우회법, 일시 상태는 올바른 단일 소스로 보내거나 제외한다.
 회사 내부 지식은 public과 private 어느 쪽에도 저장하지 않고 nbrain으로 보낸다.
 
-상세 판정 순서를 담았던 정책 문서는 플러그인과 함께 제거했다.
-정책을 채택한 근거는 `docs/adr/007-knowledge-admission-policy.md`에 남아 있다.
+상세 판정 순서를 담았던 정책 문서와 채택 근거를 적은 ADR 은 제거했다. git 이력에 남아 있다.
 
 ## 페이지 스키마
 
@@ -180,10 +177,6 @@ tags: ["주제"]
 `sources`는 본문의 `## Sources`를 대체하지 않는다.
 `generated`와 `verified`는 확인되지 않은 주체나 시각을 추정해서 채우지 않는다.
 
-`role: navigation`을 가진 문서는 Memory Atlas 그래프의 노드와 연결 계산에서 빠진다.
-목차와 활동 기록의 링크는 주제가 이어진다는 뜻이 아니라 그 문서가 존재한다는 뜻이기 때문이다.
-페이지 렌더와 검색은 그대로 유지된다. 판정 근거는 `docs/adr/011-atlas-navigation-document-exclusion.md`에 있다.
-
 ### `wiki/topics/<주제명>.md`
 
 여러 concept 을 묶는 narrative. concept 과 같은 frontmatter 를 쓰고 "Concepts" 섹션에 `[[concept]]` 를 나열한다.
@@ -224,31 +217,3 @@ mise 가 디렉터리마다 node 버전을 바꾸므로 PATH 의 node 를 그대
 - **`bun.lock`을 실행 환경 복구 수단으로 만들거나 수정하지 않는다**: 런처는 lockfile로 런타임을 고르므로, bun이 PATH에 없으면 `qmd: failed to launch bun: spawn bun ENOENT`로 실패할 수 있다. wrapper로 런타임을 고정하고 저장소의 의존성 파일은 건드리지 않는다.
 - 진단 순서: `which qmd` 로 wrapper 가 잡히는지 → `qmd collection list` 로 DB 접근이 되는지 → 고정한 node 버전이 아직 설치돼 있는지.
 - qmd 가 끝내 안 되면 `rg` 로 검색한다(품질은 떨어지지만 동작).
-
-## 웹 UI: Quartz
-
-연결된 지식을 그래프로 보는 웹 UI 는 Quartz v4 정적 사이트로 구축한다(`quartz/`).
-공개 빌드와 로컬 전체 빌드 두 가지를 운영한다.
-
-### 툴체인 전제
-
-- node 24.15.0 핀(`quartz/.tool-versions` = mise, `quartz/.npmrc` 의 `use-node-version` = pnpm). quartz engines 는 `node >=22`. node 25 에선 tsx 가 `.scss` ESM 로딩에 실패하므로 24 를 쓴다(25 회피). 핀 파일은 루트가 아니라 `quartz/` 에 있다.
-- pnpm(`packageManager` 필드). `quartz/.npmrc` 에 `node-linker=hoisted`(Quartz 가 phantom 의존성을 직접 import).
-- fos-brain 은 **독립 git repo** 여야 한다. 홈(`/Users/nhn`)이 `*` 화이트리스트 .gitignore 라, fos-brain 에 자체 `.git` 이 없으면 Quartz 의 `isGitIgnored` 가 모든 content 를 걸러내 입력 0 이 된다.
-
-### 공개 빌드 (`quartz/`)
-
-- content: `quartz/content` → 루트 `wiki/` 심볼릭 링크(public 만). private 는 config `ignorePatterns` 로 제외.
-- 기능: 그래프 뷰, 전문 검색, 백링크 패널
-- 서빙: `cd quartz && pnpm quartz build --serve` (기본 포트 8080)
-- 외부 게시(GitHub Pages 등)는 별도 요청 시에만. raw RAG 분석 등 공개 적정성 확인 후.
-- Quartz 렌더링이나 서빙에 영향을 주는 변경은 로컬 검사와 브라우저 회귀가 통과해야 public 구현 완료로 본다.
-  실제 게시, 접근 제어와 rollback 검증은 private 인프라 저장소에서 수행한다.
-  문서만 바꾸거나 `raw/`, `wiki/`만 바꾸는 작업에는 게시 검증을 요구하지 않는다.
-
-### 로컬 전체 빌드 (`quartz-local/`)
-
-- content: public 과 private 을 합친 전체 그래프. 비공개 폴더는 `_private` 로 병합(공개 config 의 ignore 회피).
-- 병합 content 는 repo 밖 temp 에 생성(repo 안이면 `.gitignore` 때문에 입력이 걸러짐).
-- **gitignore 대상**(`quartz-local/content`, `quartz-local/public`) — 절대 게시하지 않는다.
-- 서빙: `./quartz-local/serve.sh` (포트 8081)
