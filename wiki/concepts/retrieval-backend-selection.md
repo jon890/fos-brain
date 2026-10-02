@@ -40,8 +40,6 @@ RAG를 만들 때 벡터DB부터 세우는 것이 기본값은 아니다. 검색
 
 ## 관련 개념
 
-- [[rag-retrieval-pipeline]] — 이 선택 위에서 돌아가는 검색 파이프라인 전체
-- [[embedding-versioned-vector-index]] — 벡터를 도입했을 때 따라오는 운영 비용
 - [[rag-system-architecture-strategies]] — 상위 설계 관점
 
 ## Sources

@@ -300,3 +300,9 @@ Append-only 연대기. brain-add·query·lint skill 이 매번 한 줄 append �
 - Source: `raw/web/2026-08-26-toss-securities-recommendation-search-rag-graphrag.md` (https://toss.tech/article/tech_talk_talk_3)
 - 이미 있던 유튜브 자동자막 판본의 오인식 수치·파라미터 이름을 글 판본으로 교정
 - 신규 1 페이지(recommendation-batch-to-realtime-loop), 보강 2 페이지(graph-rag-path-retrieval, embedding-versioned-vector-index), 출처 추가 2 페이지
+
+## [2026-10-02] delete | 블로그로 옮긴 공부 문서 22개 제거
+- 저장소 deprecated 처리에 따라 공부 글은 블로그 원본 저장소(fos-study)로 옮기고 이 wiki 에서 지운다
+- 블로그에 새 글이나 보강으로 옮긴 15개: agent-friendly-cli-design, ai-code-review-github-actions, ai-verification-layer, append-only-doc-file-per-item-split, merge-conflict-free-append, connection-pool-pitfalls, connection-pool-sizing, document-parsing-quality-evaluation, embedding-versioned-vector-index, graph-rag-path-retrieval, rag-retrieval-pipeline, recommendation-batch-to-realtime-loop, removal-plan-grep-gate, review-bot-suggestion-verify, self-directed-learning
+- 블로그에 같은 내용의 글이 이미 있던 7개: latency-percentiles, observability-three-pillars, pid1-zombie-tini, prometheus-histogram-vs-summary, red-use-metrics, slo-burn-rate-alerting, observability(topic)
+- 남은 문서에서 위 문서를 가리키던 링크와 INDEX 항목을 정리했다. raw 원본은 그대로 둔다

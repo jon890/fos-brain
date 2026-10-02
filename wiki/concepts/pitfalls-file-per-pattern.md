@@ -13,7 +13,7 @@ updated: 2026-06-16
 
 - 모놀리식 문서는 작업마다 무관한 패턴까지 컨텍스트에 올려 토큰을 낭비하고 핵심을 묻는다.
 - 파일 per 패턴이면 INDEX 라우터로 이 작업의 변경 유형 행만 골라 해당 파일만 읽는다.
-- 끝에 append 하지 않으니 두 PR 이 동시에 패턴을 추가해도 머지 충돌이 없다([[merge-conflict-free-append]]).
+- 끝에 append 하지 않으니 두 PR 이 동시에 패턴을 추가해도 머지 충돌이 없다.
 
 ## 소비 방식 (전부 읽지 않는다)
 
@@ -63,7 +63,6 @@ frontmatter(id·category·triggers·tool_catchable·source·related) 와 본문(
 ## 관련 개념
 
 - [[self-improving-harness]] — 이 wiki 에 패턴을 누적하는 메타 루프
-- [[merge-conflict-free-append]] — 파일 per 항목, INDEX 의 충돌 제거 구조 (이 패턴의 일반형)
 - [[self-improving-harness]] — 반복 교훈을 테스트나 올바른 단일 원본으로 환원하는 루프
 
 ## Sources

@@ -45,7 +45,7 @@ updated: 2026-06-25
 ## 회피 패턴 wiki 의 운영 (파일 per 패턴 + 라우터)
 
 리뷰 학습을 한 큰 파일이 아니라 카테고리 디렉터리와 라우터(INDEX)로 운영하면 누적이 컨텍스트를 잠식하지 않는다.
-구조 패턴 자체는 [[merge-conflict-free-append]] 이고, 자기개선 루프 관점의 운영 규율은 다음이다.
+구조 패턴 자체는 merge-conflict-free-append 이고, 자기개선 루프 관점의 운영 규율은 다음이다.
 
 - **소비 3단계** — (1) 라우터 표에서 이번 작업의 변경 유형 행을 찾고, (2) 가리키는 파일만 self-check, (3) 애매하면 카테고리 디렉터리 통째로(과소선택보다 안전). 전부 읽지 않는 progressive disclosure 다.
 - **triggers 매칭** — 각 패턴 파일 frontmatter 의 `triggers` 키워드로 라우터가 매칭한다. 변경 유형 키워드로 grep 해 좁힌다.
@@ -79,7 +79,6 @@ GNOSIS 발표는 성장형 에이전트가 스킬을 무제한 누적하면 안 
 
 - [[ai-harness-pattern]] — 이 루프가 붙는 베이스 하네스
 - [[skillopt-trainable-skill-document]] — 이 수동 루프를 자동화·형식화한 외부 방법론(SkillOpt)
-- [[merge-conflict-free-append]] — 회피 패턴 wiki 의 파일 per 패턴과 INDEX 구조 (이 루프가 운영 규율을 더한다)
 - [[testing-philosophy]] — 반복 결함을 결정적 검사로 승격하는 검증 방식
 
 ## Sources

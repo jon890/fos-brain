@@ -26,12 +26,11 @@ status: stable
 
 - 반복 가능한 운영 원칙은 [[testing-philosophy]]와 자동 검사로 남긴다.
 - vendor 고유 결함과 저장소별 우회는 코드, ADR와 회고에 둔다. [[vendor-bug-wrapper-vs-replace]]
-- 제거·전환 작업은 남아 있어야 하는 상태와 사라져야 하는 상태를 함께 검사한다. [[removal-plan-grep-gate]]
-- 검토 제안은 적용됐다는 가정 대신 결과를 실측한다. [[review-bot-suggestion-verify]]
+- 제거·전환 작업은 남아 있어야 하는 상태와 사라져야 하는 상태를 함께 검사한다.
+- 검토 제안은 적용됐다는 가정 대신 결과를 실측한다.
 
 ## 관련 Topics
 
-- [[observability]] — 증상을 발견하고 계층별 신호를 수집하는 방법
 - [[work-style]] — 최소 변경과 근거 중심 검증이 포함된 전체 업무 스타일
 
 ## Sources

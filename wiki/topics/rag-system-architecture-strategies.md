@@ -38,7 +38,7 @@ RAG 시스템은 하나의 검색 기법이 아니라 사용자 작업 흐름, �
 ## 개인 설계 우선순위
 
 1. **입력 완전성과 신선도**: 수집 누락, 삭제 동기화와 갱신 실패를 먼저 측정한다.
-2. **변환 품질**: 문서와 표의 구조가 chunk 이후에도 보존되는지 평가한다. [[document-parsing-quality-evaluation]]
+2. **변환 품질**: 문서와 표의 구조가 chunk 이후에도 보존되는지 평가한다.
 3. **검색 품질**: Recall@K, MRR과 nDCG 같은 지표로 후보 집합과 순위를 본다.
 4. **최종 답변**: 근거성, 정확성과 사용자 작업 완료 여부를 평가한다.
 
@@ -56,11 +56,7 @@ RAG 시스템은 하나의 검색 기법이 아니라 사용자 작업 흐름, �
 
 ## Concepts
 
-- [[document-parsing-quality-evaluation]] — 입력 문서의 내용과 구조 보존 평가
-- [[rag-retrieval-pipeline]] — 질문 이해부터 재정렬까지의 공통 검색 흐름
 - [[retrieval-backend-selection]] — 검색 계층을 벡터DB 기본값 없이 고르는 기준
-- [[embedding-versioned-vector-index]] — 임베딩 변경과 벡터 색인의 운영 수명주기
-- [[graph-rag-path-retrieval]] — 제한된 경로 탐색으로 서브그래프를 만드는 방식
 - [[testing-philosophy]] — 결정적 검사와 비결정적 평가의 계층
 
 ## Sources

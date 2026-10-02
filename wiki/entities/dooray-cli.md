@@ -21,7 +21,7 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
   - `wiki` — 페이지·댓글
   - 인증은 Dooray API 토큰, 설정·캐시는 `~/.dooray/`.
 - **어디에** — AI 에이전트의 Dooray 자동화 토대다. weekly-report 스킬이 주간보고 댓글 등록에, dooray-comment-reply 스킬이 댓글 회신에 이 CLI 를 소비한다.
-- **설계** — 에이전트 친화 CLI 패턴을 정립했다([[agent-friendly-cli-design]]).
+- **설계** — 에이전트 친화 CLI 패턴을 정립했다.
 
 ## 개요
 
@@ -52,7 +52,6 @@ NHN Dooray REST API 를 래핑한 CLI(`@bifos/dooray-cli`, npm 공개, MIT). 하
 ## 보여주는 스타일
 
 - [[ai-harness-pattern]]
-- [[agent-friendly-cli-design]] — 이 도구가 정립한 에이전트 친화 CLI 패턴
 - [[tech-stack-preferences]]
 - [[work-style]]
 
